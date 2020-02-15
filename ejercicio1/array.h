@@ -1,13 +1,15 @@
 #ifndef ARRAY_HPP
 #define  ARRAY_HPP
 
-int init(char *nombre, int N);
+#include "comm.h"
 
-int set(char *nombre, int i, int valor);
+int init(char *name, int N);
 
-int get(char *nombre, int i, int *valor);
+int set(char *name, int i, int value);
 
-int destroy(chat *nombre);
+int get(char *name, int i, int *value);
+
+int destroy(chat *name);
 
 
 #endif
