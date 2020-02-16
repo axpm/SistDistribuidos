@@ -1,13 +1,19 @@
 #ifndef COMM_HPP
 #define COMM_HPP
+#include <mqueue.h>
 
 #define MAX 50
+#define MAX_MSS 10
+#define NO_PRIORITY 0
+// #define MAX_MSS_SIZE ???
 // Códigos para las operaciones
 #define INIT_OP 1
 #define SET_OP 2
 #define GET_OP 3
 #define DEST_OP 4
 
+
+#define NOMBRE_SERVER myServer
 
 struct petition{
   int op;
