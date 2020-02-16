@@ -11,17 +11,17 @@ int init(char *name, int N){
   struct reply r;
 
   //abrimos las colas de cliente y server
-  char * clientName = (char *) getpid(); //Se le da un nombre para la cola del cliente
     //Atributos cola
-  mq_attr attr;
+  struct mq_attr attr;
   attr.mq_maxmsg = MAX_MSS;
-  attr.mq_msgsize = sizeof(reply);
-
-  int cq = mq_open( clientName , O_CREAT | O_RDONLY, 0777, *attr);
+  attr.mq_msgsize = sizeof(struct reply);
+  char clientName[MAX];
+  sprintf(clientName, "Queue-%d", getpid()); //Se le da un nombre para la cola del cliente
+  int cq = mq_open( clientName , O_CREAT | O_RDONLY, 0700, &attr);
   if (cq == -1)
     return cq;
 
-  int sq = mq_open(NOMBRE_SERVER); //POR DEFINIR
+  int sq = mq_open(NOMBRE_SERVER, O_WRONLY);
   if (sq == -1){
     mq_close(cq);
     mq_unlink(clientName);
@@ -34,9 +34,9 @@ int init(char *name, int N){
   p.N = N;
 
   //Enviamos la petición
-  mq_send(sq, &p, sizeof(petition), NO_PRIORITY);
+  mq_send(sq, (const char *) &p, sizeof(struct petition), NO_PRIORITY);
 
-  e = mq_receive(cq, &r, sizeof(reply), NO_PRIORITY);
+  int e = mq_receive(cq, (char*) &r, sizeof(struct reply), NO_PRIORITY);
 //--------------NO MUY SEGURO DE LO SIGUIENTE--------
 
   if (e == -1){
@@ -60,16 +60,17 @@ int set(char *name, int i, int value){
   struct reply r;
 
   //abrimos las colas de cliente y server
-  char * clientName = (char *) getpid(); //Se le da un nombre para la cola del cliente
-  mq_attr attr;
+    //Atributos cola
+  struct mq_attr attr;
   attr.mq_maxmsg = MAX_MSS;
-  attr.mq_msgsize = sizeof(reply);
-
-  int cq = mq_open( clientName , O_CREAT | O_RDONLY, 0777, *attr);
+  attr.mq_msgsize = sizeof(struct reply);
+  char clientName[MAX];
+  sprintf(clientName, "Queue-%d", getpid()); //Se le da un nombre para la cola del cliente
+  int cq = mq_open( clientName , O_CREAT | O_RDONLY, 0700, &attr);
   if (cq == -1)
     return cq;
 
-  int sq = mq_open(NOMBRE_SERVER); //POR DEFINIR
+  int sq = mq_open(NOMBRE_SERVER, O_WRONLY);
   if (sq == -1){
     mq_close(cq);
     mq_unlink(clientName);
@@ -83,9 +84,9 @@ int set(char *name, int i, int value){
   p.value = value;
 
   //Enviamos la petición
-  mq_send(sq, &p, sizeof(petition), NO_PRIORITY);
+  mq_send(sq, (const char *) &p, sizeof(struct petition), NO_PRIORITY);
 
-  e = mq_receive(cq, &r, sizeof(reply), NO_PRIORITY);
+  int e = mq_receive(cq, (char*) &r, sizeof(struct reply), NO_PRIORITY);
 //--------------NO MUY SEGURO DE LO SIGUIENTE--------
 
   if (e == -1){
@@ -109,16 +110,17 @@ int get(char *name, int i, int *value){
   struct reply r;
 
   //abrimos las colas de cliente y server
-  char * clientName = (char *) getpid(); //Se le da un nombre para la cola del cliente
-  mq_attr attr;
+    //Atributos cola
+  struct mq_attr attr;
   attr.mq_maxmsg = MAX_MSS;
-  attr.mq_msgsize = sizeof(reply);
-
-  int cq = mq_open( clientName , O_CREAT | O_RDONLY, 0777, *attr); //cliente queue = cq
+  attr.mq_msgsize = sizeof(struct reply);
+  char clientName[MAX];
+  sprintf(clientName, "Queue-%d", getpid()); //Se le da un nombre para la cola del cliente
+  int cq = mq_open( clientName , O_CREAT | O_RDONLY, 0700, &attr);
   if (cq == -1)
     return cq;
 
-  int sq = mq_open(NOMBRE_SERVER); //POR DEFINIR EL NOMBRE
+  int sq = mq_open(NOMBRE_SERVER, O_WRONLY); //POR DEFINIR EL NOMBRE
   if (sq == -1){
     mq_close(cq);
     mq_unlink(clientName);
@@ -132,9 +134,9 @@ int get(char *name, int i, int *value){
   p.i = i;
 
   //Enviamos la petición
-  mq_send(sq, &p, sizeof(petition), NO_PRIORITY);
+  mq_send(sq, (const char *) &p, sizeof(struct petition), NO_PRIORITY);
 
-  e = mq_receive(cq, &r, sizeof(reply), NO_PRIORITY);
+  int e = mq_receive(cq, (char*) &r, sizeof(struct reply), NO_PRIORITY);
 //--------------NO MUY SEGURO DE LO SIGUIENTE--------
 
   if (e == -1){
@@ -150,7 +152,7 @@ int get(char *name, int i, int *value){
     return r.error;
 }
 
-int destroy(chat *name){
+int destroy(char *name){
   // return 0;
 
   //creamos las peticiones y respuestas
@@ -158,16 +160,17 @@ int destroy(chat *name){
   struct reply r;
 
   //abrimos las colas de cliente y server
-  char * clientName = (char *) getpid(); //Se le da un nombre para la cola del cliente
-  mq_attr attr;
+    //Atributos cola
+  struct mq_attr attr;
   attr.mq_maxmsg = MAX_MSS;
-  attr.mq_msgsize = sizeof(reply);
-
-  int cq = mq_open( clientName , O_CREAT | O_RDONLY, 0777, *attr); //cliente queue = cq
+  attr.mq_msgsize = sizeof(struct reply);
+  char clientName[MAX];
+  sprintf(clientName, "Queue-%d", getpid()); //Se le da un nombre para la cola del cliente
+  int cq = mq_open( clientName , O_CREAT | O_RDONLY, 0700, &attr);
   if (cq == -1)
-    return cq;
+  return cq;
 
-  int sq = mq_open(NOMBRE_SERVER); //POR DEFINIR EL NOMBRE
+  int sq = mq_open(NOMBRE_SERVER, O_WRONLY); //POR DEFINIR EL NOMBRE
   if (sq == -1){
     mq_close(cq);
     mq_unlink(clientName);
@@ -179,9 +182,9 @@ int destroy(chat *name){
   strcpy(p.name, name);
 
   //Enviamos la petición
-  mq_send(sq, &p, sizeof(petition), NO_PRIORITY);
+  mq_send(sq, (const char *) &p, sizeof(struct petition), NO_PRIORITY);
 
-  e = mq_receive(cq, &r, sizeof(reply), NO_PRIORITY);
+  int e = mq_receive(cq, (char*) &r, sizeof(struct reply), NO_PRIORITY);
 //--------------NO MUY SEGURO DE LO SIGUIENTE--------
 
   if (e == -1){
@@ -190,7 +193,6 @@ int destroy(chat *name){
     mq_unlink(clientName);
     return e;
   }
-    *value = r.value;
     mq_close(cq);
     mq_close(sq);
     mq_unlink(clientName);

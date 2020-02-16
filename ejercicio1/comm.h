@@ -13,7 +13,7 @@
 #define DEST_OP 4
 
 
-#define NOMBRE_SERVER myServer
+#define NOMBRE_SERVER "/myServer"
 
 struct petition{
   int op;
