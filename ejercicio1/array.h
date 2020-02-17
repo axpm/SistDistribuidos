@@ -1,5 +1,5 @@
 #ifndef ARRAY_HPP
-#define  ARRAY_HPP
+#define ARRAY_HPP
 
 #include "comm.h"
 #include <mqueue.h>
