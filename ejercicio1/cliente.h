@@ -1,7 +1,6 @@
 #ifndef CLIENTE_HPP
 #define CLIENTE_HPP
 
-#include "array.h"
 #include <stdio.h>
 
 void errorMsgInit(int e, int i);
