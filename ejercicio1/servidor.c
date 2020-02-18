@@ -1,21 +1,24 @@
 #include "servidor.h"
 
 int main(int argc, char const *argv[]) {
-  struct peticion p;
-  struct reply r;
+  struct petition p;
+  // struct reply r;
   struct mq_attr attr;
-  attr.mq_maxmsg = 10;
-
-  int qs = mq_open(NOMBRE_SERVER, O_CREAT | O_WRONLY, &attr);
+  attr.mq_maxmsg = MAX_MSG;
+  attr.mq_msgsize = sizeof(struct petition);
+  int qs = mq_open("/NOMBRE_SERVER", O_CREAT | O_WRONLY, 0777, &attr);
   if (qs == -1){
+    perror("mq_open");
     fprintf(stderr, "%s\n", "Error! Not created Server Queue");
+    exit(-1);
   }
 
 
   while(1){
-    mq_receive(qs, (char *)p, sizeof(struct petition), NO_PRIORITY );
+    mq_receive(qs, (char *)&p, sizeof(struct petition), NO_PRIORITY );
 
     //CREAR HILOS BAJO DEMANDA O COGER UNO DEL POOL
+    printf("%s\n", "Soy el server" );
 
     //OPERACIONES
     //Operación Init

@@ -21,15 +21,15 @@ int init(char *name, int N){
   int cq = mq_open( clientName , O_CREAT|O_RDONLY, 0700, &attr);
 
   if (cq == -1){
-    printf("%s\n","PRUEBA2" );
     perror("mq_open");
     return cq;
   }
 
-  int sq = mq_open(NOMBRE_SERVER, O_WRONLY);
+  int sq = mq_open("/NOMBRE_SERVER", O_WRONLY);
   if (sq == -1){
     mq_close(cq);
     mq_unlink(clientName);
+    printf("%s\n", "prueba2" );
     perror("mq_open");
     return sq;
   }
@@ -80,7 +80,7 @@ int set(char *name, int i, int value){
   attr.mq_maxmsg = MAX_MSG;
   attr.mq_msgsize = sizeof(struct reply);
   char clientName[MAX];
-  sprintf(clientName, "Queue-%d", getpid()); //Se le da un nombre para la cola del cliente
+  sprintf(clientName, "/Queue-%d", getpid()); //Se le da un nombre para la cola del cliente
   int cq = mq_open( clientName , O_CREAT | O_RDONLY, 0700, &attr);
   if (cq == -1){
     perror("mq_open");
@@ -142,7 +142,7 @@ int get(char *name, int i, int *value){
   attr.mq_maxmsg = MAX_MSG;
   attr.mq_msgsize = sizeof(struct reply);
   char clientName[MAX];
-  sprintf(clientName, "Queue-%d", getpid()); //Se le da un nombre para la cola del cliente
+  sprintf(clientName, "/Queue-%d", getpid()); //Se le da un nombre para la cola del cliente
   int cq = mq_open( clientName , O_CREAT | O_RDONLY, 0700, &attr);
   if (cq == -1){
     perror("mq_open");
@@ -205,7 +205,7 @@ int destroy(char *name){
   attr.mq_maxmsg = MAX_MSG;
   attr.mq_msgsize = sizeof(struct reply);
   char clientName[MAX];
-  sprintf(clientName, "Queue-%d", getpid()); //Se le da un nombre para la cola del cliente
+  sprintf(clientName, "/Queue-%d", getpid()); //Se le da un nombre para la cola del cliente
   int cq = mq_open( clientName , O_CREAT | O_RDONLY, 0700, &attr);
   if (cq == -1){
     perror("mq_open");

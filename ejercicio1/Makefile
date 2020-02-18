@@ -22,7 +22,12 @@ imple: imple.o
 
 cliente: cliente
 	gcc -Wall -o $@ cliente.c -L. -larray -lrt
-	export LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH
+	chmod +x script.sh
+	./script.sh
+
+servidor: servidor
+	gcc -Wall -o $@ servidor.c -lrt
+
 
 clean:
 	rm -f $(BIN_FILES) *.o *.so
