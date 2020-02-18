@@ -1,4 +1,4 @@
-BIN_FILES  = array cliente comm imple servidor
+BIN_FILES  = array imple cliente servidor
 
 CC = gcc
 
@@ -14,15 +14,20 @@ all: $(BIN_FILES)
 .PHONY : all
 
 array:
-	$(CC) -Wall -fPIC -c array.c -o $@.o
+	$(CC) -Wall -fpic -c array.c -o $@.o
 	$(LD) -o libarray.so $@.o -shared
 
 imple: imple.o
 	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
 cliente: cliente
-	gcc -Wall -o $@ cliente.c -L. –larray
-	export LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH
+	gcc -Wall -o $@ cliente.c -L. -larray -lrt
+	chmod +x script.sh
+	./script.sh
+
+servidor: servidor
+	gcc -Wall -o $@ servidor.c -lrt
+
 
 clean:
 	rm -f $(BIN_FILES) *.o *.so
