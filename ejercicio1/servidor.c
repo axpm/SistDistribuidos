@@ -6,7 +6,7 @@ int main(int argc, char const *argv[]) {
   struct mq_attr attr;
   attr.mq_maxmsg = MAX_MSG;
   attr.mq_msgsize = sizeof(struct petition);
-  int qs = mq_open(NOMBRE_SERVER, O_CREAT | O_WRONLY, 0777, &attr);
+  int qs = mq_open(NOMBRE_SERVER, O_CREAT | O_RDWR, 0777, &attr);
   if (qs == -1){
     perror("mq_open");
     fprintf(stderr, "%s\n", "Error! Couldn't create Server Queue");
@@ -15,7 +15,14 @@ int main(int argc, char const *argv[]) {
 
 
   while(1){
-    mq_receive(qs, (char *)&p, sizeof(struct petition), NO_PRIORITY );
+    int e = mq_receive(qs, (char *)&p, sizeof(struct petition), NO_PRIORITY );
+
+    if (e == -1){
+      perror("mq_receive");
+      mq_unlink(NOMBRE_SERVER);
+      exit(-1); //Luego no habrá que hacer exit
+    }
+
 
     //CREAR HILOS BAJO DEMANDA O COGER UNO DEL POOL
     printf("%d %s\n", p.op, "Soy el server" );
@@ -24,7 +31,6 @@ int main(int argc, char const *argv[]) {
     //Operación Init
     if(p.op == INIT_OP){
       printf("%s\n", "Operación init");
-      exit(-1);
     }
     //Operación Set
     if(p.op == SET_OP){
