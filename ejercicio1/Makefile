@@ -20,5 +20,9 @@ array:
 imple: imple.o
 	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
+cliente: cliente
+	gcc -Wall -o $@ cliente.c -L. –larray
+	export LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH
+
 clean:
 	rm -f $(BIN_FILES) *.o *.so
