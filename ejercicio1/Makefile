@@ -14,14 +14,14 @@ all: $(BIN_FILES)
 .PHONY : all
 
 array:
-	$(CC) -Wall -fPIC -c array.c -o $@.o
+	$(CC) -Wall -fpic -c array.c -o $@.o
 	$(LD) -o libarray.so $@.o -shared
 
 imple: imple.o
 	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
 cliente: cliente
-	gcc -Wall -o $@ cliente.c -L. –larray
+	gcc -Wall -o $@ cliente.c -L. -larray -lrt
 	export LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH
 
 clean:
