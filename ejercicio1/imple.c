@@ -12,9 +12,8 @@ void insert(List *l, int *vector, char * name){
     // p1 = (struct listElement *)malloc(sizeNew);
     p1 = (struct listElement *)malloc(sizeof(struct listElement));
     //datos
-    *p1->vector = &vector; //Esto me va a dar error
-    if (strcpy(p1->name, name) == -1)
-      return -1;
+    p1->vector = vector; //Esto me va a dar error
+    strcpy(p1->name, name);
 
     p1->next = NULL;
     *l = p1;
@@ -28,9 +27,9 @@ void insert(List *l, int *vector, char * name){
     // p2 = (struct listElement *)malloc(sizeNew);
     p2 = (struct listElement *)malloc(sizeof(struct listElement));
     //datos
-    *p2->vector = &vector; //Esto me va a dar error
-    f (strcpy(p2->name, name) == -1)
-      return -1;
+    p2->vector = vector; //Esto me va a dar error
+    strcpy(p1->name, name);
+
 
     p2->next = NULL;
     p1->next = p2;
@@ -75,7 +74,7 @@ int init(char *name, int N){
   }
 
   //---------OJO-------------
-  List aux = &server;// Pseudocódigo
+  List aux = server;// Pseudocódigo
 
   while(aux->next != NULL){
     //Si hay un elemento con el mismo nombre y distinto tamaño error
@@ -92,14 +91,14 @@ int init(char *name, int N){
   }
 
   int vector[N];
-  insert(&server, &vector, name);
+  insert(&server, vector, name);
 
   return cod_error;
 }
 
 int set(char *name, int i, int value){
   //return 0;
-  List aux = &server;
+  List aux = server;
 
   if (i < 0)
     return -1;
@@ -118,7 +117,7 @@ int set(char *name, int i, int value){
   //Lo ha encontrado
   for (int j = 0; j<N; j++){
     if(i == j)
-      *aux[i] = value;
+      aux->vector[i] = value;
   }
   return 0;
 }
@@ -127,7 +126,7 @@ int set(char *name, int i, int value){
 
 int get(char *name, int i, int *value){
   //return 0;
-  List aux = &server;
+  List aux = server;
 
   if (i < 0)
   return -1;
@@ -146,7 +145,7 @@ int get(char *name, int i, int *value){
   //Lo ha encontrado
   for (int j = 0; j<N; j++){
     if(i == j)
-      *value = aux[i];
+      *value = aux->vector[i];
   }
   return 0;
 }
@@ -155,10 +154,24 @@ int get(char *name, int i, int *value){
 
 
 int destroy(char *name){
-  //return 0;
+  // return 0;
 
   //Encontramos vector name, reasignamos punteros next y frees de vector name
 
+  List aux = server;
 
+  while (strcmp(aux->next->name, name) != 0) { //Compara que los nombres sean iguales
+    aux = aux->next;
+    if (aux->next == NULL){
+      fprintf(stderr, "%s\n", "Not existing element");
+      return -1;
+    }
+  }
+  // El que queremos eliminar es aux->next, por tanto queremos que aux apunte al next del next
+  aux->next = aux->next->next;
+  aux = aux->next;
+  free(aux); //Hacemos free de la posición actual
+
+  return 1;
 
 }
