@@ -17,7 +17,6 @@ int init(char *name, int N){
   attr.mq_msgsize = sizeof(struct reply);
   char clientName[MAX];
   sprintf(clientName, "/Queue-%d", getpid()); //Se le da un nombre para la cola del cliente
-  printf("%s\n", clientName );
   int qc = mq_open( clientName , O_CREAT|O_RDONLY, 0700, &attr);
 
   if (qc == -1){
@@ -35,7 +34,9 @@ int init(char *name, int N){
 
   //Rellenamos la petición
   p.op = INIT_OP;
-  strcpy(p.name, name);
+
+  sprintf(p.name, "%s", name);
+  sprintf(p.client_queue, "%s", clientName);
   p.N = N;
 
   //Enviamos la petición
@@ -96,8 +97,8 @@ int set(char *name, int i, int value){
 
   //Rellenamos la petición
   p.op = SET_OP;
-  strcpy(p.name, name);
-  strcpy(p.client_queue, clientName);
+  sprintf(p.name, "%s", name);
+  sprintf(p.client_queue, "%s", clientName);
   p.value = value;
 
   //Enviamos la petición
@@ -159,8 +160,8 @@ int get(char *name, int i, int *value){
 
   //Rellenamos la petición
   p.op = GET_OP;
-  strcpy(p.name, name);
-  strcpy(p.client_queue, clientName);
+  sprintf(p.name, "%s", name);
+  sprintf(p.client_queue, "%s", clientName);
   p.i = i;
 
   //Enviamos la petición
@@ -222,7 +223,7 @@ int destroy(char *name){
 
   //Rellenamos la petición
   p.op = DEST_OP;
-  strcpy(p.name, name);
+  sprintf(p.name, "%s", name);
 
   //Enviamos la petición
   int e = mq_send(qs, (const char *) &p, sizeof(struct petition), NO_PRIORITY);

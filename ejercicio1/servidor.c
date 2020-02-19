@@ -2,7 +2,7 @@
 
 int main(int argc, char const *argv[]) {
   struct petition p;
-  // struct reply r;
+  struct reply r;
   struct mq_attr attr;
   attr.mq_maxmsg = MAX_MSG;
   attr.mq_msgsize = sizeof(struct petition);
@@ -25,12 +25,28 @@ int main(int argc, char const *argv[]) {
 
 
     //CREAR HILOS BAJO DEMANDA O COGER UNO DEL POOL
-    printf("%d %s\n", p.op, "Soy el server" );
 
     //OPERACIONES
     //Operación Init
     if(p.op == INIT_OP){
       printf("%s\n", "Operación init");
+
+      int qc = mq_open(p.client_queue, O_WRONLY);
+
+      if (qc == -1){
+        perror("mq_open");
+        mq_unlink(NOMBRE_SERVER);
+        exit(-1); //Luego no habrá que hacer exit
+      }
+
+      int e = mq_send(qc, (const char *)&r, sizeof(struct reply), NO_PRIORITY );
+      if (e == -1){
+        perror("mq_send");
+        mq_unlink(NOMBRE_SERVER);
+        exit(-1); //Luego no habrá que hacer exit
+      }
+      mq_unlink(p.client_queue);
+      printf("%s\n", "Envía respuesta");
     }
     //Operación Set
     if(p.op == SET_OP){
