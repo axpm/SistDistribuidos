@@ -41,7 +41,7 @@ int main(int argc, char const *argv[]) {
 }
 
 void listenPetition(int qs){
-  
+
   //Petición
   struct petition p;
   struct mq_attr attr;
