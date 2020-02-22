@@ -224,6 +224,7 @@ int destroy(char *name){
   //Rellenamos la petición
   p.op = DEST_OP;
   sprintf(p.name, "%s", name);
+  sprintf(p.client_queue, "%s", clientName);
 
   //Enviamos la petición
   int e = mq_send(qs, (const char *) &p, sizeof(struct petition), NO_PRIORITY);

@@ -18,10 +18,7 @@ int main(int argc, char const *argv[]) {
   attr.mq_msgsize = sizeof(struct petition);
 
   //Cola servidor
-	char myServer [MAX] = NOMBRE_SERVER;
-	printf("%s\n", myServer);
 	int qs = mq_open(NOMBRE_SERVER, O_CREAT | O_RDWR, 0777, &attr);
-  // int qs = mq_open(myServer, O_CREAT | O_RDWR, 0777, &attr);
   if (qs == -1){
     perror("mq_open");
     fprintf(stderr, "%s\n", "Error! Couldn't create Server Queue");
