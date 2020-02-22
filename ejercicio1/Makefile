@@ -17,16 +17,13 @@ array:
 	$(CC) -Wall -fpic -c array.c -o $@.o
 	$(LD) -o libarray.so $@.o -shared
 
-imple: imple.o
-	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
-
-cliente: cliente
-	gcc -Wall -o $@ cliente.c -L. -larray -lrt
+cliente: cliente.o
+	gcc -Wall -o $@ cliente.o -L. -larray -lrt
 	chmod +x script.sh
 	./script.sh
 
-servidor: servidor
-	gcc -Wall -o $@ servidor.c -lrt
+servidor: servidor.o imple.o
+	gcc -Wall -o $@ servidor.o -lrt -lpthread
 
 
 clean:

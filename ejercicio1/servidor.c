@@ -1,5 +1,9 @@
 #include "servidor.h"
 
+pthread_mutex_t mutex;
+pthread_cond_t c;
+bool copiado; //variable de condición
+
 int main(int argc, char const *argv[]) {
   //Hilos
 	pthread_attr_t attr;
@@ -22,7 +26,7 @@ int main(int argc, char const *argv[]) {
   while(1){
 
     //CREAR HILOS BAJO DEMANDA
-    if (pthread_create(&t, NULL, (void *) listenPetition, qs) == -1){
+    if (pthread_create(&t, NULL, (void *) listenPetition, &qs) == -1){
 			printf("Error creating threads\n");
 			exit(0);
 		}
@@ -40,26 +44,21 @@ int main(int argc, char const *argv[]) {
   return 0;
 }
 
-void listenPetition(int qs){
+void listenPetition(int *qs){
 
   //Petición
   struct petition p;
-  struct mq_attr attr;
-  attr.mq_maxmsg = MAX_MSG;
-  attr.mq_msgsize = sizeof(struct petition);
 
-  //Respuesta
-  struct reply r;
-  struct mq_attr attr;
-  attr.mq_maxmsg = MAX_MSG;
-  attr.mq_msgsize = sizeof(struct reply);
 
-  int e = mq_receive(qs, (char *)&p, sizeof(struct petition), NO_PRIORITY );
+  int e = mq_receive(*qs, (char *)&p, sizeof(struct petition), NO_PRIORITY );
   //se ha recibido y copiado en petición
   pthread_mutex_lock(&mutex);
   copiado = true;
   pthread_cond_signal(&c);
   pthread_mutex_unlock(&mutex);
+
+  //Respuesta
+  struct reply r;
 
   if (e == -1){
     perror("mq_receive");
@@ -93,7 +92,7 @@ void listenPetition(int qs){
   else if(p.op == GET_OP){
     printf("%s\n", "Operation get");
     //ejecución y rellenar respuesta
-    r.error = get(p.name, p.i, &(r->value));
+    r.error = get(p.name, p.i, &(r.value));
   }
 
   //Operación destroy
@@ -107,8 +106,10 @@ void listenPetition(int qs){
     printf("%s\n", "Operation not found");
   }
 
+
+
   //Enviar respuesta
-  int e = mq_send(qc, (const char *)&r, sizeof(struct reply), NO_PRIORITY );
+  e = mq_send(qc, (const char *)&r, sizeof(struct reply), NO_PRIORITY );
   if (e == -1){
     perror("mq_send");
     mq_unlink(NOMBRE_SERVER);
