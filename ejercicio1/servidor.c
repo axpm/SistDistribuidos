@@ -6,16 +6,22 @@ bool copiado; //variable de condición
 
 int main(int argc, char const *argv[]) {
   //Hilos
-	pthread_attr_t attr;
+	pthread_attr_t attrTh;
   pthread_t t;
-  pthread_attr_init(&attr);
+  pthread_attr_init(&attrTh);
   pthread_mutex_init(&mutex, NULL);
   pthread_cond_init(&c, NULL);
   copiado = false;
 
+	struct mq_attr attr;
+  attr.mq_maxmsg = MAX_MSG;
+  attr.mq_msgsize = sizeof(struct petition);
 
   //Cola servidor
-  int qs = mq_open(NOMBRE_SERVER, O_CREAT | O_RDWR, 0777, &attr);
+	char myServer [MAX] = NOMBRE_SERVER;
+	printf("%s\n", myServer);
+	int qs = mq_open(NOMBRE_SERVER, O_CREAT | O_RDWR, 0777, &attr);
+  // int qs = mq_open(myServer, O_CREAT | O_RDWR, 0777, &attr);
   if (qs == -1){
     perror("mq_open");
     fprintf(stderr, "%s\n", "Error! Couldn't create Server Queue");

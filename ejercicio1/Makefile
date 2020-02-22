@@ -4,10 +4,11 @@ CC = gcc
 
 LD = ld
 
-CPPFLAGS = -I$(INSTALL_PATH)/include -Wall
+CPPFLAGS = -I$(INSTALL_PATH)/include
+CFLAGS =	-Wall  -g
 
 LDFLAGS = -L$(INSTALL_PATH)/lib/
-LDLIBS = -lpthread
+LDLIBS = -lpthread -lrt
 
 
 all: $(BIN_FILES)
@@ -18,12 +19,15 @@ array:
 	$(LD) -o libarray.so $@.o -shared
 
 cliente: cliente.o
-	gcc -Wall -o $@ cliente.o -L. -larray -lrt
-	chmod +x script.sh
-	./script.sh
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@ -L. -larray -lrt
+
 
 servidor: servidor.o imple.o
-	gcc -Wall -o $@ servidor.o -lrt -lpthread
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
+
+
+%.o: %.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $<
 
 
 clean:

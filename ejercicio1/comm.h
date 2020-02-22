@@ -6,12 +6,12 @@
 #define MAX_MSG 10
 #define NO_PRIORITY 0
 // Códigos para las operaciones
-const int INIT_OP = 1;
-const int SET_OP = 2;
-const int GET_OP = 3;
-const int DEST_OP = 4;
-
-const char NOMBRE_SERVER [MAX] = "/myServer";
+#define INIT_OP 1
+#define SET_OP 2
+#define GET_OP 3
+#define DEST_OP 4
+// Nombre del servidor
+#define NOMBRE_SERVER "/myServer"
 
 struct petition{
   int op;

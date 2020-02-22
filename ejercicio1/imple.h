@@ -1,7 +1,7 @@
 #ifndef IMPLE_HPP
 #define IMPLE_HPP
 
-// #include "comm.h"
+#include "comm.h"
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
