@@ -1,35 +1,5 @@
 #include "cliente.h"
 
-void errorMsgInit(int e, int i){
-  if (e == 1)
-    printf("%s %d\n", "OK; init ", i );
-  else if( e == 0)
-      printf("%s %d\n", "Already created vector; init ", i );
-  else
-    printf("%s %d\n", "Something went wrong; init ", i );
-}
-
-
-void errorMsgSet(int e, int i) {
-  if (e == 0)
-    printf("%s %d\n", "OK; set ", i );
-  else
-    printf("%s %d\n", "Something went wrong; set ", i );
-}
-
-void errorMsgGet(int e, int i){
-  if (e == 0)
-    printf("%s %d\n", "OK; get ", i );
-  else
-    printf("%s %d\n", "Something went wrong; get ", i );
-}
-
-void errorMsgDest(int e, int i){
-  if (e == 1)
-    printf("%s %d\n", "OK; destroy ", i );
-  else
-    printf("%s %d\n", "Something went wrong; destroy ", i );
-}
 
 int main(int argc, char const *argv[]) {
   int init_count = 0, set_count = 0, get_count = 0, destroy_count = 0;
@@ -62,7 +32,37 @@ int main(int argc, char const *argv[]) {
   destroy_count++;
   errorMsgDest( destroy("vector") , destroy_count);
 
-
-
   return 0;
+}
+
+
+void errorMsgInit(int e, int i){
+  if (e == 1)
+    printf("%s %d\n", "OK; init ", i );
+  else if( e == 0)
+      printf("%s %d\n", "Already created vector; init ", i );
+  else
+    printf("%s %d\n", "Something went wrong; init ", i );
+}
+
+
+void errorMsgSet(int e, int i) {
+  if (e == 0)
+    printf("%s %d\n", "OK; set ", i );
+  else
+    printf("%s %d\n", "Something went wrong; set ", i );
+}
+
+void errorMsgGet(int e, int i){
+  if (e == 0)
+    printf("%s %d\n", "OK; get ", i );
+  else
+    printf("%s %d\n", "Something went wrong; get ", i );
+}
+
+void errorMsgDest(int e, int i){
+  if (e == 1)
+    printf("%s %d\n", "OK; destroy ", i );
+  else
+    printf("%s %d\n", "Something went wrong; destroy ", i );
 }
