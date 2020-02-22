@@ -12,23 +12,20 @@
 //Lista enlazada, problema para definir nums[size]
   //idea, al hacer el init se hace un malloc de N *sizeof(int)
 struct listElement{
-int *vector;
-char name[MAX];
+ char name[MAX];
+ int N;
+ int *vector;
 struct listElement *next;
 };typedef struct listElement *List;
 
-void insert(List *l, int *vector, char * name);
 void show(List l);
-void delete(List *l);
 
+int init(char *name, int N);
 
- int init(char *name, int N);
+int set(char *name, int i, int value);
 
- int set(char *name, int i, int value);
+int get(char *name, int i, int *value);
 
- int get(char *name, int i, int *value);
-
- int destroy(char *name);
-
+int destroy(char *name);
 
 #endif
