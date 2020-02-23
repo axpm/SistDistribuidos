@@ -29,7 +29,13 @@ int main(int argc, char const *argv[]) {
   while(1){
 
     //CREAR HILOS BAJO DEMANDA
-    if (pthread_create(&t, NULL, (void *) listenPetition, &qs) == -1){
+		struct petition p;
+		int e = mq_receive(qs, (char *)&p, sizeof(struct petition), NO_PRIORITY );
+		if (e == -1){
+			perror("mq_receive");
+			exit(0);
+		}
+    if (pthread_create(&t, NULL, (void *) listenPetition, &p) == -1){
 			printf("Error creating threads\n");
 			exit(0);
 		}
@@ -47,13 +53,11 @@ int main(int argc, char const *argv[]) {
   return 0;
 }
 
-void listenPetition(int *qs){
+void listenPetition(struct petition * pet){
 
   //Petición
-  struct petition p;
+  struct petition p =  *pet;
 
-
-  int e = mq_receive(*qs, (char *)&p, sizeof(struct petition), NO_PRIORITY );
   //se ha recibido y copiado en petición
   pthread_mutex_lock(&mutex);
   copiado = true;
@@ -63,10 +67,7 @@ void listenPetition(int *qs){
   //Respuesta
   struct reply r;
 
-  if (e == -1){
-    perror("mq_receive");
-    // pthread_exit(NULL);
-  }
+
 
   //Cola cliente
   int qc = mq_open(p.client_queue, O_WRONLY);
@@ -112,7 +113,7 @@ void listenPetition(int *qs){
 
 
   //Enviar respuesta
-  e = mq_send(qc, (const char *)&r, sizeof(struct reply), NO_PRIORITY );
+  int e = mq_send(qc, (const char *)&r, sizeof(struct reply), NO_PRIORITY );
   if (e == -1){
     perror("mq_send");
     mq_unlink(NOMBRE_SERVER);

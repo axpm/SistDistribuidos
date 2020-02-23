@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-void listenPetition(int *qs);
+void listenPetition(struct petition * pet);
 
 
 
