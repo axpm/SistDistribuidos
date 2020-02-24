@@ -1,0 +1,79 @@
+% \documentclass[10pt, english, pdftex]{template/UC3M_document}
+\documentclass[10pt, spanish, pdftex]{template/UC3M_document}
+
+%%%%% Preamble %%%%%
+\author{Alejandro Prieto Macías}         % This is me! You should write here your name (for PDF metadata)
+%%%%% About the authors (will be used on title page and header) %%%%%
+
+%%% Indicate the number of authors by uncommenting the right option.
+\authorstwotrue     % 1 or 2 authors
+% \authorsthreetrue   % 3 authors
+% \authorsfourtrue    % 4 authors
+
+%%% Fill with the authors data. You can leave empty keys {} if you need to and also if you provide more info that number of authors indicated it will be ignored.
+% If you selected \authorstwotrue or \authorsthreetrue (1 to 3 authors)
+\authorsuptothree{Alejandro Prieto Macías}{NIA 100383428}{Gr. 81}{Laura Sánchez Cerro}{NIA 100383419}{Gr. 81}{Name3 Lastname3}{NIA 100XXXXXX}{Gr. XX}
+% If you selected \coauthorsfourtrue (4 authors)
+\authorsfour{Name1 Lastname1}{NIA 100XXXXXX}{Name2 Lastname2}{NIA 100XXXXXX}{Name3 Lastname3}{NIA 100XXXXXX}{Name4 Lastname4}{NIA 100XXXXXX}{Group XX}
+
+%%% If you want to show coauthors email address on the title page, uncomment \emailtrue. Comment it otherwise.
+% \emailtrue
+% You can leave empty keys {} if you need to and also if you provide more info that number of authors indicated or \emailtrue is commented it will be ignored.
+\emails{email1@domain.tld}{email2@domain.tld}{email3@domain.tld}{email4@domain.tld}
+
+
+%%%%% Basic data about the document (Degree, subject, title, campus, page number custom text) %%%%%
+\documentdata{Ingeniería Informática}{Sistemas Distribuidos}{Ejercicio 1}{Leganés}{Página }
+
+%%%%% Page style %%%%%
+\header
+\footer
+\pagestyle{fancy}
+
+\begin{document}
+%%%%% Page title %%%%%
+\titleMain
+
+%%%%% Index %%%%%
+\begin{spacing}{0.5}
+    % \shipout\null                   % Blank page before index (after title page)
+    \hypersetup{linkcolor=black}    % References/links on the index will remain black color
+    \tableofcontents\newpage        % Index of the document
+    % \listoffigures\newpage          % Index of pictures
+    % \listoftables\newpage           % Index of tables
+\end{spacing}
+
+
+%%%%% DOCUMENT CONTENT %%%%%
+%% VERY IMPORTANT!!! On the first line of this .tex file, select Spanish or English language to coincide with document text language
+\section{Introducción}\label{section_label}
+El motivo de este ejercicio se basa en la idea de poder aprender las técnicas para poder crear una aplicación cliente-servidor de forma concurrente. Además, se pretende aprender a administrar sistema de comunicación para sistemas distribuidos, es decir, para sistemas que no comparten el espacio de memoria.
+
+
+
+\newpage
+\section{Modelo}
+Este problema pretende que el cliente sea capaz de crear vectores de tamaño N, con un nombre y poder administrarlos a partir de una aplicación. Estos vectores serán almacenados en el servidor con el que se comunica el cliente.
+\subsection{Cliente}
+La función del cliente en el sistema es la de utilizar la interfaz gráfica, en este caso el main del archivo \textit{cliente.c} para administrar los datos que el cliente quiere utilizar, es decir, los vectores mencionados anteriormente.
+\subsubsection{Biblioteca Dinámica}
+En la biblioteca dinámica se han implementado las funciones que se comunicarán con el sistema servidor. La inclusión de estructuras de este estilo, es la de facilitar la posible mejora de los sistemas de comunicación sin afectar a la interfaz del usuario, incluso pudiendo tener varias interfaces.
+
+\subsection{Servidor}
+El servidor, será el encargado de recibir las peticiones y que con ayuda de hilos bajo demanda se puedan ir ejecutando las acciones que requiere el cliente para administrar los vectores.
+\subsubsection{Modelo de datos}
+Para administrar la pequeña base de datos que almacena los vectores, se ha decidido establecer una lista enlazada implementada a través de un \textit{struct} del lenguaje de programación \textbf{C}.
+\subsection{Implementación}
+La funciones que manejan la lista enlazada se encuentran en un archivo distinto al del propio servidor para facilitar los cambios en el sistema, dando prioridad a la modularización del sistema.
+
+
+
+
+
+
+\newpage
+\section{Conclusiones}
+
+
+
+\end{document}
