@@ -4,6 +4,7 @@
 
 
 %%%%% Required Packages %%%%%
+\usepackage{lastpage}
 \RequirePackage[pdftex, usenames, dvipsnames]{color}                            % So that we can define colors and change color fonts.
 \RequirePackage[table,xcdraw]{xcolor}                                           % So that we can color tables cells, row, columns...
 \RequirePackage{ragged2e}                                                       % To allign some lines.
@@ -166,7 +167,7 @@
     \cfoot{\vspace{1mm}\textcolor{uc3mNewBlue}{Universidad Carlos III de Madrid - \campus}
     \textcolor{uc3mNewBlue}{\\\studyname
     \\\subjectname}}
-    \rfoot{\vspace{1mm} \mypagename \thepage} % Current page
+    \rfoot{\vspace{1mm} \mypagename \thepage\ de \pageref{LastPage}} % Current page
 }
 
 %%%%% Title page %%%%%
