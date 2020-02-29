@@ -13,6 +13,6 @@
 
 void listenPetition(struct petition * pet);
 
-
+void servicio (void);
 
 #endif

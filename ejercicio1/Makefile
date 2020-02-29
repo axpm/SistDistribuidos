@@ -25,6 +25,9 @@ cliente: cliente.o
 servidor: servidor.o imple.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
+servidorPool: servidorPool.o imple.o
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
+
 
 %.o: %.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $<
