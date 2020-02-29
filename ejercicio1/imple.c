@@ -28,6 +28,11 @@ List server;
 //    printf("%s %d\n", "Set Vector1", e );
 //   printf("%s\n","mostramos la lista despues de set en vector 1" );
 //   show(server);
+
+//  int j = set("vectorX", 1, 2);
+//    printf("%s %d\n", "Set VectorX", j );
+//   printf("%s\n","mostramos la lista despues de set en vector X" );
+//   show(server);
 //
 //   int num;
 //   int f =get("vector1", 1, &num);

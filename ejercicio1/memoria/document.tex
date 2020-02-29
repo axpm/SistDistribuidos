@@ -67,18 +67,18 @@ Este software pretende que el cliente sea capaz de crear vectores de tamaño N, 
 La función del cliente en el sistema es la de utilizar la interfaz gráfica, en este caso el main del archivo \textit{cliente.c} para administrar los datos que el cliente quiere utilizar, es decir, los vectores mencionados anteriormente. Tendrá la capacidades de realizar varias opciones.
 
 \begin{itemize}
-  \item \textbf{Crear una vector}: Usará la función \textit{init} para crear el vector especificando el tamaño y longitud a través de los argumentos.
-  \item \textbf{Añadir a un vector}: Podrá añadir elementos de tipo número entero al vector a través de esta función indicando la posición en el vector, el nombre del vector y el valor y la función \textit{set}.
-  \item \textbf{Obtener de un vector}: Podrá obtener elementos de tipo número entero del vector a través de esta función indicando la posición en el vector, el nombre del vector y el valor y la función \textit{get}.
-  \item \textbf{Eliminar un vector}: El cliente, podrá eliminar con la función \textit{destroy} el vector que desee indicando su nombre.
+  \item \textbf{Crear un vector}: Usará la función \textit{init} para crear el vector especificando el nombre y tamaño a través de los argumentos.
+  \item \textbf{Modificar un vector}: Podrá modificar elementos de un vector de tipo número a través de la función \textit{set} indicando la posición en el vector, el nombre del vector y el nuevo valor.
+  \item \textbf{Obtener de un vector}: Podrá obtener elementos de tipo número entero del vector a través de la función \textit{get} indicando la posición en el vector, el nombre del vector y la variable valor donde se guardará el dato.
+  \item \textbf{Eliminar un vector}: El cliente podrá eliminar con la función \textit{destroy} el vector que desee indicando su nombre.
 \end{itemize}
 
 \subsubsection{Biblioteca Dinámica}
-En la biblioteca dinámica se han implementado las funciones que se comunicarán con el sistema servidor. La inclusión de estructuras de este estilo, es la de facilitar la posible mejora de los sistemas de comunicación sin afectar a la interfaz del usuario, incluso pudiendo tener varias interfaces.
+En la biblioteca dinámica se han implementado las funciones que se comunicarán con el sistema servidor. La inclusión de estructuras de este estilo facilita la posible mejora de los sistemas de comunicación sin afectar a la interfaz del usuario, incluso pudiendo tener varias interfaces.
 
 \subsection{Servidor}
-El servidor será el encargado de recibir las peticiones y que con ayuda de hilos bajo demanda, se puedan ir ejecutando las acciones que requiere el cliente para administrar los vectores.
-El servidor debe estar configurado de tal manera que se evite que se pierdan peticiones debido a condiciones de carrera y por ello, se emplearán herramientas de POSIX para evitarlo. Hemos optado por implementarlo mediante un cerrojo y una variable condicional que hacen que no se pueda atender a una nueva petición si no se atendió a la anterior. El término atender, no se refiere a procesar la petición, simplemente al hecho de copiar la petición de entrada en una variable local y evitar que se pierda.
+El servidor será el encargado de recibir las peticiones para que, con ayuda de hilos bajo demanda, se puedan ir ejecutando las acciones que requiere el cliente para administrar los vectores.
+El servidor debe estar configurado de tal manera que se evite que se pierdan peticiones debido a condiciones de carrera y, para ello, se emplearán herramientas de POSIX. Hemos optado por implementarlo mediante un cerrojo y una variable condicional que hacen que no se pueda atender a una nueva petición si no se atendió a la anterior. El término "atender" no se refiere a procesar la petición, simplemente al hecho de copiar la petición de entrada en una variable local y evitar que se pierda.
 
 \subsection{Servidor Pool de Hilos}
 Se ha implementado también la versión con un pool de hilos que consiste en crear un número de hilos determinados. Cada vez que llega una nueva petición se almacena en una cola circular de tareas y serán los hilos los que se encargan de recoger y procesar esas tareas cuando puedan actuar. Se trata de una versión del problema de \textit{productor-consumidor} en el que produce el hilo principal y los hilos que se crean son los que consumen de la cola circular.
@@ -90,20 +90,99 @@ Para su compilación:
 
 
 \subsubsection{Modelo de datos}
-Para administrar la pequeña base de datos que almacena los vectores, se ha decidido establecer una lista enlazada implementada a través de un \textit{struct} del lenguaje de programación \textbf{C}. Cada elemento de la lista está formado por un vector de tamaño N, una cadena de caracteres y el puntero al siguiente elemento.
+Para administrar la estructura de datos que almacena los vectores se ha decidido establecer una lista enlazada implementada a través de un \textit{struct} del lenguaje de programación \textbf{C}. Cada elemento de la lista está formado por un vector de enteros de tamaño N, una cadena de caracteres que representa el nombre del vector y un puntero al siguiente elemento.
 Además, las peticiones se han podido realizar mediante \textit{structs} debido a la tecnología de comunicación que son las colas de mensajes del sistema UNIX.
 
 \subsubsection{Implementación}
-Las funciones que manejan la lista enlazada se encuentran en un archivo distinto al del propio servidor para facilitar los cambios en el sistema, dando prioridad a la modularización del sistema. Las funciones que realizan los clientes tienen su correspondencia en el servidor.
+Las funciones que manejan la lista enlazada se encuentran en un archivo distinto al del propio servidor para facilitar los cambios en el sistema, dando prioridad a la modularización del sistema. Las funciones que realizan los clientes tienen su correspondencia en el servidor. Todas ellas devuelven los valores indicados en el enunciado.
 \begin{itemize}
-    \item \textbf{Crear una vector}: La función \textit{INIT} será la encarga de crear un nuevo elemento en la lista, para ello se debe reservar en memoria el tamaño necesario para almacenar un vector de N enteros, la cadena de caracteres de tamaño \textbf{MAX} (que se establece en 100 caracteres) y el puntero. Además, se deberá enlazar con el elemento correspondiente.
-    \item \textbf{Añadir a un vector}: La función \textit{SET} se encargará de encontrar el vector a través del nombre en la lista y posteriormente se encargará de cambiar el valor que se almacenaba en la posición indicada por el valor que se desea introducir.
-    \item \textbf{Obtener de un vector}: La función \textit{GET} de encontrar el vector a través del nombre en la lista y posteriormente se encargará de mostrar el valor que se almacenaba en la posición indicada.
+    \item \textbf{Crear un vector}: La función \textit{INIT} será la encargada de crear un nuevo elemento en la lista. Para ello, se debe reservar en memoria el tamaño necesario para almacenar un vector de N enteros, la cadena de caracteres (nombre del vector) de tamaño \textbf{MAX} (que se establece en 100 caracteres) y el puntero. Además, se deberá enlazar al final de la lista con el elemento correspondiente.
+    \item \textbf{Modificar un vector}: La función \textit{SET} se encargará de encontrar el vector en la lista a través del nombre y, posteriormente, se encargará de cambiar el valor que se almacenaba en la posición indicada por el valor que se desea introducir.
+    \item \textbf{Obtener de un vector}: La función \textit{GET} se encargará de encontrar el vector en la lista a través del nombre y, posteriormente, guardará el valor que se almacenaba en la posición indicada en la variable que se pasa como parámetro.
     \item \textbf{Eliminar un vector}: La función \textit{DESTROY} se encarga de eliminar el espacio de memoria que ocupaba el vector en la lista y, además, enlazar correctamente los elementos de lista para evitar que queden elementos sin apuntar.
 \end{itemize}
 
+\section{Pruebas}
+Para verificar el correcto funcionamiento de las operaciones en el servidor hemos creado el método \textit{show} que muestra la lista con el contenido de todos los vectores para ver las modificaciones.Además, hemos creado unos métodos en el cliente que muestra el resultado de los métodos (ErrorMsgInit, ErrorMsgSet, ErrorMsgGet y ErrorMsgDestroy). 
+\begin{itemize}
+  \item \textbf{init}
+    \begin{itemize}
+      \item Para probar el funcionamiento del método init primero introducimos un vector llamado "vector1" de tamaño 10. La salida en este caso es: 1. Después, introducimos otro vector con el mismo nombre y mismo tamaño. La salida es: 0 y no se enlaza en la lista. Finalmente, introducimos otro vector del mismo nombre y tamaño distinto y la salida es -1. Añadimos otro vector de distinto nombre y tamaño y se añade a la lista sin problemas.
+ \begin{figure}[h]
+ \includegraphics [scale=0.4]{INIT.png}
+  \centering
+ \end{figure}
+    \end{itemize}
+  \item \textbf{set}
+  \begin{itemize}
+    \item Modificamos el valor de un vector que está en la lista y en una posición correcta, la salida es 0. Después, modificamos el valor de un vector cuyo nombre no se encuentra en la lista, la salida es -1 . Finalmente, intentamos modificar el valor de una posición de un vector de la lista fuera de rango (de tamaño mayor del vector), la salida es -1.
+ \begin{figure}[h]
+ \includegraphics [scale=0.4]{SET.png}
+  \centering
+ \end{figure}
+    \end{itemize}
 
-\newpage
+ \item \textbf{get}
+  \begin{itemize}
+    \item Obtenemos el valor de un vector que está en la lista y en una posición correcta, la salida es 0. Después, obtenemos el valor de un vector cuyo nombre no se encuentra en la lista, la salida es -1 . Finalmente, intentamos obtener el valor de una posición de un vector de la lista fuera de rango (de tamaño mayor del vector), la salida es -1.
+ \begin{figure}[h]
+ \includegraphics [scale=0.4]{GET.png}
+  \centering
+ \end{figure}
+    \end{itemize}
+
+ \item \textbf{destroy}
+  \begin{itemize}
+    \item Eliminamos un vector que está en la lista, la salida es 1. Después, eliminamos un vector cuyo nombre no se encuentra en la lista, la salida es -1 . Finalmente, se prueba que se borra correctamente un vector situado en mitad de la lista, al principio de la lista y al final de la lista con el fin de observar que se hacen correctamente los enlaces.
+ \begin{figure}[h]
+ \includegraphics [scale=0.4]{DESTROY.png}
+  \centering
+ \end{figure}
+    \end{itemize}
+
+\end{itemize}
+
+   % \includegraphics[scale=0.2]{SET.png}
+    %\caption{Esquema de servicio cliente-servidor concurrente}
+    %\centering
+  %\end{figure}
+ %\begin{figure}[h]
+%\subfloat{
+   % \includegraphics{GET.png}}
+    %\caption{Esquema de servicio cliente-servidor concurrente}
+    %\centering
+  %\end{figure}
+ %\begin{figure}[h]
+%\subfloat{
+  %  \includegraphics{DESTROY.png}}
+    %\caption{Esquema de servicio cliente-servidor concurrente}
+    %\centering
+ % \end{figure}
+
+
+%\usepackage {subfig}
+
+ %\begin{figure}[h]
+%\subfloat{
+ %   \includegraphics [scale=0.4]{INIT.png}}
+    %\caption{Esquema de servicio cliente-servidor concurrente}
+   % \centering
+
+%\subfloat{
+ %   \includegraphics[scale=0.4]{SET.png}}
+    %\caption{Esquema de servicio cliente-servidor concurrente}
+    %\centering
+ 
+%\subfloat{
+ %   \includegraphics [scale=0.4]{GET.png}}
+    %\caption{Esquema de servicio cliente-servidor concurrente}
+ 
+%\subfloat{
+ %   \includegraphics [scale=0.4] {DESTROY.png}}
+    %\caption{Esquema de servicio cliente-servidor concurrente}
+    %\centering
+  %\end{figure}
+
 \section{Conclusiones}
 Esta práctica nos ha permitido aprender la estructura básica de un sistema de tipo cliente-servidor, pudiendo descubrir algunas de sus ventajas y desventajas.
 
@@ -120,7 +199,7 @@ Esta práctica nos ha permitido aprender la estructura básica de un sistema de 
   \end{itemize}
 \end{itemize}
 
-Por otro lado, hemos tenido ciertas dificultades a la hora de realizar la concurrencia puesto que la implementación con un \textit{pool de hilos} que permite hacer mucho más eficaz el sistema evitando que se lancen muchos más hilos llegando incluso a poder empeorar la calidad del servicio. Decidimos empezar la tarea con \textit{hilos bajo demanda} y resultó menos complejo, tras completar esta versión pudimos realizar la versión con el \textit{pool de hilos}.
+Por otro lado, hemos tenido ciertas dificultades a la hora de realizar la concurrencia puesto que en la implementación con hilos \textit{bajo demanda} se lanzan muchos más hilos llegando incluso a poder empeorar la calidad del servicio, mientras que con una implementación de \textit{pool de hilos} el sistema es mucho más eficaz. Decidimos empezar la tarea con \textit{hilos bajo demanda} y resultó menos complejo, tras completar esta versión pudimos realizar la versión con el \textit{pool de hilos}.
 
 
 \end{document}

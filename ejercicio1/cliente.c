@@ -32,21 +32,23 @@ int main(int argc, char const *argv[]) {
   // errorMsgDest( destroy("vector") , destroy_count);
 
 
-  printf("%s\n", "PRUEBAS LAURA\n" );
+  printf("%s\n", "PRUEBAS CON INIT \n" );
   // init_count = 0, set_count = 0, get_count = 0, destroy_count = 0;
 
   init_count++;
   errorMsgInit(init("vector1", 10), init_count);
   printf("%s\n", "expected: OK\n" );
-  // init_count++;
-  // errorMsgInit(init("vector1", 10), init_count);
-  // printf("%s\n", "expected: Already created vector");
-  // init_count++;
-  // errorMsgInit(init("vector1", 20), init_count);
-  // printf("%s\n", "expected: Something went wrong" );
-  // init_count++;
-  // errorMsgInit(init("vector2", 5), init_count);
-  // printf("%s\n", "expected: OK" );
+   init_count++;
+   errorMsgInit(init("vector1", 10), init_count);
+   printf("%s\n", "expected: Already created vector");
+   init_count++;
+   errorMsgInit(init("vector1", 20), init_count);
+   printf("%s\n", "expected: Something went wrong" );
+   init_count++;
+   errorMsgInit(init("vector2", 5), init_count);
+   printf("%s\n", "expected: OK" );
+
+  printf("%s\n", "PRUEBAS CON SET \n" );
   set_count++;
   errorMsgSet(set("vector1", 1, 40), set_count);
   printf("%s\n", "expected: OK \n" );
@@ -54,15 +56,16 @@ int main(int argc, char const *argv[]) {
   errorMsgSet(set("vector1", 12, 40), set_count);
   printf("%s\n", "expected: Something went wrong \n" );
   set_count++;
-  errorMsgSet(set("vector", 12, 40), set_count);
+  errorMsgSet(set("vectorX", 1, 40), set_count);
   printf("%s\n", "expected: Something went wrong \n" );
 
+printf("%s\n", "PRUEBAS CON GET \n" );
   int num;
   get_count ++;
   errorMsgGet(get("vector1", 1, &num), get_count);
   printf("%s \n", "expected: OK \n");
   get_count++;
-  errorMsgGet(get("vector", 12, &num), get_count);
+  errorMsgGet(get("vectorX", 1, &num), get_count);
   printf("%s\n", "expected: Something went wrong \n" );
   get_count++;
   errorMsgGet(get("vector1", 12, &num), get_count);
@@ -85,12 +88,14 @@ int main(int argc, char const *argv[]) {
   // init_count++;
   // errorMsgInit(init("vector5", 2), init_count);
   // printf("%s\n", "expected: OK" );
+printf("%s\n", "PRUEBAS CON DESTROY \n" );
   destroy_count++;
   errorMsgDest(destroy("vector1"), destroy_count);
   printf("%s\n", "expected: OK" );
-  // destroy_count++;
-  // errorMsgDest(destroy("vector5"), destroy_count);
-  // printf("%s\n", "expected: OK" );
+  destroy_count++;
+  errorMsgDest(destroy("vector1"), destroy_count);
+  printf("%s\n", "expected: Something went wrong" );
+
 
 
 
