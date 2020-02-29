@@ -3,6 +3,7 @@
 \LoadClass{article}                                                         % Our template is based on article.
 
 
+
 %%%%% Required Packages %%%%%
 \usepackage{lastpage}
 \RequirePackage[pdftex, usenames, dvipsnames]{color}                            % So that we can define colors and change color fonts.
@@ -34,6 +35,8 @@
     {hyperref}                                                                  % Index elements works as cross references. Also functional links to internet pages
 \RequirePackage{nameref}                                                        % Allow to add labels with \label{name} which can be reference with \nameref{name}
 \RequirePackage{array}                                                          % Table formating
+
+\graphicspath{ {template/}{media/} }
 
 %%%%% Colors %%%%%
 \definecolor{gray}{rgb}{0.2509803922, 0.2509803922, 0.2509803922}
@@ -146,7 +149,7 @@
        \textcolor{gray}{
        \vspace*{-\baselineskip} % To remove white spaces up and down the header table
        \begin{tabular}{ll}
-        \subjectname\\
+        \documenttitle
        \end{tabular}}
    }
 
@@ -155,7 +158,7 @@
     \rhead{
     \vspace*{-\baselineskip} % To remove white spaces up and down the header table
     \begin{tabular}{c}
-    \includegraphics[scale=0.12]{template/logo_completo_horizontal.png} % Logo image uc3m
+    \includegraphics[scale=0.12]{logo_completo_horizontal.png} % Logo image uc3m
     \end{tabular}}
 
     \renewcommand{\headrulewidth}{0pt}  % To erase header line
@@ -188,7 +191,7 @@
 
     \vspace{0.1cm}
     \begin{center}
-    \includegraphics[scale=0.25]{template/logo_completo_vertical.png}
+    \includegraphics[scale=0.25]{logo_completo_vertical.png}
     \end{center}
 
     \vspace{2.5cm}
