@@ -100,6 +100,7 @@ int set(char *name, int i, int value){
   sprintf(p.name, "%s", name);
   sprintf(p.client_queue, "%s", clientName);
   p.value = value;
+  p.i = i;
 
   //Enviamos la petición
   int e = mq_send(qs, (const char *) &p, sizeof(struct petition), NO_PRIORITY);
