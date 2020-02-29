@@ -1,4 +1,4 @@
-BIN_FILES  = array imple cliente servidor
+BIN_FILES  = array imple cliente servidor servidorPool
 
 CC = gcc
 
