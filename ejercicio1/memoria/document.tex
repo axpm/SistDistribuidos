@@ -63,6 +63,17 @@ El motivo de este ejercicio se basa en la idea de poder aprender las técnicas p
 \section{Modelo}
 Este software pretende que el cliente sea capaz de crear vectores de tamaño N, con un nombre, y poder administrarlos a partir de una aplicación. Estos vectores serán almacenados en el servidor con el que se comunica el cliente.
 
+\subsection{Estructura del código}
+Los archivos más importantes son cliente.c y servidor.c (bajo demanda) que son las que representan al cliente y al servidor y contienen los respectivos main. En cliente.c se ha añadido unos métodos para imprimir un mensaje con el resultado de las operaciones. Además, se incluyen sus respectivas cabeceras en los archivos cliente.h y servidor.h. El servidor de pool de hilos es el fichero servidorPool.c. El desarrollo de las peticiones del cliente de las operaciones init, get, set y destroy se realizan en los ficheros array.c en la parte cliente y imple.c en la parte servidor.
+Para la comunicación entre cliente y servidor hemos creado el fichero comm.h que contiene la estructuras de la petición y la respuesta.
+
+%%%% Compilación %%%%
+\subsection{Compilación}
+Para poder compilar el ejercicio se puede hacer de forma sencilla con \textit{make all}, esto generará dos tipos de servidores. Uno con la implementación de hilo bajo demanda (\textbf{servidor}) y otro con el pool de hilos (\textbf{servidorPool}). En el caso de que se quiera compilar solo lo necesario, se deberá realizar manualmente haciendo \textit{make} array, cliente, servidor o servidorPool.
+
+Nota: antes de compilar el cliente manualmente, será necesario haber generado la biblioteca dinámica haciendo en primer lugar \textit{make array}.
+
+Para la ejecución del cliente y que no dé problemas con la variable \textit{LD\_LIBRARY\_PATH}, se ha incluido un archivo llamado \textit{cliente.sh} que hará la ejecución para resolver los problemas con la varible mencionada anteriormente.
 \subsection{Cliente}
 La función del cliente en el sistema es la de utilizar la interfaz gráfica, en este caso el main del archivo \textit{cliente.c} para administrar los datos que el cliente quiere utilizar, es decir, los vectores mencionados anteriormente. Tendrá la capacidades de realizar varias opciones.
 
@@ -98,7 +109,6 @@ Las funciones que manejan la lista enlazada se encuentran en un archivo distinto
 \end{itemize}
 
 % %%%%Pruebas%%%%
-\newpage
 \section{Pruebas}
 Para verificar el correcto funcionamiento de las operaciones en el servidor hemos creado el método \textit{show} que muestra la lista con el contenido de todos los vectores para ver las modificaciones.Además, hemos creado unos métodos en el cliente que muestra el resultado de los métodos (ErrorMsgInit, ErrorMsgSet, ErrorMsgGet y ErrorMsgDestroy).
 
@@ -143,13 +153,6 @@ Para verificar el correcto funcionamiento de las operaciones en el servidor hemo
 
 
 \newpage
-%%%% Compilación %%%%
-\section{Compilación}
-Para poder compilar el ejercicio se puede hacer de forma sencilla con \textit{make all}, esto generará dos tipos de servidores. Uno con la implementación de hilo bajo demanda (\textbf{servidor}) y otro con el pool de hilos (\textbf{servidorPool}). En el caso de que se quiera compilar solo lo necesario, se deberá realizar manualmente haciendo \textit{make} array, cliente, servidor o servidorPool.
-
-Nota: antes de compilar el cliente manualmente, será necesario haber generado la biblioteca dinámica haciendo en primer lugar \textit{make array}.
-
-Para la ejecución de el cliente y que no de problemas con la variable \textit{LD\_LIBRARY\_PATH}, se ha incluido un archivo llamado \textit{cliente.sh} que hará la ejecución para resolver los problemas con la varible mencionada anteriormente.
 
 
 %%%% Conclusiones %%%%

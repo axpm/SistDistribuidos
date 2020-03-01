@@ -7,10 +7,8 @@
 #include <string.h>
 #include <stdlib.h>
 
- // Esto es para definir las cosas del server
-// Poner las estructuras de datos
-//Lista enlazada, problema para definir nums[size]
-  //idea, al hacer el init se hace un malloc de N *sizeof(int)
+//Estructura de datos formado por el nombre del vector, el tamaño,
+//puntero al vector y puntero al siguiente elemento de la lista
 struct listElement{
  char name[MAX];
  int N;
@@ -19,13 +17,9 @@ struct listElement *next;
 };typedef struct listElement *List;
 
 void show(List l);
-
 int init(char *name, int N);
-
 int set(char *name, int i, int value);
-
 int get(char *name, int i, int *value);
-
 int destroy(char *name);
 
 #endif

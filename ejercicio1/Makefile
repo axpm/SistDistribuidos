@@ -15,6 +15,7 @@ all: $(BIN_FILES)
 .PHONY : all
 
 array: array.o
+	$(CC) -Wall -fpic -c array.c -o $@.o
 	$(LD) -o libarray.so $@.o -shared
 
 cliente: cliente.o

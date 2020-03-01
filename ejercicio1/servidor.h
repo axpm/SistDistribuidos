@@ -3,8 +3,6 @@
 
 #define MAX_THREADS 16
 
-
-  // #include "comm.h"
 #include "imple.h"
 #include <pthread.h>
 #include <stdio.h>

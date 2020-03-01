@@ -2,14 +2,16 @@
 #define COMM_HPP
 #include <mqueue.h>
 
-#define MAX 120 //máximo de los char
-#define MAX_MSG 10
-#define NO_PRIORITY 0
+#define MAX 120 //máximo para el nombre de los vectores
+#define MAX_MSG 10 //Número máximo de peticiones que se envían
+#define NO_PRIORITY 0 //Para que las peticiones tengan prioridad 0
+
 // Códigos para las operaciones
 #define INIT_OP 1
 #define SET_OP 2
 #define GET_OP 3
 #define DEST_OP 4
+
 // Nombre del servidor
 #define NOMBRE_SERVER "/myServer"
 

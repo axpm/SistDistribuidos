@@ -13,6 +13,7 @@ int main(int argc, char const *argv[]) {
   pthread_cond_init(&c, NULL);
   copiado = false;
 
+	//Atributos
 	struct mq_attr attr;
   attr.mq_maxmsg = MAX_MSG;
   attr.mq_msgsize = sizeof(struct petition);
@@ -109,7 +110,6 @@ void listenPetition(struct petition * pet){
   }else {
     printf("%s\n", "Operation not found");
   }
-
 
 
   //Enviar respuesta

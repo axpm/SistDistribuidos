@@ -1,9 +1,8 @@
 #include "servidor.h"
 
-//irá luego en .h si va bien
 #define MAX_PETICIONES 256
 
-struct petition buffer_peticiones[MAX_PETICIONES]; // buffer
+struct petition buffer_peticiones[MAX_PETICIONES]; // buffer de peticiones
 int n_elementos; // elementos en el buffer de peticiones
 int pos_servicio = 0;
 
@@ -15,6 +14,7 @@ int fin=false;
 
 int main(int argc, char const *argv[]) {
 
+	//Atributos
 	struct mq_attr attr;
 	attr.mq_maxmsg = MAX_MSG;
 	attr.mq_msgsize = sizeof(struct petition);
@@ -38,7 +38,7 @@ int main(int argc, char const *argv[]) {
 	int error;
 	int pos = 0;
 
-// Creando Pool
+	// Creando Pool
 	for (int i = 0; i < MAX_THREADS; i++){
 		if (pthread_create(&thid[i], NULL, servicio, NULL) !=0){
 			perror("Error creando el pool de threads\n");
@@ -52,10 +52,13 @@ int main(int argc, char const *argv[]) {
 		if (error == -1 )
 			break;
 
+		//Si el buffer está lleno, se espera a que haya hueco
 		pthread_mutex_lock(&mutex);
 		while (n_elementos == MAX_PETICIONES){
 			pthread_cond_wait(&no_lleno, &mutex);
 		}
+
+		//Si hay hueco, se introduce una petición en el buffer y se aumenta en 1 el número de elementos
 		buffer_peticiones[pos] = p;
 		pos = (pos+1) % MAX_PETICIONES;
 		n_elementos++;
@@ -64,13 +67,13 @@ int main(int argc, char const *argv[]) {
 
 	}
 
+	//Se pone fin a true
 	pthread_mutex_lock(&mfin);
 	fin=true;
 	pthread_mutex_unlock(&mfin);
 	pthread_mutex_lock(&mutex);
 	pthread_cond_broadcast(&no_vacio);
 	pthread_mutex_unlock(&mutex);
-
 
 	for (int i=0;i<MAX_THREADS;i++){
 			pthread_join(thid[i],NULL);
@@ -84,13 +87,12 @@ int main(int argc, char const *argv[]) {
 }
 
 void servicio(void ){
-
-  //Petición
-  struct petition p;
-  //Respuesta
-  struct reply r;
+  struct petition p; //Petición
+  struct reply r;//Respuesta
 
 	for(;;){
+		//Si no hay elementos en el buffer y fin está a true es porque se ha termiando y salimos
+		//Si está a false, esperamos a que haya un elemento en el buffer
 		pthread_mutex_lock(&mutex);
 		while (n_elementos == 0) {
 			if (fin==true) {
@@ -100,6 +102,7 @@ void servicio(void ){
 			}
 			pthread_cond_wait(&no_vacio, &mutex);
 		}
+		//Si hay elementos, cogemos un elemento del buffer y restamos en 1 el número de elementos
 		p = buffer_peticiones[pos_servicio];
 		pos_servicio = (pos_servicio + 1) % MAX_PETICIONES;
 		n_elementos --;
@@ -134,10 +137,11 @@ void servicio(void ){
 	  else if(p.op == DEST_OP){
 	    printf("%s\n", "Operation destroy");
 
-	    //ejecución y rellenar respuesta
+	    //Ejecución y rellenar respuesta
 	    r.error = destroy(p.name);
 
-	  }else {
+	  }
+		else {
 	    printf("%s\n", "Operation not found");
 	  }
 
@@ -153,6 +157,6 @@ void servicio(void ){
 			mq_close(qc);
 			mq_unlink(p.client_queue);
 		}
-	} // FOR
+	}
 	pthread_exit(0);
 }

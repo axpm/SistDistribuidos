@@ -1,6 +1,5 @@
 #include "cliente.h"
 
-
 int main(int argc, char const *argv[]) {
   int init_count = 0, set_count = 0, get_count = 0, destroy_count = 0;
 
@@ -33,8 +32,6 @@ int main(int argc, char const *argv[]) {
 
 
   printf("%s\n", "PRUEBAS CON INIT \n" );
-  // init_count = 0, set_count = 0, get_count = 0, destroy_count = 0;
-
   init_count++;
   errorMsgInit(init("vector1", 10), init_count);
   printf("%s\n", "expected: OK\n" );
@@ -48,6 +45,8 @@ int main(int argc, char const *argv[]) {
    errorMsgInit(init("vector2", 5), init_count);
    printf("%s\n", "expected: OK" );
 
+
+
   printf("%s\n", "PRUEBAS CON SET \n" );
   set_count++;
   errorMsgSet(set("vector1", 1, 40), set_count);
@@ -59,7 +58,9 @@ int main(int argc, char const *argv[]) {
   errorMsgSet(set("vectorX", 1, 40), set_count);
   printf("%s\n", "expected: Something went wrong \n" );
 
-printf("%s\n", "PRUEBAS CON GET \n" );
+
+
+  printf("%s\n", "PRUEBAS CON GET \n" );
   int num;
   get_count ++;
   errorMsgGet(get("vector1", 1, &num), get_count);
@@ -88,6 +89,7 @@ printf("%s\n", "PRUEBAS CON GET \n" );
   // init_count++;
   // errorMsgInit(init("vector5", 2), init_count);
   // printf("%s\n", "expected: OK" );
+
 printf("%s\n", "PRUEBAS CON DESTROY \n" );
   destroy_count++;
   errorMsgDest(destroy("vector1"), destroy_count);
@@ -95,14 +97,8 @@ printf("%s\n", "PRUEBAS CON DESTROY \n" );
   destroy_count++;
   errorMsgDest(destroy("vector1"), destroy_count);
   printf("%s\n", "expected: Something went wrong" );
-
-
-
-
   return 0;
 }
-
-
 void errorMsgInit(int e, int i){
   if (e == 1)
     printf("%s %d \n", "OK; init ", i );
@@ -111,7 +107,6 @@ void errorMsgInit(int e, int i){
   else
     printf("%s %d\n", "Something went wrong; init ", i );
 }
-
 
 void errorMsgSet(int e, int i) {
   if (e == 0)
