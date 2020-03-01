@@ -46,20 +46,20 @@
 \end{spacing}
 
 
-%%%%% DOCUMENT CONTENT %%%%%
-%% VERY IMPORTANT!!! On the first line of this .tex file, select Spanish or English language to coincide with document text language
+%%%%% Introducción %%%%%
 \section{Introducción}\label{section_label}
 El motivo de este ejercicio se basa en la idea de poder aprender las técnicas para poder crear una aplicación cliente-servidor de forma concurrente. Además, se pretende aprender a administrar sistema de comunicación para sistemas distribuidos, es decir, para ordenadores que no comparten el espacio de memoria.
 
   \vspace{2cm}
   \begin{figure}[h]
+    \centering 
     \includegraphics[width=\textwidth]{cliente-servidor.png}
     \caption{Esquema de servicio cliente-servidor concurrente}
-    \centering
   \end{figure}
 
 
 \newpage
+%%%%Modelo%%%%
 \section{Modelo}
 Este software pretende que el cliente sea capaz de crear vectores de tamaño N, con un nombre, y poder administrarlos a partir de una aplicación. Estos vectores serán almacenados en el servidor con el que se comunica el cliente.
 
@@ -102,87 +102,52 @@ Las funciones que manejan la lista enlazada se encuentran en un archivo distinto
     \item \textbf{Eliminar un vector}: La función \textit{DESTROY} se encarga de eliminar el espacio de memoria que ocupaba el vector en la lista y, además, enlazar correctamente los elementos de lista para evitar que queden elementos sin apuntar.
 \end{itemize}
 
+%%%%Pruebas%%%%
+\newpage
 \section{Pruebas}
-Para verificar el correcto funcionamiento de las operaciones en el servidor hemos creado el método \textit{show} que muestra la lista con el contenido de todos los vectores para ver las modificaciones.Además, hemos creado unos métodos en el cliente que muestra el resultado de los métodos (ErrorMsgInit, ErrorMsgSet, ErrorMsgGet y ErrorMsgDestroy). 
+Para verificar el correcto funcionamiento de las operaciones en el servidor hemos creado el método \textit{show} que muestra la lista con el contenido de todos los vectores para ver las modificaciones.Además, hemos creado unos métodos en el cliente que muestra el resultado de los métodos (ErrorMsgInit, ErrorMsgSet, ErrorMsgGet y ErrorMsgDestroy).
+
 \begin{itemize}
-  \item \textbf{init}
-    \begin{itemize}
-      \item Para probar el funcionamiento del método init primero introducimos un vector llamado "vector1" de tamaño 10. La salida en este caso es: 1. Después, introducimos otro vector con el mismo nombre y mismo tamaño. La salida es: 0 y no se enlaza en la lista. Finalmente, introducimos otro vector del mismo nombre y tamaño distinto y la salida es -1. Añadimos otro vector de distinto nombre y tamaño y se añade a la lista sin problemas.
- \begin{figure}[h]
- \includegraphics [scale=0.4]{INIT.png}
-  \centering
- \end{figure}
-    \end{itemize}
-  \item \textbf{set}
-  \begin{itemize}
-    \item Modificamos el valor de un vector que está en la lista y en una posición correcta, la salida es 0. Después, modificamos el valor de un vector cuyo nombre no se encuentra en la lista, la salida es -1 . Finalmente, intentamos modificar el valor de una posición de un vector de la lista fuera de rango (de tamaño mayor del vector), la salida es -1.
- \begin{figure}[h]
- \includegraphics [scale=0.4]{SET.png}
-  \centering
- \end{figure}
-    \end{itemize}
+  \item \textbf{init} \\
+    Para probar el funcionamiento del método init primero introducimos un vector llamado "vector1" de tamaño 10. La salida en este caso es: 1. Después, introducimos otro vector con el mismo nombre y mismo tamaño. La salida es: 0 y no se enlaza en la lista. Finalmente, introducimos otro vector del mismo nombre y tamaño distinto y la salida es -1. Añadimos otro vector de distinto nombre y tamaño y se añade a la lista sin problemas.
 
- \item \textbf{get}
-  \begin{itemize}
-    \item Obtenemos el valor de un vector que está en la lista y en una posición correcta, la salida es 0. Después, obtenemos el valor de un vector cuyo nombre no se encuentra en la lista, la salida es -1 . Finalmente, intentamos obtener el valor de una posición de un vector de la lista fuera de rango (de tamaño mayor del vector), la salida es -1.
- \begin{figure}[h]
- \includegraphics [scale=0.4]{GET.png}
-  \centering
- \end{figure}
-    \end{itemize}
+    \begin{figure}[H]
+      \centering
+      \includegraphics [scale=0.4]{INIT.png}
+      \caption{Pruebas de función init}
+    \end{figure}
 
- \item \textbf{destroy}
-  \begin{itemize}
-    \item Eliminamos un vector que está en la lista, la salida es 1. Después, eliminamos un vector cuyo nombre no se encuentra en la lista, la salida es -1 . Finalmente, se prueba que se borra correctamente un vector situado en mitad de la lista, al principio de la lista y al final de la lista con el fin de observar que se hacen correctamente los enlaces.
- \begin{figure}[h]
- \includegraphics [scale=0.4]{DESTROY.png}
-  \centering
- \end{figure}
-    \end{itemize}
+  \item \textbf{set}\\
+    Modificamos el valor de un vector que está en la lista y en una posición correcta, la salida es 0. Después, modificamos el valor de un vector cuyo nombre no se encuentra en la lista, la salida es -1 . Finalmente, intentamos modificar el valor de una posición de un vector de la lista fuera de rango (de tamaño mayor del vector), la salida es -1.
+
+    \begin{figure}[H]
+      \centering
+      \includegraphics [scale=0.4]{SET.png}
+      \caption{Pruebas de función set}
+    \end{figure}
+
+ \item \textbf{get}\\
+  Obtenemos el valor de un vector que está en la lista y en una posición correcta, la salida es 0. Después, obtenemos el valor de un vector cuyo nombre no se encuentra en la lista, la salida es -1 . Finalmente, intentamos obtener el valor de una posición de un vector de la lista fuera de rango (de tamaño mayor del vector), la salida es -1.
+
+  \begin{figure}[H]
+    \centering
+    \includegraphics [scale=0.4]{GET.png}
+    \caption{Pruebas de función get}
+  \end{figure}
+
+ \item \textbf{destroy}\\
+    Eliminamos un vector que está en la lista, la salida es 1. Después, eliminamos un vector cuyo nombre no se encuentra en la lista, la salida es -1 . Finalmente, se prueba que se borra correctamente un vector situado en mitad de la lista, al principio de la lista y al final de la lista con el fin de observar que se hacen correctamente los enlaces.
+
+    \begin{figure}[H]
+      \centering
+      \includegraphics [scale=0.4]{DESTROY.png}
+      \caption{Pruebas de función destroy}
+    \end{figure}
 
 \end{itemize}
 
-   % \includegraphics[scale=0.2]{SET.png}
-    %\caption{Esquema de servicio cliente-servidor concurrente}
-    %\centering
-  %\end{figure}
- %\begin{figure}[h]
-%\subfloat{
-   % \includegraphics{GET.png}}
-    %\caption{Esquema de servicio cliente-servidor concurrente}
-    %\centering
-  %\end{figure}
- %\begin{figure}[h]
-%\subfloat{
-  %  \includegraphics{DESTROY.png}}
-    %\caption{Esquema de servicio cliente-servidor concurrente}
-    %\centering
- % \end{figure}
-
-
-%\usepackage {subfig}
-
- %\begin{figure}[h]
-%\subfloat{
- %   \includegraphics [scale=0.4]{INIT.png}}
-    %\caption{Esquema de servicio cliente-servidor concurrente}
-   % \centering
-
-%\subfloat{
- %   \includegraphics[scale=0.4]{SET.png}}
-    %\caption{Esquema de servicio cliente-servidor concurrente}
-    %\centering
- 
-%\subfloat{
- %   \includegraphics [scale=0.4]{GET.png}}
-    %\caption{Esquema de servicio cliente-servidor concurrente}
- 
-%\subfloat{
- %   \includegraphics [scale=0.4] {DESTROY.png}}
-    %\caption{Esquema de servicio cliente-servidor concurrente}
-    %\centering
-  %\end{figure}
-
+\newpage
+%%%% Conclusiones %%%%
 \section{Conclusiones}
 Esta práctica nos ha permitido aprender la estructura básica de un sistema de tipo cliente-servidor, pudiendo descubrir algunas de sus ventajas y desventajas.
 
