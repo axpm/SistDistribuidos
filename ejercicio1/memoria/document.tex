@@ -52,7 +52,7 @@ El motivo de este ejercicio se basa en la idea de poder aprender las técnicas p
 
   \vspace{2cm}
   \begin{figure}[h]
-    \centering 
+    \centering
     \includegraphics[width=\textwidth]{cliente-servidor.png}
     \caption{Esquema de servicio cliente-servidor concurrente}
   \end{figure}
@@ -83,11 +83,6 @@ El servidor debe estar configurado de tal manera que se evite que se pierdan pet
 \subsection{Servidor Pool de Hilos}
 Se ha implementado también la versión con un pool de hilos que consiste en crear un número de hilos determinados. Cada vez que llega una nueva petición se almacena en una cola circular de tareas y serán los hilos los que se encargan de recoger y procesar esas tareas cuando puedan actuar. Se trata de una versión del problema de \textit{productor-consumidor} en el que produce el hilo principal y los hilos que se crean son los que consumen de la cola circular.
 
-Para su compilación:
-  \begin{lstlisting}[frame=single]
-    make servidorPool
-  \end{lstlisting}
-
 
 \subsubsection{Modelo de datos}
 Para administrar la estructura de datos que almacena los vectores se ha decidido establecer una lista enlazada implementada a través de un \textit{struct} del lenguaje de programación \textbf{C}. Cada elemento de la lista está formado por un vector de enteros de tamaño N, una cadena de caracteres que representa el nombre del vector y un puntero al siguiente elemento.
@@ -102,7 +97,7 @@ Las funciones que manejan la lista enlazada se encuentran en un archivo distinto
     \item \textbf{Eliminar un vector}: La función \textit{DESTROY} se encarga de eliminar el espacio de memoria que ocupaba el vector en la lista y, además, enlazar correctamente los elementos de lista para evitar que queden elementos sin apuntar.
 \end{itemize}
 
-%%%%Pruebas%%%%
+% %%%%Pruebas%%%%
 \newpage
 \section{Pruebas}
 Para verificar el correcto funcionamiento de las operaciones en el servidor hemos creado el método \textit{show} que muestra la lista con el contenido de todos los vectores para ver las modificaciones.Además, hemos creado unos métodos en el cliente que muestra el resultado de los métodos (ErrorMsgInit, ErrorMsgSet, ErrorMsgGet y ErrorMsgDestroy).
@@ -146,7 +141,17 @@ Para verificar el correcto funcionamiento de las operaciones en el servidor hemo
 
 \end{itemize}
 
+
 \newpage
+%%%% Compilación %%%%
+\section{Compilación}
+Para poder compilar el ejercicio se puede hacer de forma sencilla con \textit{make all}, esto generará dos tipos de servidores. Uno con la implementación de hilo bajo demanda (\textbf{servidor}) y otro con el pool de hilos (\textbf{servidorPool}). En el caso de que se quiera compilar solo lo necesario, se deberá realizar manualmente haciendo \textit{make} array, cliente, servidor o servidorPool.
+
+Nota: antes de compilar el cliente manualmente, será necesario haber generado la biblioteca dinámica haciendo en primer lugar \textit{make array}.
+
+Para la ejecución de el cliente y que no de problemas con la variable \textit{LD\_LIBRARY\_PATH}, se ha incluido un archivo llamado \textit{cliente.sh} que hará la ejecución para resolver los problemas con la varible mencionada anteriormente.
+
+
 %%%% Conclusiones %%%%
 \section{Conclusiones}
 Esta práctica nos ha permitido aprender la estructura básica de un sistema de tipo cliente-servidor, pudiendo descubrir algunas de sus ventajas y desventajas.
