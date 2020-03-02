@@ -11,6 +11,6 @@
 
 void listenPetition(struct petition * pet);
 
-void servicio (void);
+void* servicio(void);
 
 #endif

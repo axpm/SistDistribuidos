@@ -40,7 +40,7 @@ int main(int argc, char const *argv[]) {
 
 	// Creando Pool
 	for (int i = 0; i < MAX_THREADS; i++){
-		if (pthread_create(&thid[i], NULL, servicio, NULL) !=0){
+		if (pthread_create(&thid[i], NULL, (void *) servicio, NULL) !=0){
 			perror("Error creando el pool de threads\n");
 			return 0;
 		}
@@ -86,7 +86,7 @@ int main(int argc, char const *argv[]) {
   return 0;
 }
 
-void servicio(void ){
+void* servicio(void ){
   struct petition p; //Petición
   struct reply r;//Respuesta
 
@@ -159,4 +159,5 @@ void servicio(void ){
 		}
 	}
 	pthread_exit(0);
+	return NULL;
 }
