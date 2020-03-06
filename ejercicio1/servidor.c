@@ -1,8 +1,21 @@
 #include "servidor.h"
+#include <signal.h>
 
 pthread_mutex_t mutex;
 pthread_cond_t c;
 bool copiado; //variable de condición
+
+//salir con signal
+bool fin = false;
+
+void sigint_handler(int sig) {
+	// fin = true;
+	mq_unlink(NOMBRE_SERVER);
+	pthread_mutex_destroy(&mutex);
+	pthread_cond_destroy(&c);
+	exit(0);
+	// printf("hola\n");
+}
 
 int main(int argc, char const *argv[]) {
   //Hilos
@@ -12,6 +25,12 @@ int main(int argc, char const *argv[]) {
   pthread_mutex_init(&mutex, NULL);
   pthread_cond_init(&c, NULL);
   copiado = false;
+
+	//Manejador de la señal
+	struct sigaction sa;
+	sa.sa_handler = sigint_handler;
+	sa.sa_flags = SA_RESTART;
+	sigaction(SIGINT, &sa, NULL);
 
 	//Atributos
 	struct mq_attr attr;
@@ -27,7 +46,7 @@ int main(int argc, char const *argv[]) {
   }
 
 
-  while(1){
+  while(!fin){
 
     //CREAR HILOS BAJO DEMANDA
 		struct petition p;
@@ -49,6 +68,7 @@ int main(int argc, char const *argv[]) {
 		pthread_mutex_unlock(&mutex);
   }
 
+	mq_close(qs);
   pthread_mutex_destroy(&mutex);
   pthread_cond_destroy(&c);
   return 0;
@@ -116,11 +136,13 @@ void listenPetition(struct petition * pet){
   int e = mq_send(qc, (const char *)&r, sizeof(struct reply), NO_PRIORITY );
   if (e == -1){
     perror("mq_send");
+		mq_close(qc);
     mq_unlink(NOMBRE_SERVER);
     mq_unlink(p.client_queue);
     pthread_exit(NULL);
   }
 
+	mq_close(qc);
   mq_unlink(p.client_queue);
 	pthread_exit(NULL);
 
