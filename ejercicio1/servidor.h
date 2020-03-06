@@ -9,6 +9,9 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+#include <sys/types.h>
+#include <signal.h>
+
 void listenPetition(struct petition * pet);
 
 void* servicio(void);

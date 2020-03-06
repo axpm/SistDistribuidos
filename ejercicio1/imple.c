@@ -38,6 +38,9 @@ int init(char *name, int N){
   }
   //Creamos un nuevo elemento al que le pasaremos el nombre, el tamaño y el vector. El puntero al siguiente apunatrá a NULL
   List newElement = (struct listElement *)malloc(sizeof(struct listElement));
+  if (newElement == NULL){
+    return -1;
+  }
   strcpy(newElement->name, name);
   newElement->N=N;
   newElement->vector = (int *)malloc(N*sizeof(int));
@@ -102,7 +105,7 @@ int destroy(char *name){
     server = aux->next;
     free(aux);
   }
-  
+
   else { //Si no lo es
     while (strcmp(aux->name, name) != 0) { //Compara que los nombres sean iguales
       if (aux->next == NULL){
