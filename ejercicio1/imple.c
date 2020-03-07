@@ -39,11 +39,16 @@ int init(char *name, int N){
   //Creamos un nuevo elemento al que le pasaremos el nombre, el tamaño y el vector. El puntero al siguiente apunatrá a NULL
   List newElement = (struct listElement *)malloc(sizeof(struct listElement));
   if (newElement == NULL){
+    perror("malloc");
     return -1;
   }
   strcpy(newElement->name, name);
   newElement->N=N;
   newElement->vector = (int *)malloc(N*sizeof(int));
+  if ( newElement->vector == NULL){
+    perror("malloc");
+    return -1;
+  }
   newElement->next = NULL;
   prev->next = newElement;
   return cod_error;
