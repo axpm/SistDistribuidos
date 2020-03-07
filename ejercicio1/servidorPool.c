@@ -7,12 +7,26 @@ int n_elementos; // elementos en el buffer de peticiones
 int pos_servicio = 0;
 
 pthread_mutex_t mutex;
+pthread_mutex_t mutex2;
 pthread_cond_t no_lleno;
 pthread_cond_t no_vacio;
 pthread_mutex_t mfin;
-int fin=false;
+bool fin = false;
+bool finSignal = false;
+
+void sigint_handler(int sig) {
+	// finSignal = true;
+	printf("%s\n", "\nServer Closed" );
+}
+
 
 int main(int argc, char const *argv[]) {
+
+	//Manejador de la finSignal
+	// struct sigaction sa;
+	// sa.sa_handler = sigint_handler;
+	// sa.sa_flags = SA_RESTART;
+	// sigaction(SIGINT, &sa, NULL);
 
 	//Atributos
 	struct mq_attr attr;
@@ -46,7 +60,7 @@ int main(int argc, char const *argv[]) {
 		}
 	}
 
-  while(true){
+  while(1){
 		struct petition p;
 		error = mq_receive(qs, (char *) &p, sizeof(struct petition), 0);
 		if (error == -1 )
@@ -79,9 +93,11 @@ int main(int argc, char const *argv[]) {
 			pthread_join(thid[i],NULL);
 	}
 	pthread_mutex_destroy(&mutex);
+	pthread_mutex_destroy(&mutex2);
 	pthread_cond_destroy(&no_lleno);
 	pthread_cond_destroy(&no_vacio);
 	pthread_mutex_destroy(&mfin);
+
 
   return 0;
 }
@@ -114,34 +130,39 @@ void* servicio(void ){
 		//OPERACIONES
 	  //Operación Init
 	  if(p.op == INIT_OP){
-	    printf("%s\n", "Operation init");
+	    // printf("%s\n", "Operation init");
 	    //ejecución y rellenar respuesta
+			pthread_mutex_lock(&mutex2);
 	    r.error = init(p.name, p.N);
-
+			pthread_mutex_unlock(&mutex2);
 	  }
 	  //Operación Set
 	  else if(p.op == SET_OP){
-	    printf("%s\n", "Operation set");
+	    // printf("%s\n", "Operation set");
 	    //ejecución y rellenar respuesta
-	   r.error = set(p.name, p.i, p.value);
+			pthread_mutex_lock(&mutex2);
+			r.error = set(p.name, p.i, p.value);
+			pthread_mutex_unlock(&mutex2);
 
 	  }
 	  //Operación Get
 	  else if(p.op == GET_OP){
-	    printf("%s\n", "Operation get");
+	    // printf("%s\n", "Operation get");
 	    //ejecución y rellenar respuesta
-	    r.error = get(p.name, p.i, &(r.value));
+			pthread_mutex_lock(&mutex2);
+			r.error = get(p.name, p.i, &(r.value));
+			pthread_mutex_unlock(&mutex2);
 	  }
 
 	  //Operación destroy
 	  else if(p.op == DEST_OP){
-	    printf("%s\n", "Operation destroy");
+	    // printf("%s\n", "Operation destroy");
+	    //ejecución y rellenar respuesta
+			pthread_mutex_lock(&mutex2);
+			r.error = destroy(p.name);
+			pthread_mutex_unlock(&mutex2);
 
-	    //Ejecución y rellenar respuesta
-	    r.error = destroy(p.name);
-
-	  }
-		else {
+	  }else {
 	    printf("%s\n", "Operation not found");
 	  }
 
