@@ -145,7 +145,7 @@ void listenClient(int *cs){
 		int reply = registerUser(user); //accion a realizar
 		//int reply = 0;
 		//para poder enviar el código de error
-		char replyC[2];
+		char replyC[1];
 		switch (reply) {
 			case 0:
 				replyC[0] = '0';
@@ -156,7 +156,6 @@ void listenClient(int *cs){
 			default:
 				replyC[0] = '2';
 		}
-		replyC[1] = '\0';
 		err = enviar(clienteSd, replyC, 1);
     if (err == -1) {
       perror("enviar");
@@ -180,7 +179,7 @@ void listenClient(int *cs){
 		int reply = unregisterUser(user); //accion a realizar
 		//int reply = 0;
 		//para poder enviar el código de error
-		char replyC[2];
+		char replyC[1];
 		switch (reply) {
 			case 0:
 				replyC[0] = '0';
@@ -191,7 +190,7 @@ void listenClient(int *cs){
 			default:
 				replyC[0] = '2';
 		}
-		replyC[1] = '\0';
+		printf("%d\n", replyC[0]);
 		err = enviar(clienteSd, replyC, 1);
     if (err == -1) {
       perror("enviar");

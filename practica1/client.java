@@ -42,12 +42,12 @@ class client {
 			DataOutputStream out = new DataOutputStream(sc.getOutputStream()); //Enviar
 			DataInputStream in = new DataInputStream(sc.getInputStream()); //Recibir
 
-			String message = "REGISTER " + user + '\0'; // mensaje más código ASCII 0 al final
+			String message = "REGISTER " + user;// + '\0'; // mensaje más código ASCII 0 al final
 
 			out.writeBytes(message); //Escribimos en la salida del cliente
+			out.write('\0'); // inserta el código ASCII 0 al final
 
-			byte[] ch = new byte[2];
-			String mensajeServer = new String();
+			byte[] ch = new byte[1];
 			ch[0] = in.readByte(); //Leemos la respuesta
 			char c = (char) ch[0];
 
@@ -103,18 +103,20 @@ class client {
 			out.write('\0'); // inserta el código ASCII 0 al final
 
 			//recibimos respuesta que es un solo byte
-			int ch = in.readByte();
+			byte[] ch = new byte[1];
+			ch[0] = in.readByte(); //Leemos la respuesta
+			char c = (char) ch[0];
 
-			switch(ch) {
-				case 0:
+			switch(c) {
+				case '0':
 					System.out.println("c> UNREGISTER OK");
 					break;
-				case 1:
-					System.out.println("c> UNREGISTER IN USE");
+				case '1':
+					System.out.println("c> USER DOES NOT EXIST");
 					break;
 				default:
-				System.out.println("c> UNREGISTER FAIL");
-			}
+					System.out.println("c> UNREGISTER FAIL");
+				}
 
 			sc.close();
 		} catch(Exception e) {
@@ -135,6 +137,16 @@ class client {
 	{
 		// Write your code here
 		System.out.println("CONNECT " + user);
+
+		//para elegir un puerto libre, asignar el 0 y elegirá uno libre
+		//findRandomOpenPortOnAllLocalInterfaces(); //esta funcion te hace eso ya
+
+		//crear hilo y crear ServerSocket(0)
+
+		//enviar mensaje
+
+		//recibir byte error
+
 		return 0;
 	}
 
@@ -402,3 +414,13 @@ class client {
 		System.out.println("+++ FINISHED +++");
 	}
 }
+
+/*********************** OTHERS ***************************/
+// private Integer findRandomOpenPortOnAllLocalInterfaces() throws IOException {
+// 	try (
+// 			ServerSocket socket = new ServerSocket(0);
+// 	) {
+// 		return socket.getLocalPort();
+// 	}
+//
+// }
