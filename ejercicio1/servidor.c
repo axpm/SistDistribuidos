@@ -93,7 +93,7 @@ void listenPetition(struct petition * pet){
 
   if (qc == -1){
 		printf("%s\n", p.client_queue);
-    perror("mq_open");
+    perror("mq_open: error in opening client_queue on sending the reply");
     pthread_exit(NULL);
   }
 

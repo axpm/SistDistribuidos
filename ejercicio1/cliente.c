@@ -33,7 +33,7 @@ int main(int argc, char const *argv[]) {
 
   printf("%s\n", "PRUEBAS CON INIT \n" );
   init_count++;
-  errorMsgInit(init("vector1", 10), init_count);
+  errorMsgInit(init("vector1", 1300), init_count);
   printf("%s\n", "expected: OK\n" );
    init_count++;
    errorMsgInit(init("vector1", 10), init_count);
@@ -44,7 +44,6 @@ int main(int argc, char const *argv[]) {
    init_count++;
    errorMsgInit(init("vector2", 5), init_count);
    printf("%s\n", "expected: OK" );
-
 
 
   printf("%s\n", "PRUEBAS CON SET \n" );
@@ -59,7 +58,6 @@ int main(int argc, char const *argv[]) {
   printf("%s\n", "expected: Something went wrong \n" );
 
 
-
   printf("%s\n", "PRUEBAS CON GET \n" );
   int num;
   get_count ++;
@@ -71,6 +69,7 @@ int main(int argc, char const *argv[]) {
   get_count++;
   errorMsgGet(get("vector1", 12, &num), get_count);
   printf("%s\n", "expected: Something went wrong \n" );
+
   // destroy_count++;
   // errorMsgDest(destroy("vector1"), destroy_count);
   // printf("%s\n", "expected: OK" );
@@ -90,6 +89,15 @@ int main(int argc, char const *argv[]) {
   // errorMsgInit(init("vector5", 2), init_count);
   // printf("%s\n", "expected: OK" );
 
+  //nuevo
+  printf("%s\n", "PRUEBA BUCLE SET");
+  set_count = 0;
+  for (int i = 0; i < 150; i++) {
+    set_count++;
+    errorMsgSet(set("vector1", i, i), set_count);
+    printf("%s\n", "expected: OK \n" );
+  }
+
 printf("%s\n", "PRUEBAS CON DESTROY \n" );
   destroy_count++;
   errorMsgDest(destroy("vector1"), destroy_count);
@@ -98,6 +106,7 @@ printf("%s\n", "PRUEBAS CON DESTROY \n" );
   errorMsgDest(destroy("vector1"), destroy_count);
   printf("%s\n", "expected: Something went wrong" );
   return 0;
+
 }
 void errorMsgInit(int e, int i){
   if (e == 1)

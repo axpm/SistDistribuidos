@@ -17,9 +17,17 @@ int init(char *name, int N){
   //En el caso de que esté vacía la lista
   if (server == NULL){
     List newElement = (struct listElement *)malloc(sizeof(struct listElement));//Creamos un nuevo elemento
+    if (newElement == NULL){
+      perror("malloc");
+      return -1;
+    }
     strcpy(newElement->name, name);//Le pasamos el nombre
     newElement->N=N; //Le pasamos el tamaño
     newElement->vector = (int *)malloc(N*sizeof(int));//Creamos el vector
+    if (newElement->vector == NULL){
+      perror("malloc");
+      return -1;
+    }
     newElement->next = NULL;//Hacemos que el puntero al siguiente elemento apunte a NULL
     server = newElement;//El puntero a la lista apunta al nuevo elemento
     return cod_error;
@@ -59,18 +67,21 @@ int init(char *name, int N){
 int set(char *name, int i, int value){
   List aux = server;
   //Tratamos los errores de lista vacía, posición negativa o mayor que el tamaño del vector
-  if (server == NULL || i < 0 || i >=aux->N)
+  if (server == NULL || i < 0)
   return -1;
 
   while (strcmp(aux->name, name) != 0) { //Compara que los nombres sean iguales
     aux = aux->next;
     if (aux == NULL){//Si se acaba la lista y no ha encontrado el nombre
-      fprintf(stderr, "%s\n", "Not existing element");
+      //fprintf(stderr, "%s\n", "Not existing element");
       return -1;
     }
   }
 
   //Si encontramos el nombre del vector, cambiamos el valor de la posición i
+  if (i >= aux->N){
+    return -1;
+  }
   aux->vector[i] = value;
   return 0;
 }
@@ -80,17 +91,20 @@ int get(char *name, int i, int *value){
   List aux = server;
 
   //Tratamos los errores de lista vacía, posición negativa o mayor que el tamaño del vector
-  if (server == NULL || i < 0 || i >=aux->N)
+  if (server == NULL || i < 0)
   return -1;
 
   while (strcmp(aux->name, name) != 0) { //Compara que los nombres sean iguales
     aux = aux->next;
     if (aux == NULL){//Si se acaba la lista y no ha encontrado el nombre
-      fprintf(stderr, "%s\n", "Not existing element");
+    //  fprintf(stderr, "%s\n", "Not existing element");
       return -1;
     }
   }
   //Si encontramos el nombre del vector, guardamos el valor de la posición i
+  if (i >=aux->N){
+    return -1;
+  }
   *value = aux->vector[i];
 
   return 0;
@@ -114,7 +128,7 @@ int destroy(char *name){
   else { //Si no lo es
     while (strcmp(aux->name, name) != 0) { //Compara que los nombres sean iguales
       if (aux->next == NULL){
-        fprintf(stderr, "%s\n", "Not existing element");
+      //  fprintf(stderr, "%s\n", "Not existing element");
         return -1;
       }
       prev = aux;

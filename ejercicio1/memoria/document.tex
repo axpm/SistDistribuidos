@@ -122,6 +122,13 @@ Para verificar el correcto funcionamiento de las operaciones en el servidor hemo
       \caption{Pruebas de función init}
     \end{figure}
 
+También se ha probado a crear un vector con un nombre y una dimensión desde un cliente e intentar volver a crearlo igual desde otro cliente. Se comprueba que el primero lo crea correctamente, pero al segundo cliente le da un mensaje de que el vector ya existe.
+    \begin{figure}[H]
+      \centering
+      \includegraphics [scale=0.4]{INIT2clientes.png}
+      \caption{Pruebas de función init}
+    \end{figure}
+
   \item \textbf{set}\\
     Modificamos el valor de un vector que está en la lista y en una posición correcta, la salida es 0. Después, modificamos el valor de un vector cuyo nombre no se encuentra en la lista, la salida es -1 . Finalmente, intentamos modificar el valor de una posición de un vector de la lista fuera de rango (de tamaño mayor del vector), la salida es -1.
 
