@@ -8,11 +8,8 @@
 #include <unistd.h>
 
 int init(char *name, int N);
-
 int set(char *name, int i, int value);
-
 int get(char *name, int i, int *value);
-
 int destroy(char *name);
 
 
