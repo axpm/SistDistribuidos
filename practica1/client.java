@@ -1,60 +1,149 @@
 import java.io.*;
+import java.lang.* ;
+import java.net.* ;
+import java.util.* ;
 import gnu.getopt.Getopt;
 
 
 class client {
-	
-	
+
+
 	/******************* ATTRIBUTES *******************/
-	
+
 	private static String _server   = null;
 	private static int _port = -1;
-		
-	
+
+
 	/********************* METHODS ********************/
-	
+
 	/**
 	 * @param user - User name to register in the system
-	 * 
+	 *
 	 * @return ERROR CODE
 	 */
-	static int register(String user) 
+	static int register(String user)
 	{
 		// Write your code here
-		System.out.println("REGISTER " + user);
+		// String message = "REGISTER " + user;
+		// System.out.println(message);
+		// Crear las conexiones
+		Socket sc;
+		try {
+			sc = new Socket(_server, _port);
+		} catch(Exception e) {
+			System.err.println("Can't reach the host.");
+			// System.err.println("excepcion " + e.toString() );
+			// e.printStackTrace() ;
+			return -1;
+		}
+		try {
+			// Crear las conexiones
+
+			DataOutputStream out = new DataOutputStream(sc.getOutputStream()); //Enviar
+			DataInputStream in = new DataInputStream(sc.getInputStream()); //Recibir
+
+			String message = "REGISTER " + user + '\0'; // mensaje más código ASCII 0 al final
+
+			out.writeBytes(message); //Escribimos en la salida del cliente
+
+			byte[] ch = new byte[2];
+			String mensajeServer = new String();
+			ch[0] = in.readByte(); //Leemos la respuesta
+			char c = (char) ch[0];
+
+			switch(c) {
+				case '0':
+					System.out.println("c> REGISTER OK");
+					break;
+				case '1':
+					System.out.println("c> USERNAME IN USE");
+					break;
+				default:
+					System.out.println("c> REGISTER FAIL");
+				}
+
+			sc.close();
+
+		} catch(Exception e) {
+			System.err.println("excepcion " + e.toString() );
+			e.printStackTrace() ;
+			return -1;
+		}
+
 		return 0;
 	}
-	
+
 	/**
 	 * @param user - User name to unregister from the system
-	 * 
+	 *
 	 * @return ERROR CODE
 	 */
-	static int unregister(String user) 
+	static int unregister(String user)
 	{
 		// Write your code here
-		System.out.println("UNREGISTER " + user);
+		String message = "UNREGISTER " + user;
+
+		// Crear las conexiones
+		Socket sc;
+		try {
+			sc = new Socket(_server, _port);
+		} catch(Exception e) {
+			System.err.println("Can't reach the host.");
+			// System.err.println("excepcion " + e.toString() );
+			// e.printStackTrace() ;
+			return -1;
+		}
+		try {
+
+			DataOutputStream out = new DataOutputStream(sc.getOutputStream()); //Enviar
+			DataInputStream in = new DataInputStream(sc.getInputStream()); //Recibir
+
+			//enviamos mensaje
+			out.writeBytes(message); //Escribimos en la salida del cliente
+			out.write('\0'); // inserta el código ASCII 0 al final
+
+			//recibimos respuesta que es un solo byte
+			int ch = in.readByte();
+
+			switch(ch) {
+				case 0:
+					System.out.println("c> UNREGISTER OK");
+					break;
+				case 1:
+					System.out.println("c> UNREGISTER IN USE");
+					break;
+				default:
+				System.out.println("c> UNREGISTER FAIL");
+			}
+
+			sc.close();
+		} catch(Exception e) {
+			System.err.println("excepcion " + e.toString() );
+			e.printStackTrace() ;
+			return -1;
+		}
+
 		return 0;
 	}
-	
+
     	/**
 	 * @param user - User name to connect to the system
-	 * 
+	 *
 	 * @return ERROR CODE
 	 */
-	static int connect(String user) 
+	static int connect(String user)
 	{
 		// Write your code here
 		System.out.println("CONNECT " + user);
 		return 0;
 	}
-	
+
 	 /**
 	 * @param user - User name to disconnect from the system
-	 * 
+	 *
 	 * @return ERROR CODE
 	 */
-	static int disconnect(String user) 
+	static int disconnect(String user)
 	{
 		// Write your code here
 		System.out.println("DISCONNECT " + user);
@@ -64,10 +153,10 @@ class client {
 	 /**
 	 * @param file_name    - file name
 	 * @param description - descrition
-	 * 
+	 *
 	 * @return ERROR CODE
 	 */
-	static int publish(String file_name, String description) 
+	static int publish(String file_name, String description)
 	{
 		// Write your code here
 		System.out.println("PUBLISH " + file_name + " " + description);
@@ -76,7 +165,7 @@ class client {
 
 	 /**
 	 * @param file_name    - file name
-	 * 
+	 *
 	 * @return ERROR CODE
 	 */
 	static int delete(String file_name)
@@ -99,7 +188,7 @@ class client {
 
 	 /**
 	 * @param user_name    - user name
-	 * 
+	 *
 	 * @return ERROR CODE
 	 */
 	static int list_content(String user_name)
@@ -113,7 +202,7 @@ class client {
 	 * @param user_name    - user name
 	 * @param remote_file_name    - remote file name
 	 * @param local_file_name  - local file name
-	 * 
+	 *
 	 * @return ERROR CODE
 	 */
 	static int get_file(String user_name, String remote_file_name, String local_file_name)
@@ -123,11 +212,11 @@ class client {
 		return 0;
 	}
 
-	
+
 	/**
 	 * @brief Command interpreter for the client. It calls the protocol functions.
 	 */
-	static void shell() 
+	static void shell()
 	{
 		boolean exit = false;
 		String input;
@@ -148,8 +237,8 @@ class client {
 						} else {
 							System.out.println("Syntax error. Usage: REGISTER <userName>");
 						}
-					} 
-					
+					}
+
 					/********** UNREGISTER ************/
 					else if (line[0].equals("UNREGISTER")) {
 						if  (line.length == 2) {
@@ -157,28 +246,28 @@ class client {
 						} else {
 							System.out.println("Syntax error. Usage: UNREGISTER <userName>");
 						}
-                    			} 
-                    			
-                    			/************ CONNECT *************/
-                    			else if (line[0].equals("CONNECT")) {
+                    			}
+
+    			/************ CONNECT *************/
+    			else if (line[0].equals("CONNECT")) {
 						if  (line.length == 2) {
 							connect(line[1]); // userName = line[1]
 						} else {
 							System.out.println("Syntax error. Usage: CONNECT <userName>");
                     				}
-                    			} 
-                    
-                    			/********** DISCONNECT ************/
-                    			else if (line[0].equals("DISCONNECT")) {
+                    			}
+
+    			/********** DISCONNECT ************/
+    			else if (line[0].equals("DISCONNECT")) {
 						if  (line.length == 2) {
 							disconnect(line[1]); // userName = line[1]
 						} else {
 							System.out.println("Syntax error. Usage: DISCONNECT <userName>");
                     				}
-                    			} 
-                    
-                    			/************** PUBLISH **************/
-                    			else if (line[0].equals("PUBLISH")) {
+                    			}
+
+    			/************** PUBLISH **************/
+    			else if (line[0].equals("PUBLISH")) {
 						if  (line.length >= 3) {
 							// Remove first two words
 							//String description = input.substring(input.indexOf(' ')+1).substring(input.indexOf(' ')+1);
@@ -188,79 +277,79 @@ class client {
 						} else {
 							System.out.println("Syntax error. Usage: PUBLISH <file_name> <description>");
                     				}
-                    			} 
+                    			}
 
-                    			/************ DELETE *************/
-                    			else if (line[0].equals("DELETE")) {
+    			/************ DELETE *************/
+    			else if (line[0].equals("DELETE")) {
 						if  (line.length == 2) {
 							delete(line[1]); // userName = line[1]
 						} else {
 							System.out.println("Syntax error. Usage: DELETE <file name>");
                     				}
-                    			} 
-                    
-                    			/************** LIST_USERS **************/
-                    			else if (line[0].equals("LIST_USERS")) {
+                    			}
+
+    			/************** LIST_USERS **************/
+    			else if (line[0].equals("LIST_USERS")) {
 						if  (line.length == 1) {
 							// Remove first two words
-							list_users(); 
+							list_users();
 						} else {
 							System.out.println("Syntax error. Usage: LIST_USERS ");
                     				}
-                    			} 
-                    
-                    			/************ LIST_CONTENT *************/
-                    			else if (line[0].equals("LIST_CONTENT")) {
+                    			}
+
+    			/************ LIST_CONTENT *************/
+    			else if (line[0].equals("LIST_CONTENT")) {
 						if  (line.length == 2) {
 							list_content(line[1]); // userName = line[1]
 						} else {
 							System.out.println("Syntax error. Usage: LIST_CONTENT <user name>");
                     				}
-                    			} 
-                    
-                    			/************** GET_FILE **************/
-                    			else if (line[0].equals("GET_FILE")) {
+                    			}
+
+    			/************** GET_FILE **************/
+    			else if (line[0].equals("GET_FILE")) {
 						if  (line.length == 4) {
-							get_file(line[1], line[2], line[3]); 
+							get_file(line[1], line[2], line[3]);
 						} else {
 							System.out.println("Syntax error. Usage: GET_FILE <user> <remote_file_name> <local_file_name>");
                     				}
-                    			} 
+                    			}
 
-                    
-                    			/************** QUIT **************/
-                    			else if (line[0].equals("QUIT")){
+
+    			/************** QUIT **************/
+    			else if (line[0].equals("QUIT")){
 						if (line.length == 1) {
 							exit = true;
 						} else {
 							System.out.println("Syntax error. Use: QUIT");
 						}
-					} 
-					
+					}
+
 					/************* UNKNOWN ************/
-					else {						
+					else {
 						System.out.println("Error: command '" + line[0] + "' not valid.");
 					}
-				}				
+				}
 			} catch (java.io.IOException e) {
 				System.out.println("Exception: " + e);
 				e.printStackTrace();
 			}
 		}
 	}
-	
+
 	/**
 	 * @brief Prints program usage
 	 */
-	static void usage() 
+	static void usage()
 	{
 		System.out.println("Usage: java -cp . client -s <server> -p <port>");
 	}
-	
+
 	/**
-	 * @brief Parses program execution arguments 
-	 */ 
-	static boolean parseArguments(String [] argv) 
+	 * @brief Parses program execution arguments
+	 */
+	static boolean parseArguments(String [] argv)
 	{
 		Getopt g = new Getopt("client", argv, "ds:p:");
 
@@ -286,10 +375,10 @@ class client {
 					System.out.print("getopt() returned " + c + "\n");
 			}
 		}
-		
+
 		if (_server == null)
 			return false;
-		
+
 		if ((_port < 1024) || (_port > 65535)) {
 			System.out.println("Error: Port must be in the range 1024 <= port <= 65535");
 			return false;
@@ -297,20 +386,18 @@ class client {
 
 		return true;
 	}
-	
-	
-	
+
+
+
 	/********************* MAIN **********************/
-	
-	public static void main(String[] argv) 
+
+	public static void main(String[] argv)
 	{
 		if(!parseArguments(argv)) {
 			usage();
 			return;
 		}
-		
-		// Write code here
-		
+
 		shell();
 		System.out.println("+++ FINISHED +++");
 	}
