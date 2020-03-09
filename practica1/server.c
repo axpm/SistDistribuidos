@@ -108,18 +108,18 @@ void listenClient(int *cs){
 
   char buffer[MAX_LINE];
   int err = 0;
-  //Leer del cliente
+  //Leer del cliente operación
   err = readLine(clienteSd, buffer, MAX_LINE);
   if (err == -1) {
     perror("readLine");
   }
-	//to obtain the operation
-	char line[MAX_LINE];
-	memcpy (line, buffer, strlen(buffer)+1 );
-	char *operation = strtok(line, " ");
+	// //to obtain the operation
+	// char line[MAX_LINE];
+	// memcpy (line, buffer, strlen(buffer)+1 );
+	// char *operation = strtok(line, " ");
 
 	//operaciones
-  if (strcmp("QUIT", operation) == 0){
+  if (strcmp("QUIT", buffer) == 0){
 		//enviar al cliente
     err = enviar(clienteSd, "", 1);
     if (err == -1) {
@@ -128,16 +128,20 @@ void listenClient(int *cs){
     close(clienteSd);
     pthread_exit(NULL);
 
-  }else if (strcmp("REGISTER", operation) == 0){
+  }else if (strcmp("REGISTER", buffer) == 0){
 		char user[MAX_LINE] ; 	// loop through the string to extract all other tokens
 
 		//Para obtener el usuario
-		memcpy (line, buffer, strlen(buffer)+1);
-		char *token = strtok(line, " ");
-		while( token != NULL ) {
-			memcpy (user, token, strlen(buffer)+1);
-		  token = strtok(NULL, " ");
-		}
+		// memcpy (line, buffer, strlen(buffer)+1);
+		// char *token = strtok(line, " ");
+		// while( token != NULL ) {
+		// 	memcpy (user, token, strlen(buffer)+1);
+		//   token = strtok(NULL, " ");
+		// }
+		err = readLine(clienteSd, user, MAX_LINE);
+	  if (err == -1) {
+	    perror("readLine, user");
+	  }
 
 		printf("OPERATION FROM %s\n", user);
 		printf("s> ");
@@ -162,15 +166,20 @@ void listenClient(int *cs){
       perror("enviar");
     }
 
-	}else if(strcmp("UNREGISTER", operation ) == 0) {
+	}else if(strcmp("UNREGISTER", buffer) == 0) {
 		char user[MAX_LINE] ; 	// loop through the string to extract all other tokens
 
 		//Para obtener el usuario
-		memcpy (line, buffer, strlen(buffer)+1 );
-		char *token = strtok(line, " ");
-		while( token != NULL ) {
-			memcpy (user, token, strlen(buffer)+1 );
-		  token = strtok(NULL, " ");
+		// memcpy (line, buffer, strlen(buffer)+1 );
+		// char *token = strtok(line, " ");
+		// while( token != NULL ) {
+		// 	memcpy (user, token, strlen(buffer)+1 );
+		//   token = strtok(NULL, " ");
+		// }
+
+		err = readLine(clienteSd, user, MAX_LINE);
+		if (err == -1) {
+			perror("readLine, user");
 		}
 
 		printf("OPERATION FROM %s\n", user);
@@ -200,34 +209,4 @@ void listenClient(int *cs){
   close(clienteSd);
   pthread_exit(NULL);
 
-}
-
-//OPERACIONES
-int registerUser(char * user){
-	return 0;
-}
-
-int unregisterUser(char * user){
-	return 0;
-}
-
-
-// ZONA DE MENSAJES EN LA PANTALLA
-void print_usage() {
-	    printf("Usage: server -p puerto \n");
-}
-
-void printInitServer(struct sockaddr_in server_addr){
-
-	char host[256];
-	char *IP;
-	struct hostent *host_entry;
-	gethostname(host, sizeof(host)); //find the host name
-	host_entry = gethostbyname(host); //find host information
-	IP = inet_ntoa(*((struct in_addr*) host_entry->h_addr_list[0])); //Convert into IP string
-	printf("s> ");
-	printf("init server %s:%d\n", IP, ntohs(server_addr.sin_port));
-	printf("s> ");
-	fflush(stdout);
-	//Fin init server
 }

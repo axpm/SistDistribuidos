@@ -42,10 +42,15 @@ class client {
 			DataOutputStream out = new DataOutputStream(sc.getOutputStream()); //Enviar
 			DataInputStream in = new DataInputStream(sc.getInputStream()); //Recibir
 
-			String message = "REGISTER " + user;// + '\0'; // mensaje más código ASCII 0 al final
-
+			//send operation
+			String message = "REGISTER";
 			out.writeBytes(message); //Escribimos en la salida del cliente
 			out.write('\0'); // inserta el código ASCII 0 al final
+			//send user
+			message = "" + user; //user;// // mensaje más código ASCII 0 al final
+			out.writeBytes(message); //Escribimos en la salida del cliente
+			out.write('\0'); // inserta el código ASCII 0 al final
+
 
 			byte[] ch = new byte[1];
 			ch[0] = in.readByte(); //Leemos la respuesta
@@ -80,8 +85,6 @@ class client {
 	 */
 	static int unregister(String user)
 	{
-		// Write your code here
-		String message = "UNREGISTER " + user;
 
 		// Crear las conexiones
 		Socket sc;
@@ -98,7 +101,12 @@ class client {
 			DataOutputStream out = new DataOutputStream(sc.getOutputStream()); //Enviar
 			DataInputStream in = new DataInputStream(sc.getInputStream()); //Recibir
 
-			//enviamos mensaje
+			//send operation
+			String message = "UNREGISTER";
+			out.writeBytes(message); //Escribimos en la salida del cliente
+			out.write('\0'); // inserta el código ASCII 0 al final
+			//send user
+			message = "" + user; //user;// // mensaje más código ASCII 0 al final
 			out.writeBytes(message); //Escribimos en la salida del cliente
 			out.write('\0'); // inserta el código ASCII 0 al final
 

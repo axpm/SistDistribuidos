@@ -13,7 +13,7 @@ all: CFLAGS=$(CCGLAGS)
 all: $(BIN_FILES)
 .PHONY : all
 
-server: server.o lines.o
+server: server.o lines.o imple.o
 	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
 %.o: %.c
