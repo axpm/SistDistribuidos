@@ -413,14 +413,16 @@ class client {
 		shell();
 		System.out.println("+++ FINISHED +++");
 	}
-}
 
-/*********************** OTHERS ***************************/
-// private Integer findRandomOpenPortOnAllLocalInterfaces() throws IOException {
-// 	try (
-// 			ServerSocket socket = new ServerSocket(0);
-// 	) {
-// 		return socket.getLocalPort();
-// 	}
-//
-// }
+
+	/*********************** OTHERS ***************************/
+	private Integer findRandomOpenPortOnAllLocalInterfaces() throws IOException {
+    try (
+        ServerSocket socket = new ServerSocket(0);
+    ) {
+      return socket.getLocalPort();
+
+    }
+  }
+
+}

@@ -33,7 +33,7 @@ int main(int argc, char const *argv[]) {
 
   printf("%s\n", "PRUEBAS CON INIT \n" );
   init_count++;
-  errorMsgInit(init("vector1", 1300), init_count);
+  errorMsgInit(init("vector1", 10000), init_count);
   printf("%s\n", "expected: OK\n" );
    init_count++;
    errorMsgInit(init("vector1", 10), init_count);
@@ -92,7 +92,7 @@ int main(int argc, char const *argv[]) {
   //nuevo
   printf("%s\n", "PRUEBA BUCLE SET");
   set_count = 0;
-  for (int i = 0; i < 150; i++) {
+  for (int i = 0; i < 10000; i++) {
     set_count++;
     errorMsgSet(set("vector1", i, i), set_count);
     printf("%s\n", "expected: OK \n" );

@@ -6,7 +6,10 @@ pthread_mutex_t mutex2;
 pthread_cond_t c;
 bool copiado; //variable de condición
 
+int qs = -1; //cola del server
+
 void sigint_handler(int sig) {
+	mq_close(qs);
 	mq_unlink(NOMBRE_SERVER);
 	pthread_mutex_destroy(&mutex);
 	pthread_mutex_destroy(&mutex2);
@@ -20,6 +23,7 @@ int main(int argc, char const *argv[]) {
 	pthread_attr_t attrTh;
   pthread_t t;
   pthread_attr_init(&attrTh);
+	pthread_attr_setdetachstate(&attrTh,PTHREAD_CREATE_DETACHED);
   pthread_mutex_init(&mutex, NULL);
   pthread_mutex_init(&mutex2, NULL);
   pthread_cond_init(&c, NULL);
@@ -37,7 +41,7 @@ int main(int argc, char const *argv[]) {
   attr.mq_msgsize = sizeof(struct petition);
 
   //Cola servidor
-	int qs = mq_open(NOMBRE_SERVER, O_CREAT | O_RDWR, 0777, &attr);
+	qs = mq_open(NOMBRE_SERVER, O_CREAT | O_RDWR, 0777, &attr);
   if (qs == -1){
     perror("mq_open");
     fprintf(stderr, "%s\n", "Error! Couldn't create Server Queue");
@@ -148,7 +152,7 @@ void listenPetition(struct petition * pet){
   }
 
 	mq_close(qc);
-  mq_unlink(p.client_queue);
+  //mq_unlink(p.client_queue);
 	pthread_exit(NULL);
 
 }

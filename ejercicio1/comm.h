@@ -26,8 +26,6 @@ struct petition{
 
 struct reply{
   int error;
-  int name;
-  int i;
   int value;
 };
 

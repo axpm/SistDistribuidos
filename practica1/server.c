@@ -11,6 +11,7 @@ int main(int argc, char *argv[]) {
 	pthread_attr_t attrTh;
 	pthread_t t;
 	pthread_attr_init(&attrTh);
+	pthread_attr_setdetachstate(&attrTh,PTHREAD_CREATE_DETACHED);
 	pthread_mutex_init(&mutex, NULL);
 	pthread_cond_init(&c, NULL);
 	copiado = false;
@@ -190,7 +191,6 @@ void listenClient(int *cs){
 			default:
 				replyC[0] = '2';
 		}
-		printf("%d\n", replyC[0]);
 		err = enviar(clienteSd, replyC, 1);
     if (err == -1) {
       perror("enviar");

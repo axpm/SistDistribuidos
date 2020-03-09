@@ -24,6 +24,7 @@ int main(int argc, char const *argv[]) {
 	pthread_attr_t attrTh;
   pthread_t t;
   pthread_attr_init(&attrTh);
+	pthread_attr_setdetachstate(&attrTh,PTHREAD_CREATE_DETACHED);
   pthread_mutex_init(&mutex, NULL);
   pthread_cond_init(&c, NULL);
   copiado = false;
