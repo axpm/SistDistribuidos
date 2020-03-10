@@ -29,6 +29,8 @@ int unregisterUser(char * user);
 
 void serverMsg(char * msg);
 int searchUserPos(FILE* fd, char *userFormat);
+int searchNextUserPos(FILE* fd, int userLine);
+int deleteUser(FILE* fd, int userLine);
 int validUsername(char *name);
 
 #endif
