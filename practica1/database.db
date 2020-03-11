@@ -1,7 +1,9 @@
 :::user1
-->ficheros||desc
 :::user2
+$192.0.1.2:2500
 ->ficheros||desc
+->file||desc
 :::user3
+->file||desc
 :::user4
 ->ficheros||desc

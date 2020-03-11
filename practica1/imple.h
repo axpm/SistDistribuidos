@@ -20,17 +20,23 @@
 
 #define MAX_LINE 	256
 #define MAX_FILE_LINE 514
+#define DATABASE_NAME "database.db"
 
 void print_usage();
 void printInitServer(struct sockaddr_in server_addr);
 
 int registerUser(char * user);
 int unregisterUser(char * user);
+int publish(char *user, char *file, char *desc);
 
 void serverMsg(char * msg);
 int searchUserPos(FILE* fd, char *userFormat);
 int searchNextUserPos(FILE* fd, int userLine);
 int deleteUser(FILE* fd, int userLine);
 int validUsername(char *name);
+int isConnected(FILE* fd, char *userFormat);
+int searchFile(FILE* fd, char *file, int userLine, int nextUserLine);
+void addFile(FILE* fd, char *fileFormat, int userLine, int nextUserLine);
+
 
 #endif
