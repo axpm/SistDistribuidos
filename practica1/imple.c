@@ -11,7 +11,7 @@ void serverMsg(char * msg){
 
 int main(int argc, char const *argv[]) {
   FILE* fd = fopen(db, "r+");
-  printf("%d\n", publish("user1", "file", "desc"));
+  printf("%d\n", deleteContent("user2", "ficheros"));
   fclose(fd);
 
   return(0);
@@ -90,7 +90,7 @@ int unregisterUser(char * user){
   return deleteUser(fd, userLine);
 }
 
-// ------- PUBLISH -------
+// ------- PUBLISH content-------
 int publish(char *user, char *file, char *desc){
   if (strcmp(file, "") == 0)//si el nombre del fichero es vacío
     return 4;
@@ -117,14 +117,49 @@ int publish(char *user, char *file, char *desc){
   char fileFormat[MAX_FILE_LINE];
   sprintf(fileFormat, "->%s||%s\n", file, desc); //juntar fichero y descripción en un string
 
-  if (searchFile(fd, file, userLine, nextUserLine)){ // si ya estaba el fichero
+  if (searchFile(fd, file, userLine, nextUserLine) > 0){ // si ya estaba el fichero
     fclose(fd);
     return 3;
   }
   //else no estaba y se incluye
-  addFile(fd, fileFormat, userLine, nextUserLine); //añade el archivo al final del usuario
-  return 0;
+  return addFile(fd, fileFormat, userLine, nextUserLine); //añade el archivo al final del usuario, devuelve 4 si error y 0 si todo ok
+
+  // return 0;
+} //end of publish
+
+// ------- DELETE content -------
+int deleteContent(char *user, char *file){
+  if (strcmp(file, "") == 0)//si el nombre del fichero es vacío
+    return 4;
+  FILE* fd = fopen(db, "r+"); //abrir para lectura y escritura
+  if (fd == NULL){ //NO existía la base de datos
+    perror("Not database existing");
+    return 4;
+  }
+  char userFormat[MAX_LINE];
+  sprintf(userFormat, ":::%s\n", user); //los usuarios empiezan con este formato ":::username"
+  int userLine = isConnected(fd, userFormat); //mira si está conectado un usuario y si lo está devuelve la línea en la que está, si no existe -1 //searchUserPos(fd, userFormat);
+
+  if(userLine == -1){ //el usuario no existe
+    fclose(fd);
+    return 1;
+  }else if(userLine == 0 ){ //el usuario no está connectado
+    fclose(fd);
+    return 2;
+  }
+  //else está conectado y en la línea userLine
+  int nextUserLine = searchNextUserPos(fd, userLine); //saber el siguiente usuario
+  int fileLine = searchFile(fd, file, userLine, nextUserLine);
+
+  if ( fileLine == 0){ // si no estaba el fichero devuelve 0, en caso contrario devuelve la línea
+    fclose(fd);
+    return 3;
+  }
+  //else sí estaba y se elimina
+  return deleteFile(fd, fileLine); //devuelve 4 si error y 0 si todo ok
+  // return 0;
 }
+
 
 // ------- Funciones de apoyo -------
 //mira si está conectado un usuario y si lo está devuelve la línea en la que está, si no existe -1.Devuelve 0 si existe, pero no está conectado
@@ -161,14 +196,14 @@ int searchFile(FILE* fd, char *file, int userLine, int nextUserLine){
       strcpy(strCopy,str);
       char *ptr = strtok(str, "||");
       if(strcmp(fileFormat, ptr) == 0) //si encuentra el mismo fichero para el usuario devuelve 1
-        return 1;
+        return line;
     }
   }
   return 0; //si no se encuentra el fichero para el usuario devuelve 0
 }
 
 //Añade el archivo y la descripción
-void addFile(FILE* fd, char *fileFormat, int userLine, int nextUserLine){
+int addFile(FILE* fd, char *fileFormat, int userLine, int nextUserLine){
   int line = 0;
   FILE *fd2;
   char str[MAX_FILE_LINE], temp[] = "temp.txt";
@@ -179,6 +214,8 @@ void addFile(FILE* fd, char *fileFormat, int userLine, int nextUserLine){
   }else{
     fseek(fd, 0, SEEK_SET); //se pone el puntero del fichero al principio
     fd2 = fopen(temp, "w"); // abrir un archivo temporal para escribir
+    if (fd2 == NULL)
+      return 4; //devuelve error
     // printf("%d\n", nextUserLine);
     while (!feof(fd)) {
       strcpy(str, "\0");
@@ -197,10 +234,38 @@ void addFile(FILE* fd, char *fileFormat, int userLine, int nextUserLine){
   fclose(fd);
   remove(DATABASE_NAME);  		// remove the original file
   rename(temp, DATABASE_NAME); 	// rename the temporary file to original name
-  return;
+
+  return 0; //todo fue bien
 } //end of addFile
 
+//Elimina archivo
+int deleteFile(FILE* fd, int fileLine){
+  int line = 0;
+  FILE *fd2;
+  char str[MAX_FILE_LINE], temp[] = "temp.txt";
 
+  fseek(fd, 0, SEEK_SET); //se pone el puntero del fichero al principio
+  fd2 = fopen(temp, "w"); // abrir un archivo temporal para escribir
+  if (fd2 == NULL)
+    return 4; //devuelve error
+
+  while (!feof(fd)) {
+    strcpy(str, "\0");
+    fgets(str, MAX_FILE_LINE, fd);
+    if (!feof(fd)){
+      line++;
+      if (line < fileLine || line > fileLine){
+         fprintf(fd2, "%s", str);
+      }
+    }
+  }
+  //cerramos todos los ficheros y actualizamos el fichero
+  fclose(fd2); //cerramos el fichero auxiliar
+  fclose(fd);
+  remove(DATABASE_NAME);  		// remove the original file
+  rename(temp, DATABASE_NAME); 	// rename the temporary file to original name
+  return 0; //todo fue bien
+} //end of addFile
 
 
 //Buscar línea del user

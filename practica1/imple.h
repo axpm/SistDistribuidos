@@ -28,6 +28,7 @@ void printInitServer(struct sockaddr_in server_addr);
 int registerUser(char * user);
 int unregisterUser(char * user);
 int publish(char *user, char *file, char *desc);
+int deleteContent(char *user, char *file);
 
 void serverMsg(char * msg);
 int searchUserPos(FILE* fd, char *userFormat);
@@ -36,7 +37,8 @@ int deleteUser(FILE* fd, int userLine);
 int validUsername(char *name);
 int isConnected(FILE* fd, char *userFormat);
 int searchFile(FILE* fd, char *file, int userLine, int nextUserLine);
-void addFile(FILE* fd, char *fileFormat, int userLine, int nextUserLine);
+int addFile(FILE* fd, char *fileFormat, int userLine, int nextUserLine);
+int deleteFile(FILE* fd, int fileLine);
 
 
 #endif
