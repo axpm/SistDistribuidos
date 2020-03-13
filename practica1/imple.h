@@ -29,6 +29,7 @@ int registerUser(char * user);
 int unregisterUser(char * user);
 int publish(char *user, char *file, char *desc);
 int deleteContent(char *user, char *file);
+int list_users(char *user);
 
 void serverMsg(char * msg);
 int searchUserPos(FILE* fd, char *userFormat);
@@ -39,6 +40,7 @@ int isConnected(FILE* fd, char *userFormat);
 int searchFile(FILE* fd, char *file, int userLine, int nextUserLine);
 int addFile(FILE* fd, char *fileFormat, int userLine, int nextUserLine);
 int deleteFile(FILE* fd, int fileLine);
+void fillUserInfo(char *user, char * ip, char *port, int *userLine, int *nextUserLine, bool *noMore);
 
 
 #endif

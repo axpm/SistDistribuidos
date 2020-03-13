@@ -3,19 +3,37 @@
 //DATABASE FILE
 char db[MAX_LINE] = DATABASE_NAME;
 
-void serverMsg(char * msg){
-  printf("%s\n", msg);
-  printf("s> ");
-  fflush( stdout );
-}
-
 int main(int argc, char const *argv[]) {
-  FILE* fd = fopen(db, "r+");
-  printf("%d\n", deleteContent("user2", "ficheros"));
-  fclose(fd);
+  bool noMore = false;
+  int userLine = 0, nextUserLine = 0;
+  char user[MAX_LINE];
+  char ip[MAX_LINE];
+  char port[MAX_LINE];
+  int n = 6;
+  for (int i = 0; i < n; i++){
+    fillUserInfo(user, ip, port, &userLine, &nextUserLine, &noMore);
+    printf("round: %d\n", i+1 );
+    if (noMore){
+      sprintf(user, " ");
+      sprintf(ip, " ");
+      sprintf(port, " ");
+      printf("user: %s\n", user );
+      printf("IP: %s\n", ip );
+      printf("port: %s\n\n", port );
+    }else{
+      printf("user: %s\n", user );
+      printf("IP: %s\n", ip );
+      printf("port: %s\n\n", port );
+    }
+  }
 
   return(0);
 }
+
+
+
+
+
 
 
 //OPERACIONES
@@ -160,6 +178,92 @@ int deleteContent(char *user, char *file){
   // return 0;
 }
 
+// ------- LIST_USERS -------
+int list_users(char *user){
+  FILE* fd = fopen(db, "r+"); //abrir para lectura y escritura
+  if (fd == NULL){ //NO existía la base de datos
+    perror("Not database existing");
+    return 3;
+  }
+  char userFormat[MAX_LINE];
+  sprintf(userFormat, ":::%s\n", user); //los usuarios empiezan con este formato ":::username"
+  int userLine = isConnected(fd, userFormat); //mira si está conectado un usuario y si lo está devuelve la línea en la que está, si no existe -1 //searchUserPos(fd, userFormat);
+  if(userLine == -1){ //el usuario no existe
+    fclose(fd);
+    return 1;
+  }else if(userLine == 0 ){ //el usuario no está connectado
+    fclose(fd);
+    return 2;
+  }
+
+  return 0; //todo OK
+}
+// ------- LIST_USERS 2 (rellena la info) -------
+void fillUserInfo(char *user, char * ip, char *port, int *userLine, int *nextUserLine, bool *noMore){
+  if(*userLine == 0){
+    *userLine = 1;
+  }else{
+    *userLine = *nextUserLine;
+  }
+  printf("userLine: %d next: %d\n", *userLine, *nextUserLine );
+  FILE *fd = fopen(db, "r+"); //abrir para lectura y escritura
+  if (fd == NULL){ //NO existía la base de datos
+    perror("Not database existing");
+    *noMore = true;
+    return;
+  }
+  int line = 0;
+  if (*userLine == -1){//no hay más usuarios
+    *noMore = true;
+    return;
+  }
+  *nextUserLine = searchNextUserPos(fd, *userLine);
+  if(*userLine == 1 && *nextUserLine == -1){ //no hay usuarios
+    *noMore = true;
+    return;
+  }
+  char str[MAX_FILE_LINE];
+  fseek(fd, 0, SEEK_SET);
+  //buscamos en el fichero
+  while(fgets(str, sizeof(str), fd)) {
+    line ++;
+    if (line == *userLine){ //si está en la línea del usuario, se comprueban sus datos
+      char copy[MAX_FILE_LINE];
+      strcpy(copy, str);
+      //guardar el user
+      char *ptr = strtok(str, ":::");
+      ptr = strtok(ptr, "\n"); //borrar el \n final
+      sprintf(user, "%s", ptr);
+
+    }
+    if(line == *userLine+1){
+      if(str[0] == '$'){
+        char copy[MAX_FILE_LINE];
+        strcpy(copy,str);
+        //cogemos el primer caracter
+        char *ptr = strtok(copy, "$");
+        //cogemos la cadena que continua el simbolo
+        strcpy(copy,ptr);
+        //cogemos el puerto
+        ptr = strtok(copy, ":");
+        strcpy(ip, ptr);
+        ptr = strtok(NULL, ":");
+        ptr = strtok(ptr, "\n"); //borrar el \n final
+        sprintf(port, "%s", ptr);
+        // strcpy(port, ptr);
+      }else{ //no es la info de IP:port
+        sprintf(ip, " ");
+        sprintf(port, " ");
+        // *ip = "\0";
+        // *port = "\0;
+      }
+    }
+  }
+  //fin y cerramos el fichero
+  fclose(fd);
+  return ;
+}
+
 
 // ------- Funciones de apoyo -------
 //mira si está conectado un usuario y si lo está devuelve la línea en la que está, si no existe -1.Devuelve 0 si existe, pero no está conectado
@@ -169,7 +273,7 @@ int isConnected(FILE* fd, char *userFormat){
   bool found = false;
   while(fgets(str, sizeof(str), fd)) {
     line ++;
-    if(found == true){ //si se le encuentra, en la siguiente línea se ve si emopieza por $ (que indica que es una línea ip:port)
+    if(found == true){ //si se le encuentra, en la siguiente línea se ve si empieza por $ (que indica que es una línea ip:port)
       // printf("%s %c\n", userFormat, str[0] );
       if(str[0] == '$')
         return line-1;
@@ -179,7 +283,7 @@ int isConnected(FILE* fd, char *userFormat){
     if (strcmp(str, userFormat) == 0)
       found = true;
   }
-  return -1;
+  return -1; //not connected
 }
 //Comprueba si está el fichero, si estaba ya registrado para ese usuario
 int searchFile(FILE* fd, char *file, int userLine, int nextUserLine){
@@ -356,6 +460,12 @@ int validUsername(char *name){
 // ZONA DE MENSAJES EN LA PANTALLA
 void print_usage() {
 	    printf("Usage: server -p puerto \n");
+}
+
+void serverMsg(char * msg){
+  printf("%s\n", msg);
+  printf("s> ");
+  fflush( stdout );
 }
 
 void printInitServer(struct sockaddr_in server_addr){

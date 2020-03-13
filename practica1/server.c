@@ -131,13 +131,6 @@ void listenClient(int *cs){
   }else if (strcmp("REGISTER", buffer) == 0){
 		char user[MAX_LINE] ; 	// loop through the string to extract all other tokens
 
-		//Para obtener el usuario
-		// memcpy (line, buffer, strlen(buffer)+1);
-		// char *token = strtok(line, " ");
-		// while( token != NULL ) {
-		// 	memcpy (user, token, strlen(buffer)+1);
-		//   token = strtok(NULL, " ");
-		// }
 		err = readLine(clienteSd, user, MAX_LINE);
 	  if (err == -1) {
 	    perror("readLine, user");
@@ -169,14 +162,6 @@ void listenClient(int *cs){
 	}else if(strcmp("UNREGISTER", buffer) == 0) {
 		char user[MAX_LINE] ; 	// loop through the string to extract all other tokens
 
-		//Para obtener el usuario
-		// memcpy (line, buffer, strlen(buffer)+1 );
-		// char *token = strtok(line, " ");
-		// while( token != NULL ) {
-		// 	memcpy (user, token, strlen(buffer)+1 );
-		//   token = strtok(NULL, " ");
-		// }
-
 		err = readLine(clienteSd, user, MAX_LINE);
 		if (err == -1) {
 			perror("readLine, user");
@@ -187,7 +172,6 @@ void listenClient(int *cs){
 		fflush(stdout);
 
 		int reply = unregisterUser(user); //accion a realizar
-		//int reply = 0;
 		//para poder enviar el código de error
 		char replyC[1];
 		switch (reply) {
@@ -204,6 +188,66 @@ void listenClient(int *cs){
     if (err == -1) {
       perror("enviar");
     }
+
+	}else if(strcmp("LIST_USERS", buffer) == 0){
+
+		err = readLine(clienteSd, user, MAX_LINE);
+		if (err == -1) {
+			perror("readLine, user");
+		}
+
+		printf("OPERATION FROM %s\n", user);
+		printf("s> ");
+		fflush(stdout);
+
+		//comprueba si el user tiene problemas y envía respuesta
+		int reply = list_users(user); //accion a realizar
+		//para poder enviar el código de error
+		char replyC[1];
+		bool continue = false;
+		switch (reply) {
+			case 0:
+				continue = true;
+				replyC[0] = '0';
+				break;
+			case 1:
+				replyC[0] = '1';
+				break;
+			default:
+				replyC[0] = '2';
+		}
+		err = enviar(clienteSd, replyC, 1);
+    if (err == -1) {
+      perror("enviar");
+    }
+		//si no dió error se leerá el número de users a imprimir
+		if(continue){
+			int n = 0;
+			char nString[MAX_LINE];
+			err = readLine(clienteSd, nString, MAX_LINE);
+			if (err == -1) {
+				perror("readLine, n");
+			}
+			n = atoi(nString);
+			
+			bool noMore = false;
+			int userLine = 0, nextUserLine = 0;
+			for (int i = 0; i < n; i++){
+				fillUserInfo(&user, &ip, &port, &userLine, &nextUserLine, &noMore);
+
+				if (noMore){ //envío de relleno
+					enviar(clienteSd, "\0", 1);
+					enviar(clienteSd, "\0", 1);
+					enviar(clienteSd, "\0", 1);
+				}else{ //envío normal de la info de los usuarios
+					enviar(clienteSd, user, strlen(user)+1);
+					enviar(clienteSd, ip, strlen(IP)+1);
+					enviar(clienteSd, port, strlen(port)+1);
+				}
+
+			}
+		}
+
 
 	}
   close(clienteSd);
