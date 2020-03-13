@@ -17,13 +17,15 @@ int main(int argc, char const *argv[]) {
       sprintf(user, " ");
       sprintf(ip, " ");
       sprintf(port, " ");
-      printf("user: %s\n", user );
+      printf("result user: %s\n", user );
       printf("IP: %s\n", ip );
-      printf("port: %s\n\n", port );
+      printf("port: %s\n", port );
+      printf("\n" );
     }else{
-      printf("user: %s\n", user );
+      printf("result user: %s\n", user );
       printf("IP: %s\n", ip );
-      printf("port: %s\n\n", port );
+      printf("port: %s\n", port );
+      printf("\n" );
     }
   }
 
@@ -99,7 +101,6 @@ int unregisterUser(char * user){
 
   //buscar a usuario,linea por linea
   int userLine = searchUserPos(fd, userFormat);
-  // printf("userLine %d\n", userLine);
   if (userLine == -1){ //no estaba en la lista
     fclose(fd);
     return 2; //error
@@ -128,10 +129,8 @@ int publish(char *user, char *file, char *desc){
     // printf("%s\n", "No conectado");
     return 2;
   }
-  // printf("userLine: %d\n", userLine);
   //else está conectado y en la línea userLine
   int nextUserLine = searchNextUserPos(fd, userLine); //saber el siguiente usuario
-  // printf("userLine: %d next: %d\n", userLine, nextUserLine );
   char fileFormat[MAX_FILE_LINE];
   sprintf(fileFormat, "->%s||%s\n", file, desc); //juntar fichero y descripción en un string
 
@@ -205,7 +204,6 @@ void fillUserInfo(char *user, char * ip, char *port, int *userLine, int *nextUse
   }else{
     *userLine = *nextUserLine;
   }
-  printf("userLine: %d next: %d\n", *userLine, *nextUserLine );
   FILE *fd = fopen(db, "r+"); //abrir para lectura y escritura
   if (fd == NULL){ //NO existía la base de datos
     perror("Not database existing");
@@ -224,20 +222,26 @@ void fillUserInfo(char *user, char * ip, char *port, int *userLine, int *nextUse
   }
   char str[MAX_FILE_LINE];
   fseek(fd, 0, SEEK_SET);
+  bool copied = false;
   //buscamos en el fichero
-  while(fgets(str, sizeof(str), fd)) {
+  while(fgets(str, sizeof(str), fd) && !copied) {
     line ++;
-    if (line == *userLine){ //si está en la línea del usuario, se comprueban sus datos
+    if (line == *userLine ){ //si está en la línea del usuario, se comprueban sus datos
       char copy[MAX_FILE_LINE];
-      strcpy(copy, str);
       //guardar el user
-      char *ptr = strtok(str, ":::");
+      strcpy(copy, str);
+      char *ptr = strtok(copy, ":::");
       ptr = strtok(ptr, "\n"); //borrar el \n final
       sprintf(user, "%s", ptr);
-
-    }
-    if(line == *userLine+1){
+      if( isConnectedWithoutFD(fd, str) <= 0 ) {
+       *userLine = searchNextUserPosWithoutFD(fd, *userLine);
+      }else{
+        *nextUserLine = searchNextUserPosWithoutFD(fd, *userLine);
+      }
+    }//fin if
+    if(line == *userLine + 1){
       if(str[0] == '$'){
+        copied = true;
         char copy[MAX_FILE_LINE];
         strcpy(copy,str);
         //cogemos el primer caracter
@@ -250,22 +254,50 @@ void fillUserInfo(char *user, char * ip, char *port, int *userLine, int *nextUse
         ptr = strtok(NULL, ":");
         ptr = strtok(ptr, "\n"); //borrar el \n final
         sprintf(port, "%s", ptr);
-        // strcpy(port, ptr);
-      }else{ //no es la info de IP:port
-        sprintf(ip, " ");
-        sprintf(port, " ");
-        // *ip = "\0";
-        // *port = "\0;
       }
+      // else{ //no es la info de IP:port
+      //   sprintf(user, " ");
+      //   sprintf(ip, " ");
+      //   sprintf(port, " ");
+      // }
     }
-  }
+
+  } //fin while
   //fin y cerramos el fichero
   fclose(fd);
   return ;
 }
-
-
 // ------- Funciones de apoyo -------
+
+//mira si está conectado un usuario y si lo está devuelve la línea en la que está, si no existe -1.Devuelve 0 si existe, pero no está conectado
+int isConnectedWithoutFD(FILE* fd, char *userFormat){
+  unsigned long position = ftell(fd);
+  fseek(fd, 0, SEEK_SET);
+  char str[MAX_FILE_LINE];
+  int line = 0;
+  bool found = false;
+  while(fgets(str, sizeof(str), fd)) {
+    line ++;
+    // printf("connected func: %s\n", str);
+    if(found == true){ //si se le encuentra, en la siguiente línea se ve si empieza por $ (que indica que es una línea ip:port)
+      // printf("%s %c\n", userFormat, str[0] );
+      if(str[0] == '$'){
+        fseek(fd, position, SEEK_SET);
+        return line-1;
+      }
+      else{
+        fseek(fd, position, SEEK_SET);
+        return 0;
+      }
+    }
+    if (strcmp(str, userFormat) == 0)
+      found = true;
+  }
+  fseek(fd, position, SEEK_SET);
+  return -1; //not connected
+}
+
+
 //mira si está conectado un usuario y si lo está devuelve la línea en la que está, si no existe -1.Devuelve 0 si existe, pero no está conectado
 int isConnected(FILE* fd, char *userFormat){
   char str[MAX_FILE_LINE];
@@ -383,6 +415,28 @@ int searchUserPos(FILE* fd, char *userFormat){
   }
   return -1;
 }
+
+//busca la línea en la que está el siguiente al pasado por parámetro
+int searchNextUserPosWithoutFD(FILE* fd, int userLine){ //devuelve -1 si no hay más usuarios, y en caso contrario la posición del siguiente
+  unsigned long position = ftell(fd);
+  fseek(fd, 0, SEEK_SET);
+
+  char str[MAX_FILE_LINE];
+  int line = 0;
+  while(fgets(str, sizeof(str), fd)) {
+    line ++;
+    if(line > userLine){
+      if (str[0] == ':' && str[1] == ':' && str[2] == ':'){
+        fseek(fd, position, SEEK_SET);
+        return line;
+      }
+    }
+  }
+  fseek(fd, position, SEEK_SET);
+  return -1;
+}
+
+
 //busca la línea en la que está el siguiente al pasado por parámetro
 int searchNextUserPos(FILE* fd, int userLine){ //devuelve -1 si no hay más usuarios, y en caso contrario la posición del siguiente
   fseek(fd, 0, SEEK_SET);
