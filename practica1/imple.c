@@ -3,34 +3,34 @@
 //DATABASE FILE
 char db[MAX_LINE] = DATABASE_NAME;
 
-int main(int argc, char const *argv[]) {
-  bool noMore = false;
-  int n = 6;
-  char userTarget[MAX_LINE] = "user4";
-	int firstLine = 0, lastLine = 0;
-  char file[MAX_LINE];
-
-  findContentUser(userTarget, &firstLine, &lastLine);
-
-  printf("firstLine: %d; lastLine: %d\n", firstLine, lastLine);
-
-
-  for (int i = 0; i < n; i++){
-    fillContentUser(file, &firstLine, lastLine, &noMore);
-    printf("round: %d\n", i+1 );
-    if (noMore){
-      sprintf(file, " ");
-      printf("file: %s\n", file );
-      printf("\n" );
-    }else{
-      printf("file: %s\n", file );
-      printf("\n" );
-    }
-    firstLine++;
-  }
-
-  return(0);
-}
+// int main(int argc, char const *argv[]) {
+//   bool noMore = false;
+//   int n = 6;
+//   char userTarget[MAX_LINE] = "user4";
+// 	int firstLine = 0, lastLine = 0;
+//   char file[MAX_LINE];
+//
+//   findContentUser(userTarget, &firstLine, &lastLine);
+//
+//   printf("firstLine: %d; lastLine: %d\n", firstLine, lastLine);
+//
+//
+//   for (int i = 0; i < n; i++){
+//     fillContentUser(file, &firstLine, lastLine, &noMore);
+//     printf("round: %d\n", i+1 );
+//     if (noMore){
+//       sprintf(file, " ");
+//       printf("file: %s\n", file );
+//       printf("\n" );
+//     }else{
+//       printf("file: %s\n", file );
+//       printf("\n" );
+//     }
+//     firstLine++;
+//   }
+//
+//   return(0);
+// } //fin main
 
 
 //OPERACIONES

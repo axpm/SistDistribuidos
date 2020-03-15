@@ -129,8 +129,7 @@ void listenClient(int *cs){
     pthread_exit(NULL);
 
   }else if (strcmp("REGISTER", buffer) == 0){
-		char user[MAX_LINE] ; 	// loop through the string to extract all other tokens
-
+		char user[MAX_LINE] ;
 		err = readLine(clienteSd, user, MAX_LINE);
 	  if (err == -1) {
 	    perror("readLine, user");
@@ -160,8 +159,7 @@ void listenClient(int *cs){
     }
 
 	}else if(strcmp("UNREGISTER", buffer) == 0) {
-		char user[MAX_LINE] ; 	// loop through the string to extract all other tokens
-
+		char user[MAX_LINE] ;
 		err = readLine(clienteSd, user, MAX_LINE);
 		if (err == -1) {
 			perror("readLine, user");
@@ -189,7 +187,156 @@ void listenClient(int *cs){
       perror("enviar");
     }
 
-	}else if(strcmp("LIST_USERS", buffer) == 0){
+	}//end of UNREGISTER
+
+
+	// ----------------CONNECT sin hacer
+	// else if (strcmp("CONNECT", buffer) == 0) {
+	// 	char user[MAX_LINE];
+	// 	err = readLine(clienteSd, user, MAX_LINE);
+	// 	if (err == -1) {
+	// 		perror("readLine, user");
+	// 	}
+	//
+	// 	printf("OPERATION FROM %s\n", user);
+	// 	printf("s> ");
+	// 	fflush(stdout);
+	//
+	// 	//leer puerto del cliente
+	// 	char port[MAX_LINE];
+	// 	err = readLine(clienteSd, port, MAX_LINE);
+	// 	if (err == -1) {
+	// 		perror("readLine, file");
+	// 	}
+	//
+	//
+	// 	char ip[MAX_LINE];
+	// 	struct hostent *host_entry;
+	// 	gethostname(host, sizeof(host)); //find the host name
+	// 	host_entry = gethostbyname(host); //find host information
+	// 	ip = inet_ntoa(*((struct in_addr*) host_entry->h_addr_list[0])); //Convert into IP string
+	//
+	// 	int reply = connect(user, port); //accion a realizar
+	// 	//para poder enviar el código de error
+	// 	char replyC[1];
+	// 	bool cont = false;
+	// 	switch (reply) {
+	// 		case 0:
+	// 			replyC[0] = '0';
+	// 			cont = true;
+	// 			break;
+	// 		case 1:
+	// 			replyC[0] = '1';
+	// 			break;
+	// 		default:
+	// 			replyC[0] = '2';
+	// 	}
+	// 	err = enviar(clienteSd, replyC, 1);
+	// 	if (err == -1) {
+	// 		perror("enviar");
+	// 	}
+	//
+	//
+	// }//end of CONNECT
+
+
+
+	else if(strcmp("PUBLISH", buffer) == 0){
+
+		//NO LO PONE EN EL ENUNCIADO PERO ES LO LÓGICO
+		//leer usuario que realiza la acción
+		char user[MAX_LINE];
+		err = readLine(clienteSd, user, MAX_LINE);
+		if (err == -1) {
+			perror("readLine, user");
+		}
+
+		printf("OPERATION FROM %s\n", user);
+		printf("s> ");
+		fflush(stdout);
+
+		//FIN
+
+		char file[MAX_LINE];
+		err = readLine(clienteSd, file, MAX_LINE);
+		if (err == -1) {
+			perror("readLine, file");
+		}
+
+		char desc[MAX_LINE];
+		err = readLine(clienteSd, desc, MAX_LINE);
+		if (err == -1) {
+			perror("readLine, description");
+		}
+
+		int reply = publish(user, file, desc); //accion a realizar
+		char replyC[1];
+		switch (reply) {
+			case 0:
+				replyC[0] = '0';
+				break;
+			case 1:
+				replyC[0] = '1';
+				break;
+			case 2:
+				replyC[0] = '2';
+				break;
+			default:
+				replyC[0] = '3';
+		}
+
+		err = enviar(clienteSd, replyC, 1);
+		if (err == -1) {
+			perror("enviar");
+		}
+
+
+	}//end of publish
+
+	else if(strcmp("DELETE", buffer) == 0){
+		char user[MAX_LINE];
+		err = readLine(clienteSd, user, MAX_LINE);
+		if (err == -1) {
+			perror("readLine, user");
+		}
+
+		printf("OPERATION FROM %s\n", user);
+		printf("s> ");
+		fflush(stdout);
+
+		char file[MAX_LINE];
+		err = readLine(clienteSd, file, MAX_LINE);
+		if (err == -1) {
+			perror("readLine, file");
+		}
+
+		int reply = deleteContent(user, file); //accion a realizar
+			char replyC[1];
+			switch (reply) {
+				case 0:
+					replyC[0] = '0';
+					break;
+				case 1:
+					replyC[0] = '1';
+					break;
+				case 2:
+					replyC[0] = '2';
+					break;
+				case 3:
+					replyC[0] = '3';
+					break;
+				default:
+					replyC[0] = '4';
+			}
+
+		err = enviar(clienteSd, replyC, 1);
+    if (err == -1) {
+      perror("enviar");
+    }
+
+	}//end of DELETE
+
+	else if(strcmp("LIST_USERS", buffer) == 0){
 		char user[MAX_LINE];
 		err = readLine(clienteSd, user, MAX_LINE);
 		if (err == -1) {
@@ -204,24 +351,27 @@ void listenClient(int *cs){
 		int reply = list_users(user); //accion a realizar
 		//para poder enviar el código de error
 		char replyC[1];
-		bool continue = false;
+		bool cont = false;
 		switch (reply) {
 			case 0:
-				continue = true;
 				replyC[0] = '0';
+				cont = true;
 				break;
 			case 1:
 				replyC[0] = '1';
 				break;
-			default:
+			case 2:
 				replyC[0] = '2';
+				break;
+			default:
+				replyC[0] = '3';
 		}
 		err = enviar(clienteSd, replyC, 1);
     if (err == -1) {
       perror("enviar");
     }
 		//si no dió error se leerá el número de users a imprimir
-		if(continue){
+		if(cont){
 			int n = 0;
 			char nString[MAX_LINE];
 			err = readLine(clienteSd, nString, MAX_LINE);
@@ -232,8 +382,11 @@ void listenClient(int *cs){
 
 			bool noMore = false;
 			int userLine = 0, nextUserLine = 0;
+			char ip[MAX_LINE];
+			char port[MAX_LINE];
+
 			for (int i = 0; i < n; i++){
-				fillUserInfo(&user, &ip, &port, &userLine, &nextUserLine, &noMore);
+				fillUserInfo(user, ip, port, &userLine, &nextUserLine, &noMore);
 
 				if (noMore){ //envío de relleno
 					enviar(clienteSd, "\0", 1);
@@ -251,13 +404,7 @@ void listenClient(int *cs){
 
 	} //end LIST_USERS
 	else if (strcmp("LIST_CONTENT", buffer) == 0) {
-		//envía acción y usuario objetivo
-		char userTarget[MAX_LINE];
-		err = readLine(clienteSd, userTarget, MAX_LINE);
-		if (err == -1) {
-			perror("readLine, user");
-		}
-		//envía usuario que realiza la acción
+		char user[MAX_LINE];
 		err = readLine(clienteSd, user, MAX_LINE);
 		if (err == -1) {
 			perror("readLine, user");
@@ -267,14 +414,21 @@ void listenClient(int *cs){
 		printf("s> ");
 		fflush(stdout);
 
+		//envía acción y usuario objetivo
+		char userTarget[MAX_LINE];
+		err = readLine(clienteSd, userTarget, MAX_LINE);
+		if (err == -1) {
+			perror("readLine, user");
+		}
+
 		//comprueba si el user tiene problemas y envía respuesta
 		int reply = list_content(user, userTarget); //accion a realizar
 		//para poder enviar el código de error
 		char replyC[1];
-		bool continue = false;
+		bool cont = false;
 		switch (reply) {
 			case 0:
-			continue = true;
+			cont = true;
 				replyC[0] = '0';
 				break;
 			case 1:
@@ -282,10 +436,10 @@ void listenClient(int *cs){
 				break;
 			case 2:
 				replyC[0] = '2';
-				break
+				break;
 			case 3:
 				replyC[0] = '3';
-				break
+				break;
 			default:
 				replyC[0] = '4';
 		}
@@ -294,7 +448,7 @@ void listenClient(int *cs){
       perror("enviar");
     }
 		//si no dió error se leerá el número de users a imprimir
-		if(continue){
+		if(cont){
 			int n = 0;
 			char nString[MAX_LINE];
 			err = readLine(clienteSd, nString, MAX_LINE);
@@ -306,15 +460,17 @@ void listenClient(int *cs){
 			bool noMore = false;
 			int firstLine = 0, lastLine = 0;
 
-			findContentUser(&userTarget, &firstLine, &lastLine);
+			findContentUser(userTarget, &firstLine, &lastLine);
+			char file[MAX_LINE];
 
 			for (int i = 0; i < n; i++){
-				fillContentUser(&file, &firstLine, lastLine, &noMore);
+				fillContentUser(file, &firstLine, lastLine, &noMore);
 
 				if (noMore){ //envío de relleno
 					enviar(clienteSd, "\0", 1);
 				}else{ //envío normal de la info
 					enviar(clienteSd, file, strlen(user)+1);
+				}
 			}
 		}
 
