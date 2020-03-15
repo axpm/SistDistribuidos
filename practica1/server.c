@@ -190,7 +190,7 @@ void listenClient(int *cs){
     }
 
 	}else if(strcmp("LIST_USERS", buffer) == 0){
-
+		char user[MAX_LINE];
 		err = readLine(clienteSd, user, MAX_LINE);
 		if (err == -1) {
 			perror("readLine, user");
@@ -229,7 +229,7 @@ void listenClient(int *cs){
 				perror("readLine, n");
 			}
 			n = atoi(nString);
-			
+
 			bool noMore = false;
 			int userLine = 0, nextUserLine = 0;
 			for (int i = 0; i < n; i++){
@@ -241,7 +241,7 @@ void listenClient(int *cs){
 					enviar(clienteSd, "\0", 1);
 				}else{ //envío normal de la info de los usuarios
 					enviar(clienteSd, user, strlen(user)+1);
-					enviar(clienteSd, ip, strlen(IP)+1);
+					enviar(clienteSd, ip, strlen(ip)+1);
 					enviar(clienteSd, port, strlen(port)+1);
 				}
 
@@ -249,7 +249,78 @@ void listenClient(int *cs){
 		}
 
 
-	}
+	} //end LIST_USERS
+	else if (strcmp("LIST_CONTENT", buffer) == 0) {
+		//envía acción y usuario objetivo
+		char userTarget[MAX_LINE];
+		err = readLine(clienteSd, userTarget, MAX_LINE);
+		if (err == -1) {
+			perror("readLine, user");
+		}
+		//envía usuario que realiza la acción
+		err = readLine(clienteSd, user, MAX_LINE);
+		if (err == -1) {
+			perror("readLine, user");
+		}
+
+		printf("OPERATION FROM %s\n", user);
+		printf("s> ");
+		fflush(stdout);
+
+		//comprueba si el user tiene problemas y envía respuesta
+		int reply = list_content(user, userTarget); //accion a realizar
+		//para poder enviar el código de error
+		char replyC[1];
+		bool continue = false;
+		switch (reply) {
+			case 0:
+			continue = true;
+				replyC[0] = '0';
+				break;
+			case 1:
+				replyC[0] = '1';
+				break;
+			case 2:
+				replyC[0] = '2';
+				break
+			case 3:
+				replyC[0] = '3';
+				break
+			default:
+				replyC[0] = '4';
+		}
+		err = enviar(clienteSd, replyC, 1);
+    if (err == -1) {
+      perror("enviar");
+    }
+		//si no dió error se leerá el número de users a imprimir
+		if(continue){
+			int n = 0;
+			char nString[MAX_LINE];
+			err = readLine(clienteSd, nString, MAX_LINE);
+			if (err == -1) {
+				perror("readLine, n");
+			}
+			n = atoi(nString);
+
+			bool noMore = false;
+			int firstLine = 0, lastLine = 0;
+
+			findContentUser(&userTarget, &firstLine, &lastLine);
+
+			for (int i = 0; i < n; i++){
+				fillContentUser(&file, &firstLine, lastLine, &noMore);
+
+				if (noMore){ //envío de relleno
+					enviar(clienteSd, "\0", 1);
+				}else{ //envío normal de la info
+					enviar(clienteSd, file, strlen(user)+1);
+			}
+		}
+
+
+
+	} //end LIST_CONTENT
   close(clienteSd);
   pthread_exit(NULL);
 

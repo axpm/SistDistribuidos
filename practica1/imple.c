@@ -5,37 +5,32 @@ char db[MAX_LINE] = DATABASE_NAME;
 
 int main(int argc, char const *argv[]) {
   bool noMore = false;
-  int userLine = 0, nextUserLine = 0;
-  char user[MAX_LINE];
-  char ip[MAX_LINE];
-  char port[MAX_LINE];
   int n = 6;
+  char userTarget[MAX_LINE] = "user4";
+	int firstLine = 0, lastLine = 0;
+  char file[MAX_LINE];
+
+  findContentUser(userTarget, &firstLine, &lastLine);
+
+  printf("firstLine: %d; lastLine: %d\n", firstLine, lastLine);
+
+
   for (int i = 0; i < n; i++){
-    fillUserInfo(user, ip, port, &userLine, &nextUserLine, &noMore);
+    fillContentUser(file, &firstLine, lastLine, &noMore);
     printf("round: %d\n", i+1 );
     if (noMore){
-      sprintf(user, " ");
-      sprintf(ip, " ");
-      sprintf(port, " ");
-      printf("result user: %s\n", user );
-      printf("IP: %s\n", ip );
-      printf("port: %s\n", port );
+      sprintf(file, " ");
+      printf("file: %s\n", file );
       printf("\n" );
     }else{
-      printf("result user: %s\n", user );
-      printf("IP: %s\n", ip );
-      printf("port: %s\n", port );
+      printf("file: %s\n", file );
       printf("\n" );
     }
+    firstLine++;
   }
 
   return(0);
 }
-
-
-
-
-
 
 
 //OPERACIONES
@@ -266,8 +261,103 @@ void fillUserInfo(char *user, char * ip, char *port, int *userLine, int *nextUse
   //fin y cerramos el fichero
   fclose(fd);
   return ;
-}
+} //fin de LIST_USERS (2)
+
+// ------- LIST_CONTENT -------
+int list_content(char *user, char *userTarget){
+  FILE* fd = fopen(db, "r+"); //abrir para lectura y escritura
+  if (fd == NULL){ //NO existía la base de datos
+    perror("Not database existing");
+    return 3;
+  }
+  char userFormat[MAX_LINE];
+  sprintf(userFormat, ":::%s\n", user); //los usuarios empiezan con este formato ":::username"
+  int userLine = isConnectedWithoutFD(fd, userFormat); //mira si está conectado un usuario y si lo está devuelve la línea en la que está, si no existe -1 //searchUserPos(fd, userFormat);
+  if(userLine == -1){ //el usuario no existe
+    fclose(fd);
+    return 1;
+  }else if(userLine == 0 ){ //el usuario no está connectado
+    fclose(fd);
+    return 2;
+  }
+
+  sprintf(userFormat, ":::%s\n", userTarget); //los usuarios empiezan con este formato ":::username"
+  userLine = searchUserPos(fd, userFormat);
+  if(userLine == -1){ //el usuario del que se quiere saber la no no existe
+    fclose(fd);
+    return 1;
+  }
+
+  fclose(fd);
+  return 0; //todo OK
+}//end list_content
+
+// ------- LIST_CONTENT (2)-------
+void fillContentUser(char *file, int *firstLine, int lastLine, bool *noMore){
+  FILE *fd = fopen(db, "r+"); //abrir para lectura y escritura);
+  char str[MAX_FILE_LINE];
+  int line = 0;
+  if(*firstLine == 0){
+    *noMore = true; //si no hay nada, estará vacío todo
+  }
+  if (lastLine == -1) {
+    while(fgets(str, sizeof(str), fd) && *noMore == false) {
+      line ++;
+      if (line == *firstLine) {
+        char *copy = strtok(str, "->");
+        copy = strtok(copy, "||");
+        strcpy(file, copy);
+      }
+    }
+    if(*firstLine > line){
+      *noMore = true;
+    }
+  }else{
+    if(*firstLine == lastLine){
+      *noMore = true;
+    }
+    while(fgets(str, sizeof(str), fd) && *noMore == false) {
+      line ++;
+      if (line == *firstLine && *noMore == false) {
+        char *copy = strtok(str, "->");
+        copy = strtok(copy, "||");
+        strcpy(file, copy);
+      }
+    }
+  }
+  fclose(fd);
+}//end list_content(2) (fillContentUser)
+
+
 // ------- Funciones de apoyo -------
+//Rellenar límites de contenido usuario
+void findContentUser(char *user, int *firstLine, int* lastLine){
+  FILE *fd = fopen(db, "r+"); //abrir para lectura y escritura);
+  char userFormat[MAX_LINE];
+  sprintf(userFormat, ":::%s\n", user);
+  int userLine = searchUserPos(fd, userFormat);
+  printf("userLine %d\n", userLine);
+  *lastLine = searchNextUserPosWithoutFD(fd, userLine);
+  char str[MAX_FILE_LINE];
+  int line = 0;
+
+  while(fgets(str, sizeof(str), fd)) {
+    line ++;
+    if (line == userLine + 1 ) {
+      if(str[0] == '-' && str[1] == '>'){
+        *firstLine = line + 1;
+      }
+    }else if(line == userLine + 2 ) {
+      if(str[0] == '-' && str[1] == '>'){
+        *firstLine = line ;
+      }
+    }
+  }
+
+  fclose(fd);
+}//end findContentUser
+
+
 
 //mira si está conectado un usuario y si lo está devuelve la línea en la que está, si no existe -1.Devuelve 0 si existe, pero no está conectado
 int isConnectedWithoutFD(FILE* fd, char *userFormat){
@@ -406,13 +496,18 @@ int deleteFile(FILE* fd, int fileLine){
 
 //Buscar línea del user
 int searchUserPos(FILE* fd, char *userFormat){
+  unsigned long position = ftell(fd);
+  fseek(fd, 0, SEEK_SET);
   char str[MAX_FILE_LINE];
   int line = 0;
   while(fgets(str, sizeof(str), fd)) {
     line ++;
-    if (strcmp(str, userFormat) == 0)
+    if (strcmp(str, userFormat) == 0){
+      fseek(fd, position, SEEK_SET);
       return line;
+    }
   }
+  fseek(fd, position, SEEK_SET);
   return -1;
 }
 

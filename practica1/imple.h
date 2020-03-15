@@ -30,6 +30,7 @@ int unregisterUser(char * user);
 int publish(char *user, char *file, char *desc);
 int deleteContent(char *user, char *file);
 int list_users(char *user);
+int list_content(char *user, char *userTarget);
 
 void serverMsg(char * msg);
 int searchUserPos(FILE* fd, char *userFormat);
@@ -43,6 +44,8 @@ int searchFile(FILE* fd, char *file, int userLine, int nextUserLine);
 int addFile(FILE* fd, char *fileFormat, int userLine, int nextUserLine);
 int deleteFile(FILE* fd, int fileLine);
 void fillUserInfo(char *user, char * ip, char *port, int *userLine, int *nextUserLine, bool *noMore);
+void findContentUser(char *user, int *firstLine, int* lastLine);
+void fillContentUser(char *file, int *firstLine, int lastLine, bool *noMore);
 
 
 #endif
