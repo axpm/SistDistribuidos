@@ -1,4 +1,4 @@
-BIN_FILES  = array cliente servidor servidorPool
+BIN_FILES  = array cliente cliente2 servidor servidorPool
 
 CC = gcc
 
@@ -19,6 +19,9 @@ array: array.o
 	$(LD) -o libarray.so $@.o -shared
 
 cliente: cliente.o
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@ -L. -larray -lrt
+
+cliente2: cliente2.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@ -L. -larray -lrt
 
 servidor: servidor.o imple.o
