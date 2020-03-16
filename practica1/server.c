@@ -1,6 +1,7 @@
 #include "server.h"
 
 pthread_mutex_t mutex;
+pthread_mutex_t mutex2;
 pthread_cond_t c;
 bool copiado; //variable de condición
 
@@ -13,6 +14,7 @@ int main(int argc, char *argv[]) {
 	pthread_attr_init(&attrTh);
 	pthread_attr_setdetachstate(&attrTh,PTHREAD_CREATE_DETACHED);
 	pthread_mutex_init(&mutex, NULL);
+	pthread_mutex_init(&mutex2, NULL);
 	pthread_cond_init(&c, NULL);
 	copiado = false;
 	//Sockets
@@ -106,6 +108,8 @@ void listenClient(int *cs){
   pthread_cond_signal(&c);
   pthread_mutex_unlock(&mutex);
 
+
+
   char buffer[MAX_LINE];
   int err = 0;
   //Leer del cliente operación
@@ -113,10 +117,6 @@ void listenClient(int *cs){
   if (err == -1) {
     perror("readLine");
   }
-	// //to obtain the operation
-	// char line[MAX_LINE];
-	// memcpy (line, buffer, strlen(buffer)+1 );
-	// char *operation = strtok(line, " ");
 
 	//operaciones
   if (strcmp("QUIT", buffer) == 0){
@@ -169,7 +169,9 @@ void listenClient(int *cs){
 		printf("s> ");
 		fflush(stdout);
 
+		pthread_mutex_lock(&mutex2);
 		int reply = unregisterUser(user); //accion a realizar
+		pthread_mutex_unlock(&mutex2);
 		//para poder enviar el código de error
 		char replyC[1];
 		switch (reply) {
@@ -191,53 +193,51 @@ void listenClient(int *cs){
 
 
 	// ----------------CONNECT sin hacer
-	// else if (strcmp("CONNECT", buffer) == 0) {
-	// 	char user[MAX_LINE];
-	// 	err = readLine(clienteSd, user, MAX_LINE);
-	// 	if (err == -1) {
-	// 		perror("readLine, user");
-	// 	}
-	//
-	// 	printf("OPERATION FROM %s\n", user);
-	// 	printf("s> ");
-	// 	fflush(stdout);
-	//
-	// 	//leer puerto del cliente
-	// 	char port[MAX_LINE];
-	// 	err = readLine(clienteSd, port, MAX_LINE);
-	// 	if (err == -1) {
-	// 		perror("readLine, file");
-	// 	}
-	//
-	//
-	// 	char ip[MAX_LINE];
-	// 	struct hostent *host_entry;
-	// 	gethostname(host, sizeof(host)); //find the host name
-	// 	host_entry = gethostbyname(host); //find host information
-	// 	ip = inet_ntoa(*((struct in_addr*) host_entry->h_addr_list[0])); //Convert into IP string
-	//
-	// 	int reply = connect(user, port); //accion a realizar
-	// 	//para poder enviar el código de error
-	// 	char replyC[1];
-	// 	bool cont = false;
-	// 	switch (reply) {
-	// 		case 0:
-	// 			replyC[0] = '0';
-	// 			cont = true;
-	// 			break;
-	// 		case 1:
-	// 			replyC[0] = '1';
-	// 			break;
-	// 		default:
-	// 			replyC[0] = '2';
-	// 	}
-	// 	err = enviar(clienteSd, replyC, 1);
-	// 	if (err == -1) {
-	// 		perror("enviar");
-	// 	}
-	//
-	//
-	// }//end of CONNECT
+	else if (strcmp("CONNECT", buffer) == 0) {
+		char user[MAX_LINE];
+		err = readLine(clienteSd, user, MAX_LINE);
+		if (err == -1) {
+			perror("readLine, user");
+		}
+
+		printf("OPERATION FROM %s\n", user);
+		printf("s> ");
+		fflush(stdout);
+
+		//leer puerto del cliente
+		char port[MAX_LINE];
+		err = readLine(clienteSd, port, MAX_LINE);
+		if (err == -1) {
+			perror("readLine, file");
+		}
+
+		char ip[MAX_LINE];
+		ip = inet_ntoa(*(struct in_addr*) clienteSd.sin_addr); //Convert into IP string
+
+		pthread_mutex_lock(&mutex2);
+		int reply = connectUser(user, ip, port); //accion a realizar
+		pthread_mutex_unlock(&mutex2);
+		//para poder enviar el código de error
+		char replyC[1];
+		bool cont = false;
+		switch (reply) {
+			case 0:
+				replyC[0] = '0';
+				cont = true;
+				break;
+			case 1:
+				replyC[0] = '1';
+				break;
+			default:
+				replyC[0] = '2';
+		}
+		err = enviar(clienteSd, replyC, 1);
+		if (err == -1) {
+			perror("enviar");
+		}
+
+
+	}//end of CONNECT
 
 
 
@@ -268,8 +268,9 @@ void listenClient(int *cs){
 		if (err == -1) {
 			perror("readLine, description");
 		}
-
+		pthread_mutex_lock(&mutex2);
 		int reply = publish(user, file, desc); //accion a realizar
+		pthread_mutex_unlock(&mutex2);
 		char replyC[1];
 		switch (reply) {
 			case 0:
@@ -309,8 +310,9 @@ void listenClient(int *cs){
 		if (err == -1) {
 			perror("readLine, file");
 		}
-
+		pthread_mutex_lock(&mutex2);
 		int reply = deleteContent(user, file); //accion a realizar
+		pthread_mutex_unlock(&mutex2);
 			char replyC[1];
 			switch (reply) {
 				case 0:
@@ -348,7 +350,9 @@ void listenClient(int *cs){
 		fflush(stdout);
 
 		//comprueba si el user tiene problemas y envía respuesta
+		pthread_mutex_lock(&mutex2);
 		int reply = list_users(user); //accion a realizar
+		pthread_mutex_unlock(&mutex2);
 		//para poder enviar el código de error
 		char replyC[1];
 		bool cont = false;
@@ -386,7 +390,9 @@ void listenClient(int *cs){
 			char port[MAX_LINE];
 
 			for (int i = 0; i < n; i++){
+				pthread_mutex_lock(&mutex2);
 				fillUserInfo(user, ip, port, &userLine, &nextUserLine, &noMore);
+				pthread_mutex_unlock(&mutex2);
 
 				if (noMore){ //envío de relleno
 					enviar(clienteSd, "\0", 1);
@@ -422,7 +428,9 @@ void listenClient(int *cs){
 		}
 
 		//comprueba si el user tiene problemas y envía respuesta
+		pthread_mutex_lock(&mutex2);
 		int reply = list_content(user, userTarget); //accion a realizar
+		pthread_mutex_unlock(&mutex2);
 		//para poder enviar el código de error
 		char replyC[1];
 		bool cont = false;
@@ -459,12 +467,15 @@ void listenClient(int *cs){
 
 			bool noMore = false;
 			int firstLine = 0, lastLine = 0;
-
+			pthread_mutex_lock(&mutex2);
 			findContentUser(userTarget, &firstLine, &lastLine);
+			pthread_mutex_unlock(&mutex2);
 			char file[MAX_LINE];
 
 			for (int i = 0; i < n; i++){
+				pthread_mutex_lock(&mutex2);
 				fillContentUser(file, &firstLine, lastLine, &noMore);
+				pthread_mutex_unlock(&mutex2);
 
 				if (noMore){ //envío de relleno
 					enviar(clienteSd, "\0", 1);
