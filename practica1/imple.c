@@ -377,7 +377,6 @@ void fillContentUser(char *file, int *firstLine, int lastLine, bool *noMore){
         char *copy = strtok(str, "->");
         copy = strtok(copy, "||");
         strcpy(file, copy);
-        printf("fill: %s\n", file );
       }
     }
     if(*firstLine > line){
@@ -393,7 +392,6 @@ void fillContentUser(char *file, int *firstLine, int lastLine, bool *noMore){
         char *copy = strtok(str, "->");
         copy = strtok(copy, "||");
         strcpy(file, copy);
-        printf("fill: %s\n", file);
       }
     }
   }
@@ -417,7 +415,6 @@ void findContentUser(char *user, int *firstLine, int* lastLine){
     line ++;
     if (line == userLine + 1 ) {
       if(str[0] == '-' && str[1] == '>'){
-        printf("%d\n", line );
         *firstLine = line;
         fclose(fd);
         return;

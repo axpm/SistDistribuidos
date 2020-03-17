@@ -513,7 +513,7 @@ void listenClient(int *cs){
 			pthread_mutex_unlock(&mutex2);
 			char file[MAX_LINE];
 
-			printf("%d %d\n",firstLine, lastLine );
+			// printf("%d %d\n",firstLine, lastLine );
 
 			for (int i = 0; i < n; i++){
 				pthread_mutex_lock(&mutex2);
@@ -526,7 +526,7 @@ void listenClient(int *cs){
 					enviar(clienteSd, "\0", 1);
 					// printf("noMore %d\n", i );
 				}else{ //envío normal de la info
-					enviar(clienteSd, file, strlen(user)+1);
+					enviar(clienteSd, file, strlen(file)+1);
 				}
 				firstLine++;
 			}
