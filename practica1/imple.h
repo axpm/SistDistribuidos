@@ -19,7 +19,7 @@
 #include <signal.h>
 
 #define MAX_LINE 	256
-#define MAX_FILE_LINE 514
+#define MAX_FILE_LINE 516 //file MAX_LINE *2 + delimitadores
 #define DATABASE_NAME "database.db"
 
 void print_usage();

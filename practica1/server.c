@@ -2,8 +2,34 @@
 
 pthread_mutex_t mutex;
 pthread_mutex_t mutex2;
+pthread_mutex_t mutex3;
 pthread_cond_t c;
+pthread_cond_t c2;
 bool copiado; //variable de condición
+
+struct sockaddr_in client_addr; //accesible desde cualquier hilo, no es recomendable
+
+int sd; //servidor accesible para todos
+int nt = 0; //number of threads
+
+void sigint_handler(int sig) {
+	//compureba el estado del contador de hilos
+	pthread_mutex_lock(&mutex3);
+	while(nt > 0)
+		pthread_cond_wait(&c2, &mutex3);
+	pthread_mutex_unlock(&mutex3);
+
+	//si han acabado todos los hilos ya acaba
+	close(sd);
+	pthread_mutex_destroy(&mutex);
+	pthread_mutex_destroy(&mutex2);
+	pthread_mutex_destroy(&mutex3);
+	pthread_cond_destroy(&c);
+	pthread_cond_destroy(&c2);
+	printf("%s\n", "\nServer Closed" );
+	exit(0);
+}
+
 
 int main(int argc, char *argv[]) {
 	//avoid being killed by a child
@@ -12,20 +38,28 @@ int main(int argc, char *argv[]) {
 	pthread_attr_t attrTh;
 	pthread_t t;
 	pthread_attr_init(&attrTh);
-	pthread_attr_setdetachstate(&attrTh,PTHREAD_CREATE_DETACHED);
+	pthread_attr_setdetachstate(&attrTh, PTHREAD_CREATE_DETACHED);
 	pthread_mutex_init(&mutex, NULL);
 	pthread_mutex_init(&mutex2, NULL);
+	pthread_mutex_init(&mutex3, NULL);
 	pthread_cond_init(&c, NULL);
+	pthread_cond_init(&c2, NULL);
 	copiado = false;
 	//Sockets
-	int sd, val, err, clienteSd;
+	int val, err, clienteSd;
 	socklen_t size;
-	struct sockaddr_in server_addr, client_addr;
+	// struct sockaddr_in server_addr, client_addr;
+	struct sockaddr_in server_addr;
 
 	int  option = 0;
 	char port[256]= "";
 
-	//  INSERT SERVER CODE HERE
+	//Manejador de la señal ctrl-c
+	struct sigaction sa;
+	sa.sa_handler = sigint_handler;
+	sa.sa_flags = SA_RESTART;
+	sigaction(SIGINT, &sa, NULL);
+
 	while ((option = getopt(argc, argv,"p:")) != -1) {
 		switch (option) {
 		    	case 'p' :
@@ -91,15 +125,23 @@ int main(int argc, char *argv[]) {
     pthread_mutex_unlock(&mutex);
 
   }
-
-  pthread_mutex_destroy(&mutex);
-  pthread_cond_destroy(&c);
-  close (sd);
+	close (sd);
+	pthread_mutex_destroy(&mutex);
+	pthread_mutex_destroy(&mutex2);
+	pthread_mutex_destroy(&mutex3);
+	pthread_cond_destroy(&c);
+	pthread_cond_destroy(&c2);
+	printf("%s\n", "\nServer Closed" );
 
 	return 0;
 }
 
 void listenClient(int *cs){
+
+	pthread_mutex_lock(&mutex3);
+  nt ++;
+  pthread_mutex_unlock(&mutex3);
+
 
   int clienteSd = *cs;
   //se ha recibido y copiado en petición
@@ -107,7 +149,6 @@ void listenClient(int *cs){
   copiado = true;
   pthread_cond_signal(&c);
   pthread_mutex_unlock(&mutex);
-
 
 
   char buffer[MAX_LINE];
@@ -118,17 +159,18 @@ void listenClient(int *cs){
     perror("readLine");
   }
 
-	//operaciones
-  if (strcmp("QUIT", buffer) == 0){
-		//enviar al cliente
-    err = enviar(clienteSd, "", 1);
-    if (err == -1) {
-      perror("enviar");
-    }
-    close(clienteSd);
-    pthread_exit(NULL);
-
-  }else if (strcmp("REGISTER", buffer) == 0){
+  // if (strcmp("QUIT", buffer) == 0){
+	// 	//enviar al cliente
+  //   err = enviar(clienteSd, "", 1);
+  //   if (err == -1) {
+  //     perror("enviar");
+  //   }
+  //   close(clienteSd);
+  //   pthread_exit(NULL);
+	//
+  // }else
+	// --------------- OPERACIONES ---------------
+	if (strcmp("REGISTER", buffer) == 0){
 		char user[MAX_LINE] ;
 		err = readLine(clienteSd, user, MAX_LINE);
 	  if (err == -1) {
@@ -139,7 +181,9 @@ void listenClient(int *cs){
 		printf("s> ");
 		fflush(stdout);
 
+		pthread_mutex_lock(&mutex2);
 		int reply = registerUser(user); //accion a realizar
+		pthread_mutex_unlock(&mutex2);
 		//int reply = 0;
 		//para poder enviar el código de error
 		char replyC[1];
@@ -211,8 +255,12 @@ void listenClient(int *cs){
 			perror("readLine, file");
 		}
 
-		char ip[MAX_LINE];
-		ip = inet_ntoa(*(struct in_addr*) clienteSd.sin_addr); //Convert into IP string
+		//get cliente ip
+		struct sockaddr_in* pV4Addr = (struct sockaddr_in*)&client_addr;
+		struct in_addr ipAddr = pV4Addr->sin_addr;
+		char ip[INET_ADDRSTRLEN];
+		// ip = inet_ntop(*(struct in_addr*) client_addr.sin_addr); //Convert into IP string
+		inet_ntop( AF_INET, &ipAddr, ip, INET_ADDRSTRLEN );
 
 		pthread_mutex_lock(&mutex2);
 		int reply = connectUser(user, ip, port); //accion a realizar
@@ -236,6 +284,10 @@ void listenClient(int *cs){
 			perror("enviar");
 		}
 
+		if(cont){
+			printf("%s\n", "" );
+		}
+
 
 	}//end of CONNECT
 
@@ -255,7 +307,6 @@ void listenClient(int *cs){
 		printf("s> ");
 		fflush(stdout);
 
-		//FIN
 
 		char file[MAX_LINE];
 		err = readLine(clienteSd, file, MAX_LINE);
@@ -485,10 +536,16 @@ void listenClient(int *cs){
 			}
 		}
 
-
-
 	} //end LIST_CONTENT
-  close(clienteSd);
-  pthread_exit(NULL);
+
+	close(clienteSd);
+
+	//se disminuye el contador de hilos
+	pthread_mutex_lock(&mutex3);
+	nt--;
+	pthread_cond_signal(&c2);
+	pthread_mutex_unlock(&mutex3);
+
+	pthread_exit(NULL);
 
 }

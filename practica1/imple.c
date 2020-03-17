@@ -3,40 +3,40 @@
 //DATABASE FILE
 char db[MAX_LINE] = DATABASE_NAME;
 
-int main(int argc, char const *argv[]) {
-  // bool noMore = false;
-  // int n = 6;
-  // char userTarget[MAX_LINE] = "user4";
-	// int firstLine = 0, lastLine = 0;
-  // char file[MAX_LINE];
-  //
-  // findContentUser(userTarget, &firstLine, &lastLine);
-  //
-  // printf("firstLine: %d; lastLine: %d\n", firstLine, lastLine);
-  //
-  //
-  // for (int i = 0; i < n; i++){
-  //   fillContentUser(file, &firstLine, lastLine, &noMore);
-  //   printf("round: %d\n", i+1 );
-  //   if (noMore){
-  //     sprintf(file, " ");
-  //     printf("file: %s\n", file );
-  //     printf("\n" );
-  //   }else{
-  //     printf("file: %s\n", file );
-  //     printf("\n" );
-  //   }
-  //   firstLine++;
-  // }
-
-  char user[MAX_LINE] = "user1";
-  char ip[MAX_LINE] = "192.2.2.2";
-  char port[MAX_LINE] = "2";
-  printf("%d\n", connectUser(user, ip, port) );
-
-
-  return(0);
-} //fin main
+// int main(int argc, char const *argv[]) {
+//   // bool noMore = false;
+//   // int n = 6;
+//   // char userTarget[MAX_LINE] = "user4";
+// 	// int firstLine = 0, lastLine = 0;
+//   // char file[MAX_LINE];
+//   //
+//   // findContentUser(userTarget, &firstLine, &lastLine);
+//   //
+//   // printf("firstLine: %d; lastLine: %d\n", firstLine, lastLine);
+//   //
+//   //
+//   // for (int i = 0; i < n; i++){
+//   //   fillContentUser(file, &firstLine, lastLine, &noMore);
+//   //   printf("round: %d\n", i+1 );
+//   //   if (noMore){
+//   //     sprintf(file, " ");
+//   //     printf("file: %s\n", file );
+//   //     printf("\n" );
+//   //   }else{
+//   //     printf("file: %s\n", file );
+//   //     printf("\n" );
+//   //   }
+//   //   firstLine++;
+//   // }
+//
+//   char user[MAX_LINE] = "user1";
+//   char ip[MAX_LINE] = "192.2.2.2";
+//   char port[MAX_LINE] = "2";
+//   printf("%d\n", connectUser(user, ip, port) );
+//
+//
+//   return(0);
+// } //fin main
 
 
 //OPERACIONES
@@ -51,13 +51,13 @@ int registerUser(char * user){
 
   FILE* fd = fopen(db, "r+"); //abrir para lectura y escritura
   if (fd == NULL){ //NO existía la base de datos
-    serverMsg("A new database will be created");
+    // serverMsg("A new database will be created");
     fd = fopen(db, "w");
     if (fd == NULL){
       perror("Couldn't create a new database");
       return 2;
     }
-    if (fprintf(fd, "%s", userFormat) == -1){ //se le incluye al final
+    if (fprintf(fd, "%s", userFormat) == -1){ //se le incluye al final de la nueva BBDD
       // perror("fprintf");
       fclose(fd);
       return 2; //error
@@ -71,6 +71,7 @@ int registerUser(char * user){
   //buscar a usuario,linea por linea
   int userLine = searchUserPos(fd, userFormat);
   if (userLine == -1){ //no estaba en la lista
+    fseek(fd, 0, SEEK_END); //se pone el puntero del fichero al final
     if (fprintf(fd, "%s", userFormat) == -1){ //se le incluye al final
       perror("fprintf");
       fclose(fd);
@@ -95,8 +96,8 @@ int unregisterUser(char * user){
 
   FILE* fd = fopen(db, "r+"); //abrir para lectura y escritura
   if (fd == NULL){ //NO existía la base de datos
-      perror("Not database existing");
-      return 2;
+    // perror("Not database existing");
+    return 2;
   }
   //existía la base de datos
 
@@ -104,7 +105,7 @@ int unregisterUser(char * user){
   int userLine = searchUserPos(fd, userFormat);
   if (userLine == -1){ //no estaba en la lista
     fclose(fd);
-    return 2; //error
+    return 1; //error
   }
   //borrar al usuario y sus ficheros
   return deleteUser(fd, userLine);
@@ -115,7 +116,7 @@ int connectUser(char* user,char *ip, char *port){
 
   FILE* fd = fopen(db, "r+"); //abrir para lectura y escritura
   if (fd == NULL){ //NO existía la base de datos
-    perror("Not database existing");
+    // perror("Not database existing");
     return 3;
   }
   char userFormat[MAX_LINE];
@@ -184,7 +185,7 @@ int publish(char *user, char *file, char *desc){
     return 4;
   FILE* fd = fopen(db, "r+"); //abrir para lectura y escritura
   if (fd == NULL){ //NO existía la base de datos
-    perror("Not database existing");
+    // perror("Not database existing");
     return 4;
   }
   char userFormat[MAX_LINE];
@@ -219,7 +220,7 @@ int deleteContent(char *user, char *file){
     return 4;
   FILE* fd = fopen(db, "r+"); //abrir para lectura y escritura
   if (fd == NULL){ //NO existía la base de datos
-    perror("Not database existing");
+    // perror("Not database existing");
     return 4;
   }
   char userFormat[MAX_LINE];
@@ -250,7 +251,7 @@ int deleteContent(char *user, char *file){
 int list_users(char *user){
   FILE* fd = fopen(db, "r+"); //abrir para lectura y escritura
   if (fd == NULL){ //NO existía la base de datos
-    perror("Not database existing");
+    // perror("Not database existing");
     return 3;
   }
   char userFormat[MAX_LINE];
@@ -275,7 +276,7 @@ void fillUserInfo(char *user, char * ip, char *port, int *userLine, int *nextUse
   }
   FILE *fd = fopen(db, "r+"); //abrir para lectura y escritura
   if (fd == NULL){ //NO existía la base de datos
-    perror("Not database existing");
+    // perror("Not database existing");
     *noMore = true;
     return;
   }
@@ -324,11 +325,6 @@ void fillUserInfo(char *user, char * ip, char *port, int *userLine, int *nextUse
         ptr = strtok(ptr, "\n"); //borrar el \n final
         sprintf(port, "%s", ptr);
       }
-      // else{ //no es la info de IP:port
-      //   sprintf(user, " ");
-      //   sprintf(ip, " ");
-      //   sprintf(port, " ");
-      // }
     }
 
   } //fin while
@@ -341,7 +337,7 @@ void fillUserInfo(char *user, char * ip, char *port, int *userLine, int *nextUse
 int list_content(char *user, char *userTarget){
   FILE* fd = fopen(db, "r+"); //abrir para lectura y escritura
   if (fd == NULL){ //NO existía la base de datos
-    perror("Not database existing");
+    // perror("Not database existing");
     return 3;
   }
   char userFormat[MAX_LINE];
@@ -660,7 +656,7 @@ int deleteUser(FILE* fd, int userLine){
       fgets(str, MAX_FILE_LINE, fd);
       if (!feof(fd)){
         ctr++;
-        if (ctr < userLine || ctr > nextUserLine){
+        if (ctr < userLine || ctr >= nextUserLine){
            fprintf(fd2, "%s", str);
         }
       }

@@ -3,17 +3,30 @@
 
 pthread_mutex_t mutex;
 pthread_mutex_t mutex2;
+pthread_mutex_t mutex3;
 pthread_cond_t c;
+pthread_cond_t c2;
 bool copiado; //variable de condición
 
 int qs = -1; //cola del server
+int nt = 0; //number of threads
 
 void sigint_handler(int sig) {
+
+	//compureba el estado del contador de hilos
+	pthread_mutex_lock(&mutex3);
+	while(nt > 0)
+		pthread_cond_wait(&c2, &mutex3);
+	pthread_mutex_unlock(&mutex3);
+
+	//si han acabado todos los hilos ya acaba
 	mq_close(qs);
 	mq_unlink(NOMBRE_SERVER);
 	pthread_mutex_destroy(&mutex);
 	pthread_mutex_destroy(&mutex2);
+	pthread_mutex_destroy(&mutex3);
 	pthread_cond_destroy(&c);
+	pthread_cond_destroy(&c2);
 	printf("%s\n", "\nServer Closed" );
 	exit(0);
 }
@@ -25,11 +38,13 @@ int main(int argc, char const *argv[]) {
   pthread_attr_init(&attrTh);
 	pthread_attr_setdetachstate(&attrTh,PTHREAD_CREATE_DETACHED);
   pthread_mutex_init(&mutex, NULL);
-  pthread_mutex_init(&mutex2, NULL);
-  pthread_cond_init(&c, NULL);
+	pthread_mutex_init(&mutex2, NULL);
+	pthread_mutex_init(&mutex3, NULL);
+	pthread_cond_init(&c, NULL);
+	pthread_cond_init(&c2, NULL);
   copiado = false;
 
-	//Manejador de la señal
+	//Manejador de la señal ctrl-c
 	struct sigaction sa;
 	sa.sa_handler = sigint_handler;
 	sa.sa_flags = SA_RESTART;
@@ -72,13 +87,21 @@ int main(int argc, char const *argv[]) {
   }
 
 	mq_close(qs);
-  pthread_mutex_destroy(&mutex);
-  pthread_mutex_destroy(&mutex2);
-  pthread_cond_destroy(&c);
+	mq_unlink(NOMBRE_SERVER);
+	pthread_mutex_destroy(&mutex);
+	pthread_mutex_destroy(&mutex2);
+	pthread_mutex_destroy(&mutex3);
+	pthread_cond_destroy(&c);
+	pthread_cond_destroy(&c2);
   return 0;
 }
 
 void listenPetition(struct petition * pet){
+
+	pthread_mutex_lock(&mutex3);
+  nt ++;
+	printf("%d\n", nt );
+  pthread_mutex_unlock(&mutex3);
 
   //Petición
   struct petition p =  *pet;
@@ -88,7 +111,7 @@ void listenPetition(struct petition * pet){
   copiado = true;
   pthread_cond_signal(&c);
   pthread_mutex_unlock(&mutex);
-
+	
   //Respuesta
   struct reply r;
 
@@ -147,12 +170,16 @@ void listenPetition(struct petition * pet){
     perror("mq_send");
 		mq_close(qc);
     mq_unlink(NOMBRE_SERVER);
-    mq_unlink(p.client_queue);
     pthread_exit(NULL);
   }
 
 	mq_close(qc);
-  //mq_unlink(p.client_queue);
+	pthread_mutex_lock(&mutex3);
+	nt--;
+	printf("%d\n", nt );
+	pthread_cond_signal(&c2);
+	pthread_mutex_unlock(&mutex3);
+
 	pthread_exit(NULL);
 
 }
