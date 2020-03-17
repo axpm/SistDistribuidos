@@ -377,13 +377,14 @@ void fillContentUser(char *file, int *firstLine, int lastLine, bool *noMore){
         char *copy = strtok(str, "->");
         copy = strtok(copy, "||");
         strcpy(file, copy);
+        printf("fill: %s\n", file );
       }
     }
     if(*firstLine > line){
       *noMore = true;
     }
   }else{
-    if(*firstLine == lastLine){
+    if(*firstLine == lastLine ){
       *noMore = true;
     }
     while(fgets(str, sizeof(str), fd) && *noMore == false) {
@@ -392,6 +393,7 @@ void fillContentUser(char *file, int *firstLine, int lastLine, bool *noMore){
         char *copy = strtok(str, "->");
         copy = strtok(copy, "||");
         strcpy(file, copy);
+        printf("fill: %s\n", file);
       }
     }
   }
@@ -406,7 +408,7 @@ void findContentUser(char *user, int *firstLine, int* lastLine){
   char userFormat[MAX_LINE];
   sprintf(userFormat, ":::%s\n", user);
   int userLine = searchUserPos(fd, userFormat);
-  printf("userLine %d\n", userLine);
+
   *lastLine = searchNextUserPosWithoutFD(fd, userLine);
   char str[MAX_FILE_LINE];
   int line = 0;
@@ -415,16 +417,20 @@ void findContentUser(char *user, int *firstLine, int* lastLine){
     line ++;
     if (line == userLine + 1 ) {
       if(str[0] == '-' && str[1] == '>'){
-        *firstLine = line + 1;
+        printf("%d\n", line );
+        *firstLine = line;
+        fclose(fd);
+        return;
       }
     }else if(line == userLine + 2 ) {
       if(str[0] == '-' && str[1] == '>'){
         *firstLine = line ;
+        fclose(fd);
+        return;
       }
     }
   }
 
-  fclose(fd);
 }//end findContentUser
 
 

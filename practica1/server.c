@@ -159,16 +159,6 @@ void listenClient(int *cs){
     perror("readLine");
   }
 
-  // if (strcmp("QUIT", buffer) == 0){
-	// 	//enviar al cliente
-  //   err = enviar(clienteSd, "", 1);
-  //   if (err == -1) {
-  //     perror("enviar");
-  //   }
-  //   close(clienteSd);
-  //   pthread_exit(NULL);
-	//
-  // }else
 	// --------------- OPERACIONES ---------------
 	if (strcmp("REGISTER", buffer) == 0){
 		char user[MAX_LINE] ;
@@ -523,16 +513,22 @@ void listenClient(int *cs){
 			pthread_mutex_unlock(&mutex2);
 			char file[MAX_LINE];
 
+			printf("%d %d\n",firstLine, lastLine );
+
 			for (int i = 0; i < n; i++){
 				pthread_mutex_lock(&mutex2);
 				fillContentUser(file, &firstLine, lastLine, &noMore);
 				pthread_mutex_unlock(&mutex2);
 
+				// printf("%s %d %d\n", file, noMore, i );
+
 				if (noMore){ //envío de relleno
 					enviar(clienteSd, "\0", 1);
+					// printf("noMore %d\n", i );
 				}else{ //envío normal de la info
 					enviar(clienteSd, file, strlen(user)+1);
 				}
+				firstLine++;
 			}
 		}
 

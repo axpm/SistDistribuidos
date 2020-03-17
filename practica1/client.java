@@ -656,6 +656,7 @@ class client {
 
 					if( file != "" && file != " "){ //si no está vacío se imprime
 						System.out.println(" " + file);
+
 					}
 				}
 
