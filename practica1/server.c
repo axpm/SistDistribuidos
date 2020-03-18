@@ -32,7 +32,6 @@ void sigint_handler(int sig) {
 
 
 int main(int argc, char *argv[]) {
-	//avoid being killed by a child
 
 	//Hilos
 	pthread_attr_t attrTh;
@@ -110,8 +109,9 @@ int main(int argc, char *argv[]) {
 		clienteSd = accept (sd, (struct sockaddr *) &client_addr, &size);
     if (clienteSd < 0) {
       printf("Error en el accept\n");
-      return(-1);
-    }
+      // return(-1);
+			break;
+		}
     if (pthread_create(&t, NULL, (void *) listenClient, &clienteSd) == -1){
       printf("Error creating threads\n");
       exit(0);
@@ -125,23 +125,32 @@ int main(int argc, char *argv[]) {
     pthread_mutex_unlock(&mutex);
 
   }
-	close (sd);
+
+	// close (sd);
+	//compureba el estado del contador de hilos
+	pthread_mutex_lock(&mutex3);
+	while(nt > 0)
+		pthread_cond_wait(&c2, &mutex3);
+	pthread_mutex_unlock(&mutex3);
+
+	//si han acabado todos los hilos ya acaba
+	close(sd);
 	pthread_mutex_destroy(&mutex);
 	pthread_mutex_destroy(&mutex2);
 	pthread_mutex_destroy(&mutex3);
 	pthread_cond_destroy(&c);
 	pthread_cond_destroy(&c2);
 	printf("%s\n", "\nServer Closed" );
+	exit(0);
 
-	return 0;
 }
 
 void listenClient(int *cs){
-
+	// ------ NO HACER NADA ANTES
+	//se crea un hilo más
 	pthread_mutex_lock(&mutex3);
   nt ++;
   pthread_mutex_unlock(&mutex3);
-
 
   int clienteSd = *cs;
   //se ha recibido y copiado en petición
@@ -149,6 +158,8 @@ void listenClient(int *cs){
   copiado = true;
   pthread_cond_signal(&c);
   pthread_mutex_unlock(&mutex);
+
+	// ------ YA SE PUEDE METER CÓDIGO
 
 
   char buffer[MAX_LINE];
