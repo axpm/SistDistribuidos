@@ -64,12 +64,13 @@ El motivo de este ejercicio se basa en la idea de poder aprender las técnicas p
 Este software pretende que el cliente sea capaz de crear vectores de tamaño N, con un nombre, y poder administrarlos a partir de una aplicación. Estos vectores serán almacenados en el servidor con el que se comunica el cliente.
 
 \subsection{Estructura del código}
-Los archivos más importantes son cliente.c y servidor.c (bajo demanda) que son las que representan al cliente y al servidor y contienen los respectivos main. En cliente.c se ha añadido unos métodos para imprimir un mensaje con el resultado de las operaciones. Además, se incluyen sus respectivas cabeceras en los archivos cliente.h y servidor.h. El servidor de pool de hilos es el fichero servidorPool.c. El desarrollo de las peticiones del cliente de las operaciones init, get, set y destroy se realizan en los ficheros array.c en la parte cliente y imple.c en la parte servidor.
+Los archivos más importantes son cliente.c y servidor.c (bajo demanda) que son las que representan al cliente y al servidor y contienen los respectivos main. En cliente.c se ha añadido unos métodos para imprimir un mensaje con el resultado de las operaciones. Además, se incluyen sus respectivas cabeceras en los archivos cliente.h y servidor.h. El desarrollo de las peticiones del cliente de las operaciones init, get, set y destroy se realizan en los ficheros array.c en la parte cliente y imple.c en la parte servidor.
 Para la comunicación entre cliente y servidor hemos creado el fichero comm.h que contiene la estructuras de la petición y la respuesta.
 
 %%%% Compilación %%%%
 \subsection{Compilación}
-Para poder compilar el ejercicio se puede hacer de forma sencilla con \textit{make all}, esto generará dos tipos de servidores. Uno con la implementación de hilo bajo demanda (\textbf{servidor}) y otro con el pool de hilos (\textbf{servidorPool}). En el caso de que se quiera compilar solo lo necesario, se deberá realizar manualmente haciendo \textit{make} array, cliente, servidor o servidorPool.
+Para poder compilar el ejercicio se puede hacer de forma sencilla con \textit{make all}, esto generará todos los ejecutables.
+%Uno con la implementación de hilo bajo demanda (\textbf{servidor}) y otro con el pool de hilos (\textbf{servidorPool}). En el caso de que se quiera compilar solo lo necesario, se deberá realizar manualmente haciendo \textit{make} array, cliente, servidor o servidorPool.
 
 Nota: antes de compilar el cliente manualmente, será necesario haber generado la biblioteca dinámica haciendo en primer lugar \textit{make array}.
 
@@ -91,8 +92,8 @@ En la biblioteca dinámica se han implementado las funciones que se comunicarán
 El servidor será el encargado de recibir las peticiones para que, con ayuda de hilos bajo demanda, se puedan ir ejecutando las acciones que requiere el cliente para administrar los vectores.
 El servidor debe estar configurado de tal manera que se evite que se pierdan peticiones debido a condiciones de carrera y, para ello, se emplearán herramientas de POSIX. Hemos optado por implementarlo mediante un cerrojo y una variable condicional que hacen que no se pueda atender a una nueva petición si no se atendió a la anterior. El término "atender" no se refiere a procesar la petición, simplemente al hecho de copiar la petición de entrada en una variable local y evitar que se pierda.
 
-\subsection{Servidor Pool de Hilos}
-Se ha implementado también la versión con un pool de hilos que consiste en crear un número de hilos determinados. Cada vez que llega una nueva petición se almacena en una cola circular de tareas y serán los hilos los que se encargan de recoger y procesar esas tareas cuando puedan actuar. Se trata de una versión del problema de \textit{productor-consumidor} en el que produce el hilo principal y los hilos que se crean son los que consumen de la cola circular.
+% \subsection{Servidor Pool de Hilos}
+% Se ha implementado también la versión con un pool de hilos que consiste en crear un número de hilos determinados. Cada vez que llega una nueva petición se almacena en una cola circular de tareas y serán los hilos los que se encargan de recoger y procesar esas tareas cuando puedan actuar. Se trata de una versión del problema de \textit{productor-consumidor} en el que produce el hilo principal y los hilos que se crean son los que consumen de la cola circular.
 
 
 \subsubsection{Modelo de datos}
@@ -179,7 +180,6 @@ Esta práctica nos ha permitido aprender la estructura básica de un sistema de 
   \end{itemize}
 \end{itemize}
 
-Por otro lado, hemos tenido ciertas dificultades a la hora de realizar la concurrencia puesto que en la implementación con hilos \textit{bajo demanda} se lanzan muchos más hilos llegando incluso a poder empeorar la calidad del servicio, mientras que con una implementación de \textit{pool de hilos} el sistema es mucho más eficaz. Decidimos empezar la tarea con \textit{hilos bajo demanda} y resultó menos complejo, tras completar esta versión pudimos realizar la versión con el \textit{pool de hilos}.
-
+Por otro lado, hemos tenido ciertas dificultades a la hora de realizar la concurrencia puesto que en la implementación con hilos \textit{bajo demanda} se lanzan muchos más hilos llegando incluso a poder empeorar la calidad del servicio, mientras que con una implementación de \textit{pool de hilos} el sistema es mucho más eficaz. Decidimos empezar la tarea con \textit{hilos bajo demanda} y resultó menos complejo, tras completar esta versión pudimos realizar la versión con el \textit{pool de hilos}. Finalmente la versión de pool de hilos dejó de funcionar y decididimos no continuar la depuración de esta implementación.
 
 \end{document}

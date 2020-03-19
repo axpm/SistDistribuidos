@@ -46,7 +46,7 @@ int main(int argc, char const *argv[]) {
 	struct sigaction sa;
 	sa.sa_handler = sigint_handler;
 	sa.sa_flags = SA_RESTART;
-	sigaction(SIGINT, &sa, NULL);
+	// sigaction(SIGINT, &sa, NULL);
 
 	//Atributos
 	struct mq_attr attr;
@@ -60,10 +60,11 @@ int main(int argc, char const *argv[]) {
 		fprintf(stderr, "%s\n", "Error! Couldn't create Server Queue");
 		exit(-1);
 	}
+
   //Hilos
 	pthread_attr_t attrTh;
 	pthread_attr_init(&attrTh);
-	pthread_attr_setdetachstate(&attrTh,PTHREAD_CREATE_DETACHED);
+	pthread_attr_setdetachstate(&attrTh, PTHREAD_CREATE_DETACHED);
 	pthread_mutex_init(&mutex,NULL);
 	pthread_cond_init(&no_lleno,NULL);
 	pthread_cond_init(&no_vacio,NULL);
@@ -103,7 +104,7 @@ int main(int argc, char const *argv[]) {
 
 	//Se pone fin a true
 	pthread_mutex_lock(&mfin);
-	fin=true;
+	fin = true;
 	pthread_mutex_unlock(&mfin);
 	pthread_mutex_lock(&mutex);
 	pthread_cond_broadcast(&no_vacio);

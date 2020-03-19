@@ -92,7 +92,7 @@ int get(char *name, int i, int *value){
 
   //Tratamos los errores de lista vacía, posición negativa o mayor que el tamaño del vector
   if (server == NULL || i < 0)
-  return -1;
+    return -1;
 
   while (strcmp(aux->name, name) != 0) { //Compara que los nombres sean iguales
     aux = aux->next;

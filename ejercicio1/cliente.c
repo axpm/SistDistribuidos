@@ -14,7 +14,7 @@ int main(int argc, char const *argv[]) {
    errorMsgInit(init("vector1", 20), init_count); //Se crea el vector1 de longitud distinta, devuelve -1
    printf("%s\n", "expected: Something went wrong" );
    init_count++;
-   errorMsgInit(init("vector2", 10000), init_count); //Se crea otro vector
+   errorMsgInit(init("vector2", 3000), init_count); //Se crea otro vector
    printf("%s\n", "expected: OK" );
    //Esto vector3 se crea para comprobar que si borramos el vector2 (que está en medio), se borra correctamente
    init_count++;

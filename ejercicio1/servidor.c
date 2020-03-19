@@ -36,7 +36,7 @@ int main(int argc, char const *argv[]) {
 	pthread_attr_t attrTh;
   pthread_t t;
   pthread_attr_init(&attrTh);
-	pthread_attr_setdetachstate(&attrTh,PTHREAD_CREATE_DETACHED);
+	pthread_attr_setdetachstate(&attrTh, PTHREAD_CREATE_DETACHED);
   pthread_mutex_init(&mutex, NULL);
 	pthread_mutex_init(&mutex2, NULL);
 	pthread_mutex_init(&mutex3, NULL);
@@ -71,7 +71,7 @@ int main(int argc, char const *argv[]) {
 		int e = mq_receive(qs, (char *)&p, sizeof(struct petition), NO_PRIORITY );
 		if (e == -1){
 			perror("mq_receive");
-			exit(0);
+			break;
 		}
     if (pthread_create(&t, NULL, (void *) listenPetition, &p) == -1){
 			printf("Error creating threads\n");
@@ -85,6 +85,12 @@ int main(int argc, char const *argv[]) {
 		copiado = false;
 		pthread_mutex_unlock(&mutex);
   }
+
+	//compureba el estado del contador de hilos
+	pthread_mutex_lock(&mutex3);
+	while(nt > 0)
+		pthread_cond_wait(&c2, &mutex3);
+	pthread_mutex_unlock(&mutex3);
 
 	mq_close(qs);
 	mq_unlink(NOMBRE_SERVER);
@@ -100,7 +106,6 @@ void listenPetition(struct petition * pet){
 
 	pthread_mutex_lock(&mutex3);
   nt ++;
-	printf("%d\n", nt );
   pthread_mutex_unlock(&mutex3);
 
   //Petición
@@ -111,7 +116,7 @@ void listenPetition(struct petition * pet){
   copiado = true;
   pthread_cond_signal(&c);
   pthread_mutex_unlock(&mutex);
-	
+
   //Respuesta
   struct reply r;
 
@@ -119,8 +124,14 @@ void listenPetition(struct petition * pet){
   int qc = mq_open(p.client_queue, O_WRONLY);
 
   if (qc == -1){
-		printf("%s\n", p.client_queue);
+		// printf("%s\n", p.client_queue);
+
     perror("mq_open: error in opening client_queue on sending the reply");
+		pthread_mutex_lock(&mutex3);
+		nt--;
+		pthread_cond_signal(&c2);
+		pthread_mutex_unlock(&mutex3);
+
     pthread_exit(NULL);
   }
 
@@ -169,14 +180,18 @@ void listenPetition(struct petition * pet){
   if (e == -1){
     perror("mq_send");
 		mq_close(qc);
-    mq_unlink(NOMBRE_SERVER);
+    // mq_unlink(NOMBRE_SERVER);
+		pthread_mutex_lock(&mutex3);
+		nt--;
+		pthread_cond_signal(&c2);
+		pthread_mutex_unlock(&mutex3);
+
     pthread_exit(NULL);
   }
 
 	mq_close(qc);
 	pthread_mutex_lock(&mutex3);
 	nt--;
-	printf("%d\n", nt );
 	pthread_cond_signal(&c2);
 	pthread_mutex_unlock(&mutex3);
 
