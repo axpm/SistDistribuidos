@@ -11,22 +11,42 @@ pthread_mutex_t mutex2;
 pthread_cond_t no_lleno;
 pthread_cond_t no_vacio;
 pthread_mutex_t mfin;
+pthread_t thid[MAX_THREADS];
 bool fin = false;
 bool finSignal = false;
 
 void sigint_handler(int sig) {
-	// finSignal = true;
-	printf("%s\n", "\nServer Closed" );
+
+	//Se pone fin a true
+	pthread_mutex_lock(&mfin);
+	fin=true;
+	pthread_mutex_unlock(&mfin);
+	pthread_mutex_lock(&mutex);
+	pthread_cond_broadcast(&no_vacio);
+	pthread_mutex_unlock(&mutex);
+
+	for (int i=0;i<MAX_THREADS;i++){
+			pthread_join(thid[i],NULL);
+	}
+
+	fprintf(stderr,"Finalizando servicio\n");
+
+	pthread_mutex_destroy(&mutex);
+	pthread_mutex_destroy(&mutex2);
+	pthread_cond_destroy(&no_lleno);
+	pthread_cond_destroy(&no_vacio);
+	pthread_mutex_destroy(&mfin);
+	exit(0);
 }
 
 
 int main(int argc, char const *argv[]) {
 
 	//Manejador de la finSignal
-	// struct sigaction sa;
-	// sa.sa_handler = sigint_handler;
-	// sa.sa_flags = SA_RESTART;
-	// sigaction(SIGINT, &sa, NULL);
+	struct sigaction sa;
+	sa.sa_handler = sigint_handler;
+	sa.sa_flags = SA_RESTART;
+	sigaction(SIGINT, &sa, NULL);
 
 	//Atributos
 	struct mq_attr attr;
@@ -41,13 +61,13 @@ int main(int argc, char const *argv[]) {
 		exit(-1);
 	}
   //Hilos
-	pthread_t thid[MAX_THREADS];
+	pthread_attr_t attrTh;
+	pthread_attr_init(&attrTh);
+	pthread_attr_setdetachstate(&attrTh,PTHREAD_CREATE_DETACHED);
 	pthread_mutex_init(&mutex,NULL);
 	pthread_cond_init(&no_lleno,NULL);
 	pthread_cond_init(&no_vacio,NULL);
 	pthread_mutex_init(&mfin,NULL);
-	pthread_attr_t attrTh;
-	pthread_attr_init(&attrTh);
 
 	int error;
 	int pos = 0;
@@ -112,7 +132,7 @@ void* servicio(void ){
 		pthread_mutex_lock(&mutex);
 		while (n_elementos == 0) {
 			if (fin==true) {
-				fprintf(stderr,"Finalizando servicio\n");
+				// fprintf(stderr,"Finalizando servicio\n");
 				pthread_mutex_unlock(&mutex);
 				pthread_exit(0);
 			}
