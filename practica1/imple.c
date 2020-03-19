@@ -3,34 +3,40 @@
 //DATABASE FILE
 char db[MAX_LINE] = DATABASE_NAME;
 
-int main(int argc, char const *argv[]) {
-  bool noMore = false;
-  int n = 6;
-  char userTarget[MAX_LINE] = "user4";
-	int firstLine = 0, lastLine = 0;
-  char file[MAX_LINE];
-
-  findContentUser(userTarget, &firstLine, &lastLine);
-
-  printf("firstLine: %d; lastLine: %d\n", firstLine, lastLine);
-
-
-  for (int i = 0; i < n; i++){
-    fillContentUser(file, &firstLine, lastLine, &noMore);
-    printf("round: %d\n", i+1 );
-    if (noMore){
-      sprintf(file, " ");
-      printf("file: %s\n", file );
-      printf("\n" );
-    }else{
-      printf("file: %s\n", file );
-      printf("\n" );
-    }
-    firstLine++;
-  }
-
-  return(0);
-}
+// int main(int argc, char const *argv[]) {
+//   // bool noMore = false;
+//   // int n = 6;
+//   // char userTarget[MAX_LINE] = "user4";
+// 	// int firstLine = 0, lastLine = 0;
+//   // char file[MAX_LINE];
+//   //
+//   // findContentUser(userTarget, &firstLine, &lastLine);
+//   //
+//   // printf("firstLine: %d; lastLine: %d\n", firstLine, lastLine);
+//   //
+//   //
+//   // for (int i = 0; i < n; i++){
+//   //   fillContentUser(file, &firstLine, lastLine, &noMore);
+//   //   printf("round: %d\n", i+1 );
+//   //   if (noMore){
+//   //     sprintf(file, " ");
+//   //     printf("file: %s\n", file );
+//   //     printf("\n" );
+//   //   }else{
+//   //     printf("file: %s\n", file );
+//   //     printf("\n" );
+//   //   }
+//   //   firstLine++;
+//   // }
+//
+//   char user[MAX_LINE] = "user1";
+//   char ip[MAX_LINE] = "192.2.2.2";
+//   char port[MAX_LINE] = "2";
+//   printf("%d\n", connectUser(user, ip, port) );
+//
+//
+//   return(0);
+// } //fin main
 
 
 //OPERACIONES
@@ -45,13 +51,13 @@ int registerUser(char * user){
 
   FILE* fd = fopen(db, "r+"); //abrir para lectura y escritura
   if (fd == NULL){ //NO existía la base de datos
-    serverMsg("A new database will be created");
+    // serverMsg("A new database will be created");
     fd = fopen(db, "w");
     if (fd == NULL){
       perror("Couldn't create a new database");
       return 2;
     }
-    if (fprintf(fd, "%s", userFormat) == -1){ //se le incluye al final
+    if (fprintf(fd, "%s", userFormat) == -1){ //se le incluye al final de la nueva BBDD
       // perror("fprintf");
       fclose(fd);
       return 2; //error
@@ -65,6 +71,7 @@ int registerUser(char * user){
   //buscar a usuario,linea por linea
   int userLine = searchUserPos(fd, userFormat);
   if (userLine == -1){ //no estaba en la lista
+    fseek(fd, 0, SEEK_END); //se pone el puntero del fichero al final
     if (fprintf(fd, "%s", userFormat) == -1){ //se le incluye al final
       perror("fprintf");
       fclose(fd);
@@ -89,8 +96,8 @@ int unregisterUser(char * user){
 
   FILE* fd = fopen(db, "r+"); //abrir para lectura y escritura
   if (fd == NULL){ //NO existía la base de datos
-      perror("Not database existing");
-      return 2;
+    // perror("Not database existing");
+    return 2;
   }
   //existía la base de datos
 
@@ -98,11 +105,79 @@ int unregisterUser(char * user){
   int userLine = searchUserPos(fd, userFormat);
   if (userLine == -1){ //no estaba en la lista
     fclose(fd);
-    return 2; //error
+    return 1; //error
   }
   //borrar al usuario y sus ficheros
   return deleteUser(fd, userLine);
 }
+
+// ------- CONNECT -------
+int connectUser(char* user,char *ip, char *port){
+
+  FILE* fd = fopen(db, "r+"); //abrir para lectura y escritura
+  if (fd == NULL){ //NO existía la base de datos
+    // perror("Not database existing");
+    return 3;
+  }
+  char userFormat[MAX_LINE];
+  sprintf(userFormat, ":::%s\n", user); //los usuarios empiezan con este formato ":::username"
+  int userLine = isConnectedWithoutFD(fd, userFormat); //mira si está conectado un usuario y si lo está devuelve la línea en la que está, si no existe -1
+  if (userLine == -1){
+    return 1; //no existe el usuario
+  }
+  if(userLine > 0){
+    return 2; //ya estaba conectado el usuario
+  }
+  userLine = searchUserPos(fd, userFormat);
+  int nextUserLine = searchNextUserPosWithoutFD(fd, userLine);
+
+  //no conectado, se le mete la ip y puerto
+  char newLine[MAX_FILE_LINE];
+
+  sprintf(newLine, "$%s:%s\n", ip, port);
+
+  FILE *fd2;
+  char str[MAX_FILE_LINE], temp[] = "temp.txt";
+  int line = 0;
+  fd2 = fopen(temp, "w"); // abrir un archivo temporal para escribir
+  if (fd2 == NULL){
+    fclose(fd);
+    return 3; //devuelve error
+  }
+
+//escribir en el archivo
+  if (nextUserLine == -1){
+    fseek(fd, 0, SEEK_END); //se pone el puntero del fichero al final
+    fprintf(fd, "%s", newLine);
+  }else{
+    fseek(fd, 0, SEEK_SET); //se pone el puntero del fichero al principio
+    fd2 = fopen(temp, "w"); // abrir un archivo temporal para escribir
+    if (fd2 == NULL){
+      fclose(fd);
+      return 3; //devuelve error
+    }
+    // printf("%d\n", nextUserLine);
+    while (!feof(fd)) {
+      strcpy(str, "\0");
+      fgets(str, MAX_FILE_LINE, fd);
+      if (!feof(fd)){
+        line++;
+        if (line == nextUserLine){
+           fprintf(fd2, "%s", newLine);
+        }
+        fprintf(fd2, "%s", str);
+      }
+    }
+    fclose(fd2); //cerramos el fichero auxiliar
+  }
+  //cerramos todos los ficheros y actualizamos el fichero
+  fclose(fd);
+  remove(DATABASE_NAME);  		//eliminamos el archivo original
+  rename(temp, DATABASE_NAME); 	// renombramos el temporal como el original
+
+
+  return 0;
+}//end of connect
 
 // ------- PUBLISH content-------
 int publish(char *user, char *file, char *desc){
@@ -110,12 +185,12 @@ int publish(char *user, char *file, char *desc){
     return 4;
   FILE* fd = fopen(db, "r+"); //abrir para lectura y escritura
   if (fd == NULL){ //NO existía la base de datos
-    perror("Not database existing");
+    // perror("Not database existing");
     return 4;
   }
   char userFormat[MAX_LINE];
   sprintf(userFormat, ":::%s\n", user); //los usuarios empiezan con este formato ":::username"
-  int userLine = isConnected(fd, userFormat); //mira si está conectado un usuario y si lo está devuelve la línea en la que está, si no existe -1 //searchUserPos(fd, userFormat);
+  int userLine = isConnected(fd, userFormat); //mira si está conectado un usuario y si lo está devuelve la línea en la que está, si no existe -1
   if(userLine == -1){ //el usuario no existe
     fclose(fd);
     return 1;
@@ -145,7 +220,7 @@ int deleteContent(char *user, char *file){
     return 4;
   FILE* fd = fopen(db, "r+"); //abrir para lectura y escritura
   if (fd == NULL){ //NO existía la base de datos
-    perror("Not database existing");
+    // perror("Not database existing");
     return 4;
   }
   char userFormat[MAX_LINE];
@@ -176,7 +251,7 @@ int deleteContent(char *user, char *file){
 int list_users(char *user){
   FILE* fd = fopen(db, "r+"); //abrir para lectura y escritura
   if (fd == NULL){ //NO existía la base de datos
-    perror("Not database existing");
+    // perror("Not database existing");
     return 3;
   }
   char userFormat[MAX_LINE];
@@ -201,7 +276,7 @@ void fillUserInfo(char *user, char * ip, char *port, int *userLine, int *nextUse
   }
   FILE *fd = fopen(db, "r+"); //abrir para lectura y escritura
   if (fd == NULL){ //NO existía la base de datos
-    perror("Not database existing");
+    // perror("Not database existing");
     *noMore = true;
     return;
   }
@@ -250,11 +325,6 @@ void fillUserInfo(char *user, char * ip, char *port, int *userLine, int *nextUse
         ptr = strtok(ptr, "\n"); //borrar el \n final
         sprintf(port, "%s", ptr);
       }
-      // else{ //no es la info de IP:port
-      //   sprintf(user, " ");
-      //   sprintf(ip, " ");
-      //   sprintf(port, " ");
-      // }
     }
 
   } //fin while
@@ -267,7 +337,7 @@ void fillUserInfo(char *user, char * ip, char *port, int *userLine, int *nextUse
 int list_content(char *user, char *userTarget){
   FILE* fd = fopen(db, "r+"); //abrir para lectura y escritura
   if (fd == NULL){ //NO existía la base de datos
-    perror("Not database existing");
+    // perror("Not database existing");
     return 3;
   }
   char userFormat[MAX_LINE];
@@ -313,7 +383,7 @@ void fillContentUser(char *file, int *firstLine, int lastLine, bool *noMore){
       *noMore = true;
     }
   }else{
-    if(*firstLine == lastLine){
+    if(*firstLine == lastLine ){
       *noMore = true;
     }
     while(fgets(str, sizeof(str), fd) && *noMore == false) {
@@ -336,7 +406,7 @@ void findContentUser(char *user, int *firstLine, int* lastLine){
   char userFormat[MAX_LINE];
   sprintf(userFormat, ":::%s\n", user);
   int userLine = searchUserPos(fd, userFormat);
-  printf("userLine %d\n", userLine);
+
   *lastLine = searchNextUserPosWithoutFD(fd, userLine);
   char str[MAX_FILE_LINE];
   int line = 0;
@@ -345,16 +415,19 @@ void findContentUser(char *user, int *firstLine, int* lastLine){
     line ++;
     if (line == userLine + 1 ) {
       if(str[0] == '-' && str[1] == '>'){
-        *firstLine = line + 1;
+        *firstLine = line;
+        fclose(fd);
+        return;
       }
     }else if(line == userLine + 2 ) {
       if(str[0] == '-' && str[1] == '>'){
         *firstLine = line ;
+        fclose(fd);
+        return;
       }
     }
   }
 
-  fclose(fd);
 }//end findContentUser
 
 
@@ -440,8 +513,10 @@ int addFile(FILE* fd, char *fileFormat, int userLine, int nextUserLine){
   }else{
     fseek(fd, 0, SEEK_SET); //se pone el puntero del fichero al principio
     fd2 = fopen(temp, "w"); // abrir un archivo temporal para escribir
-    if (fd2 == NULL)
+    if (fd2 == NULL){
+      fclose(fd);
       return 4; //devuelve error
+    }
     // printf("%d\n", nextUserLine);
     while (!feof(fd)) {
       strcpy(str, "\0");
@@ -458,8 +533,8 @@ int addFile(FILE* fd, char *fileFormat, int userLine, int nextUserLine){
   }
   //cerramos todos los ficheros y actualizamos el fichero
   fclose(fd);
-  remove(DATABASE_NAME);  		// remove the original file
-  rename(temp, DATABASE_NAME); 	// rename the temporary file to original name
+  remove(DATABASE_NAME);  		//eliminamos el archivo original
+  rename(temp, DATABASE_NAME); 	// renombramos el temporal como el original
 
   return 0; //todo fue bien
 } //end of addFile
@@ -472,8 +547,10 @@ int deleteFile(FILE* fd, int fileLine){
 
   fseek(fd, 0, SEEK_SET); //se pone el puntero del fichero al principio
   fd2 = fopen(temp, "w"); // abrir un archivo temporal para escribir
-  if (fd2 == NULL)
+  if (fd2 == NULL){
+    fclose(fd);
     return 4; //devuelve error
+  }
 
   while (!feof(fd)) {
     strcpy(str, "\0");
@@ -488,8 +565,8 @@ int deleteFile(FILE* fd, int fileLine){
   //cerramos todos los ficheros y actualizamos el fichero
   fclose(fd2); //cerramos el fichero auxiliar
   fclose(fd);
-  remove(DATABASE_NAME);  		// remove the original file
-  rename(temp, DATABASE_NAME); 	// rename the temporary file to original name
+  remove(DATABASE_NAME);  		//eliminamos el archivo original
+  rename(temp, DATABASE_NAME); 	// renombramos el temporal como el original
   return 0; //todo fue bien
 } //end of addFile
 
@@ -582,7 +659,7 @@ int deleteUser(FILE* fd, int userLine){
       fgets(str, MAX_FILE_LINE, fd);
       if (!feof(fd)){
         ctr++;
-        if (ctr < userLine || ctr > nextUserLine){
+        if (ctr < userLine || ctr >= nextUserLine){
            fprintf(fd2, "%s", str);
         }
       }
@@ -592,8 +669,8 @@ int deleteUser(FILE* fd, int userLine){
   //cerramos todos los ficheros y actualizamos el fichero
   fclose(fd2);
   fclose(fd);
-  remove(DATABASE_NAME);  		// remove the original file
-  rename(temp, DATABASE_NAME); 	// rename the temporary file to original name
+  remove(DATABASE_NAME);  		//eliminamos el archivo original
+  rename(temp, DATABASE_NAME); 	// renombramos el temporal como el original
   return 0;
 }
 

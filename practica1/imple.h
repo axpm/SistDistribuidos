@@ -19,7 +19,7 @@
 #include <signal.h>
 
 #define MAX_LINE 	256
-#define MAX_FILE_LINE 514
+#define MAX_FILE_LINE 516 //file MAX_LINE *2 + delimitadores
 #define DATABASE_NAME "database.db"
 
 void print_usage();
@@ -27,6 +27,7 @@ void printInitServer(struct sockaddr_in server_addr);
 
 int registerUser(char * user);
 int unregisterUser(char * user);
+int connectUser(char* user,char *ip, char *port);
 int publish(char *user, char *file, char *desc);
 int deleteContent(char *user, char *file);
 int list_users(char *user);
