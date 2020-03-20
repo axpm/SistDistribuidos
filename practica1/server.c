@@ -172,7 +172,7 @@ void listenClient(int *cs){
 
 	// --------------- OPERACIONES ---------------
 	if (strcmp("REGISTER", buffer) == 0){
-		char user[MAX_LINE] ;
+		char user[MAX_LINE];
 		err = readLine(clienteSd, user, MAX_LINE);
 	  if (err == -1) {
 	    perror("readLine, user");
@@ -203,7 +203,8 @@ void listenClient(int *cs){
       perror("enviar");
     }
 
-	}else if(strcmp("UNREGISTER", buffer) == 0) {
+	}// end of REGISTER
+	else if(strcmp("UNREGISTER", buffer) == 0) {
 		char user[MAX_LINE] ;
 		err = readLine(clienteSd, user, MAX_LINE);
 		if (err == -1) {
@@ -257,7 +258,7 @@ void listenClient(int *cs){
 		}
 
 		//get cliente ip
-		struct sockaddr_in* pV4Addr = (struct sockaddr_in*)&client_addr;
+		struct sockaddr_in* pV4Addr = (struct sockaddr_in*) &client_addr;
 		struct in_addr ipAddr = pV4Addr->sin_addr;
 		char ip[INET_ADDRSTRLEN];
 		// ip = inet_ntop(*(struct in_addr*) client_addr.sin_addr); //Convert into IP string
@@ -296,7 +297,6 @@ void listenClient(int *cs){
 
 	else if(strcmp("PUBLISH", buffer) == 0){
 
-		//NO LO PONE EN EL ENUNCIADO PERO ES LO LÓGICO
 		//leer usuario que realiza la acción
 		char user[MAX_LINE];
 		err = readLine(clienteSd, user, MAX_LINE);

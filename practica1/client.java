@@ -24,23 +24,24 @@ class client {
 	 */
 	static int register(String user)
 	{
-		if(user.length() > MAX_LINE ){
+		//chequear que no empieza por :::
+		if(!checkUserName(user)){
 			System.out.println("c> REGISTER FAIL");
 			return -1;
 		}
-		// Crear las conexiones
-		Socket sc;
-		try {
-			sc = new Socket(_server, _port);
-		} catch(Exception e) {
-			System.out.println("c> REGISTER FAIL");
-			// System.err.println("Can't reach the host.");
-			// System.err.println("excepcion " + e.toString() );
-			// e.printStackTrace() ;
-			return -1;
-		}
+
+		// try {
+		// } catch(Exception e) {
+		// 	System.out.println("c> REGISTER FAIL");
+		// 	// System.err.println("Can't reach the host.");
+		// 	// System.err.println("excepcion " + e.toString() );
+		// 	// e.printStackTrace() ;
+		// 	return -1;
+		// }
 		try {
 			// Crear las conexiones
+			Socket sc;
+			sc = new Socket(_server, _port);
 
 			DataOutputStream out = new DataOutputStream(sc.getOutputStream()); //Enviar
 			DataInputStream in = new DataInputStream(sc.getInputStream()); //Recibir
@@ -87,24 +88,24 @@ class client {
 	 *
 	 * @return ERROR CODE
 	 */
-	static int unregister(String user)
-	{
-		if(user.length() > MAX_LINE ){
+	static int unregister(String user)	{
+		//chequear que no empieza por :::
+		if(!checkUserName(user)){
 			System.out.println("c> UNREGISTER FAIL");
 			return -1;
 		}
-		// Crear las conexiones
-		Socket sc;
+		// try {
+		// } catch(Exception e) {
+		// 	System.out.println("c> UNREGISTER FAIL");
+		// 	// System.err.println("Can't reach the host.");
+		// 	// System.err.println("excepcion " + e.toString() );
+		// 	// e.printStackTrace() ;
+		// 	return -1;
+		// }
 		try {
+			// Crear las conexiones
+			Socket sc;
 			sc = new Socket(_server, _port);
-		} catch(Exception e) {
-			System.out.println("c> UNREGISTER FAIL");
-			// System.err.println("Can't reach the host.");
-			// System.err.println("excepcion " + e.toString() );
-			// e.printStackTrace() ;
-			return -1;
-		}
-		try {
 
 			DataOutputStream out = new DataOutputStream(sc.getOutputStream()); //Enviar
 			DataInputStream in = new DataInputStream(sc.getInputStream()); //Recibir
@@ -167,22 +168,24 @@ class client {
 
 		// -------------------------------HECHO DE FORMA SECUENCIAL ----////////////////
 
-		if(user.length() > MAX_LINE ){
+		//chequear que no empieza por :::
+		if(!checkUserName(user)){
 			System.out.println("c> CONNECT FAIL");
 			return -1;
 		}
+
 		// Crear las conexiones
-		Socket sc;
+		// try {
+		// } catch(Exception e) {
+		// 	System.out.println("c> CONNECT FAIL");
+		// 	// System.err.println("Can't reach the host.");
+		// 	// System.err.println("excepcion " + e.toString() );
+		// 	// e.printStackTrace() ;
+		// 	return -1;
+		// }
 		try {
+			Socket sc;
 			sc = new Socket(_server, _port);
-		} catch(Exception e) {
-			System.out.println("c> CONNECT FAIL");
-			// System.err.println("Can't reach the host.");
-			// System.err.println("excepcion " + e.toString() );
-			// e.printStackTrace() ;
-			return -1;
-		}
-		try {
 
 			DataOutputStream out = new DataOutputStream(sc.getOutputStream()); //Enviar
 			DataInputStream in = new DataInputStream(sc.getInputStream()); //Recibir
@@ -239,22 +242,23 @@ class client {
 	 */
 	static int disconnect(String user)
 	{
-		if(user.length() > MAX_LINE ){
+		//chequear que no empieza por :::
+		if(!checkUserName(user)){
 			System.out.println("c> DISCONNECT FAIL");
 			return -1;
 		}
 
-		Socket sc;
+		// try {
+		// } catch(Exception e) {
+		// 	System.out.println("c> DISCONNECT FAIL");
+		// 	// System.err.println("Can't reach the host.");
+		// 	// System.err.println("excepcion " + e.toString() );
+		// 	// e.printStackTrace() ;
+		// 	return -1;
+		// }
 		try {
+			Socket sc;
 			sc = new Socket(_server, _port);
-		} catch(Exception e) {
-			System.out.println("c> DISCONNECT FAIL");
-			// System.err.println("Can't reach the host.");
-			// System.err.println("excepcion " + e.toString() );
-			// e.printStackTrace() ;
-			return -1;
-		}
-		try {
 
 			DataOutputStream out = new DataOutputStream(sc.getOutputStream()); //Enviar
 			DataInputStream in = new DataInputStream(sc.getInputStream()); //Recibir
@@ -307,25 +311,25 @@ class client {
 	 */
 	static int publish(String file_name, String description)
 	{
-		//
-		// System.out.println("PUBLISH " + file_name + " " + description);
-
-		if(file_name.length() > MAX_LINE || description.length() > MAX_LINE ){
+		//chequear que no empieza por :::
+		if(!checkFileName(file_name) || !checkDescription(description)){
 			System.out.println("c> PUBLISH FAIL");
 			return -1;
 		}
 
-		Socket sc;
+
+
+		// try {
+		// } catch(Exception e) {
+		// 	System.out.println("c> PUBLISH FAIL");
+		// 	// System.err.println("Can't reach the host.");
+		// 	// System.err.println("excepcion " + e.toString() );
+		// 	// e.printStackTrace() ;
+		// 	return -1;
+		// }
 		try {
+			Socket sc;
 			sc = new Socket(_server, _port);
-		} catch(Exception e) {
-			System.out.println("c> PUBLISH FAIL");
-			// System.err.println("Can't reach the host.");
-			// System.err.println("excepcion " + e.toString() );
-			// e.printStackTrace() ;
-			return -1;
-		}
-		try {
 
 			DataOutputStream out = new DataOutputStream(sc.getOutputStream()); //Enviar
 			DataInputStream in = new DataInputStream(sc.getInputStream()); //Recibir
@@ -392,22 +396,28 @@ class client {
 	{
 		//
 		// System.out.println("DELETE " + file_name);
-		if(file_name.length() > MAX_LINE){
+		// if(file_name.length() > MAX_LINE){
+		// 	return -1;
+		// }
+
+		// try {
+		// } catch(Exception e) {
+		// 	System.out.println("c> DELETE FAIL");
+		// 	// System.err.println("Can't reach the host.");
+		// 	// System.err.println("excepcion " + e.toString() );
+		// 	// e.printStackTrace() ;
+		// 	return -1;
+		// }
+
+		if (!checkFileName(file_name)) {
 			System.out.println("c> DELETE FAIL");
 			return -1;
 		}
 
-		Socket sc;
 		try {
+			//Crear conexiones
+			Socket sc;
 			sc = new Socket(_server, _port);
-		} catch(Exception e) {
-			System.out.println("c> DELETE FAIL");
-			// System.err.println("Can't reach the host.");
-			// System.err.println("excepcion " + e.toString() );
-			// e.printStackTrace() ;
-			return -1;
-		}
-		try {
 
 			DataOutputStream out = new DataOutputStream(sc.getOutputStream()); //Enviar
 			DataInputStream in = new DataInputStream(sc.getInputStream()); //Recibir
@@ -468,17 +478,18 @@ class client {
 	{
 		//
 		// System.out.println("LIST_USERS " );
-		Socket sc;
+		// try {
+		// } catch(Exception e) {
+		// 	System.out.println("c> LIST_USERS FAIL");
+		// 	// System.err.println("Can't reach the host.");
+		// 	// System.err.println("excepcion " + e.toString() );
+		// 	// e.printStackTrace() ;
+		// 	return -1;
+		// }
 		try {
+			//crear la conexiones
+			Socket sc;
 			sc = new Socket(_server, _port);
-		} catch(Exception e) {
-			System.out.println("c> LIST_USERS FAIL");
-			// System.err.println("Can't reach the host.");
-			// System.err.println("excepcion " + e.toString() );
-			// e.printStackTrace() ;
-			return -1;
-		}
-		try {
 
 			DataOutputStream out = new DataOutputStream(sc.getOutputStream()); //Enviar
 			DataInputStream in = new DataInputStream(sc.getInputStream()); //Recibir
@@ -574,22 +585,26 @@ class client {
 		//
 		// System.out.println("LIST_CONTENT " + user_name);
 
-		if(user_name.length() > MAX_LINE){
+		// if(user_name.length() > MAX_LINE){
+		// 	return -1;
+		// }
+		if(!checkUserName(user_name)){
 			System.out.println("c> LIST_CONTENT FAIL");
 			return -1;
 		}
 
-		Socket sc;
+		// try {
+		// } catch(Exception e) {
+		// 	System.out.println("c> LIST_CONTENT FAIL");
+		// 	// System.err.println("Can't reach the host.");
+		// 	// System.err.println("excepcion " + e.toString() );
+		// 	// e.printStackTrace() ;
+		// 	return -1;
+		// }
 		try {
+			//Crear la conexión
+			Socket sc;
 			sc = new Socket(_server, _port);
-		} catch(Exception e) {
-			System.out.println("c> LIST_CONTENT FAIL");
-			// System.err.println("Can't reach the host.");
-			// System.err.println("excepcion " + e.toString() );
-			// e.printStackTrace() ;
-			return -1;
-		}
-		try {
 
 			DataOutputStream out = new DataOutputStream(sc.getOutputStream()); //Enviar
 			DataInputStream in = new DataInputStream(sc.getInputStream()); //Recibir
@@ -686,23 +701,24 @@ class client {
 	{
 		// System.out.println("GET_FILE " + user_name + " "  + remote_file_name + " " + local_file_name);
 
-
-		if(user_name.length() > MAX_LINE || remote_file_name.length() > MAX_LINE || local_file_name.length() > MAX_LINE){
+		//se comprueba que los campos son correctos
+		if(!checkUserName(user_name) || !checkFileName(remote_file_name) || !checkFileName(local_file_name)){
 			System.out.println("c> GET_FILE FAIL");
 			return -1;
 		}
 
-		Socket sc;
+		// try {
+		// } catch(Exception e) {
+		// 	System.out.println("c> GET_FILE FAIL");
+		// 	// System.err.println("Can't reach the host.");
+		// 	// System.err.println("excepcion " + e.toString() );
+		// 	// e.printStackTrace() ;
+		// 	return -1;
+		// }
 		try {
+			//Crear la conexión
+			Socket sc;
 			sc = new Socket(_server, _port);
-		} catch(Exception e) {
-			System.out.println("c> GET_FILE FAIL");
-			// System.err.println("Can't reach the host.");
-			// System.err.println("excepcion " + e.toString() );
-			// e.printStackTrace() ;
-			return -1;
-		}
-		try {
 
 			DataOutputStream out = new DataOutputStream(sc.getOutputStream()); //Enviar
 			DataInputStream in = new DataInputStream(sc.getInputStream()); //Recibir
@@ -997,6 +1013,43 @@ class client {
     }
   }
 
+	private static boolean checkUserName(String user){
+		if(user.length() <= MAX_LINE){
+			if (user.length() > 2){
+				if (user.charAt(0) == ':' && user.charAt(1) == ':' && user.charAt(2) == ':' )
+					return false; //no puede empezar por :::loQueSea
+				return true;
+			}else{ //tiene menos de tres caracteres
+				return true;
+			}
+		}else return false; //se pasa de longitud
+	}
+
+
+	private static boolean checkFileName(String file){
+		if(file.length() <= MAX_LINE){
+			if (file.length() > 1){
+				if (file.charAt(0) == '-' && file.charAt(1) == '>')
+					return false; //no puede empezar por :::loQueSea
+				return true;
+			}else{ //tiene menos de dos caracteres
+				return true;
+			}
+		}else return false; //se pasa de longitud
+	}
+
+
+	private static boolean checkDescription(String desc){
+		if(desc.length() <= MAX_LINE){
+			if (desc.length() > 1){
+				if (desc.charAt(0) == '|' && desc.charAt(1) == '|' )
+					return false; //no puede empezar por :::loQueSea
+				return true;
+			}else{ //tiene menos de dos caracteres
+				return true;
+			}
+		}else return false; //se pasa de longitud
+	}
 
 	/*********** READ FROM SERVER A STRING *********/
 	private static String readFromServer(DataInputStream in) throws Exception{

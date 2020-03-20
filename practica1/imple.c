@@ -52,7 +52,7 @@ int registerUser(char * user){
   FILE* fd = fopen(db, "r+"); //abrir para lectura y escritura
   if (fd == NULL){ //NO existía la base de datos
     // serverMsg("A new database will be created");
-    fd = fopen(db, "w");
+    fd = fopen(db, "w");// Si no existe, con "w" la crea
     if (fd == NULL){
       perror("Couldn't create a new database");
       return 2;
@@ -575,9 +575,9 @@ int deleteFile(FILE* fd, int fileLine){
 int searchUserPos(FILE* fd, char *userFormat){
   unsigned long position = ftell(fd);
   fseek(fd, 0, SEEK_SET);
-  char str[MAX_FILE_LINE];
+  char str[MAX_FILE_LINE]; //La línea más grande es la del fichero + desc + separadores
   int line = 0;
-  while(fgets(str, sizeof(str), fd)) {
+  while(fgets(str, sizeof(str), fd)) { //fgets coge una línea
     line ++;
     if (strcmp(str, userFormat) == 0){
       fseek(fd, position, SEEK_SET);
