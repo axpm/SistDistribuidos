@@ -287,12 +287,58 @@ void listenClient(int *cs){
 		}
 
 		if(cont){
-			printf("%s\n", "" );
+			printf("%s\n", "Conectado, faltan cosas" );
+			printf("s> ");
+			fflush(stdout);
 		}
 
 
 	}//end of CONNECT
 
+	// ----------------CONNECT sin hacer
+	else if (strcmp("DISCONNECT", buffer) == 0) {
+		char user[MAX_LINE];
+		err = readLine(clienteSd, user, MAX_LINE);
+		if (err == -1) {
+			perror("readLine, user");
+		}
+
+		printf("OPERATION FROM %s\n", user);
+		printf("s> ");
+		fflush(stdout);
+
+		//get cliente ip
+		struct sockaddr_in* pV4Addr = (struct sockaddr_in*) &client_addr;
+		struct in_addr ipAddr = pV4Addr->sin_addr;
+		char ip[INET_ADDRSTRLEN];
+		// ip = inet_ntop(*(struct in_addr*) client_addr.sin_addr); //Convert into IP string
+		inet_ntop( AF_INET, &ipAddr, ip, INET_ADDRSTRLEN );
+
+		pthread_mutex_lock(&mutex2);
+		int reply = disconnectUser(user); //accion a realizar
+		pthread_mutex_unlock(&mutex2);
+		//para poder enviar el código de error
+		char replyC[1];
+		switch (reply) {
+			case 0:
+				replyC[0] = '0';
+				break;
+			case 1:
+				replyC[0] = '1';
+				break;
+			case 2:
+				replyC[0] = '2';
+				break;
+			default:
+				replyC[0] = '3';
+		}
+		err = enviar(clienteSd, replyC, 1);
+		if (err == -1) {
+			perror("enviar");
+		}
+
+
+	}//end of DISCONNECT
 
 
 	else if(strcmp("PUBLISH", buffer) == 0){

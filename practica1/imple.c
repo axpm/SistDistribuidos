@@ -6,7 +6,7 @@ char db[MAX_LINE] = DATABASE_NAME;
 // int main(int argc, char const *argv[]) {
 //   // bool noMore = false;
 //   // int n = 6;
-//   // char userTarget[MAX_LINE] = "user4";
+//   // char userTarget[MAX_LINE] = "LauraLaMasGuapa";
 // 	// int firstLine = 0, lastLine = 0;
 //   // char file[MAX_LINE];
 //   //
@@ -29,11 +29,13 @@ char db[MAX_LINE] = DATABASE_NAME;
 //   //   firstLine++;
 //   // }
 //
-//   char user[MAX_LINE] = "user1";
+//   char user[MAX_LINE] = "alex";
 //   char ip[MAX_LINE] = "192.2.2.2";
 //   char port[MAX_LINE] = "2";
-//   printf("%d\n", connectUser(user, ip, port) );
-//
+//   // printf("%d\n", registerUser(user));
+//   // printf("%d\n", connectUser(user, ip, port) );
+//   // printf("%d\n", disconnectUser(user) );
+//   // printf("%d\n", unregisterUser(user));
 //
 //   return(0);
 // } //fin main
@@ -122,6 +124,7 @@ int connectUser(char* user,char *ip, char *port){
   char userFormat[MAX_LINE];
   sprintf(userFormat, ":::%s\n", user); //los usuarios empiezan con este formato ":::username"
   int userLine = isConnectedWithoutFD(fd, userFormat); //mira si está conectado un usuario y si lo está devuelve la línea en la que está, si no existe -1
+
   if (userLine == -1){
     return 1; //no existe el usuario
   }
@@ -130,6 +133,7 @@ int connectUser(char* user,char *ip, char *port){
   }
   userLine = searchUserPos(fd, userFormat);
   int nextUserLine = searchNextUserPosWithoutFD(fd, userLine);
+  // printf("userLine %d, nextUserLine %d\n", userLine, nextUserLine );
 
   //no conectado, se le mete la ip y puerto
   char newLine[MAX_FILE_LINE];
@@ -145,11 +149,29 @@ int connectUser(char* user,char *ip, char *port){
     return 3; //devuelve error
   }
 
-//escribir en el archivo
+// escribir en el archivo
   if (nextUserLine == -1){
-    fseek(fd, 0, SEEK_END); //se pone el puntero del fichero al final
-    fprintf(fd, "%s", newLine);
-  }else{
+    bool moreLines = false;
+    fseek(fd, 0, SEEK_SET); //se pone el puntero del fichero al principio
+    while (!feof(fd)) {
+      strcpy(str, "\0");
+      fgets(str, MAX_FILE_LINE, fd);
+      if (!feof(fd)){
+        line++;
+        if (line == userLine + 1){
+          moreLines = true;
+          fprintf(fd2, "%s", newLine);
+        }
+        fprintf(fd2, "%s", str);
+      }
+    }
+    if (!moreLines){ //si no hay más líneas se pone al final
+      fprintf(fd2, "%s", newLine);
+    }
+    // fseek(fd, 0, SEEK_END); //se pone el puntero del fichero al final
+    // fprintf(fd, "%s", newLine);
+  }
+  else{
     fseek(fd, 0, SEEK_SET); //se pone el puntero del fichero al principio
     fd2 = fopen(temp, "w"); // abrir un archivo temporal para escribir
     if (fd2 == NULL){
@@ -162,15 +184,15 @@ int connectUser(char* user,char *ip, char *port){
       fgets(str, MAX_FILE_LINE, fd);
       if (!feof(fd)){
         line++;
-        if (line == nextUserLine){
+        if (line == userLine + 1){
            fprintf(fd2, "%s", newLine);
         }
         fprintf(fd2, "%s", str);
       }
     }
-    fclose(fd2); //cerramos el fichero auxiliar
   }
   //cerramos todos los ficheros y actualizamos el fichero
+  fclose(fd2); //cerramos el fichero auxiliar
   fclose(fd);
   remove(DATABASE_NAME);  		//eliminamos el archivo original
   rename(temp, DATABASE_NAME); 	// renombramos el temporal como el original
@@ -278,6 +300,8 @@ void fillUserInfo(char *user, char * ip, char *port, int *userLine, int *nextUse
   if (fd == NULL){ //NO existía la base de datos
     // perror("Not database existing");
     *noMore = true;
+    //reseteamos el user
+    sprintf(user, "%s", "");
     return;
   }
   int line = 0;
@@ -304,6 +328,8 @@ void fillUserInfo(char *user, char * ip, char *port, int *userLine, int *nextUse
       ptr = strtok(ptr, "\n"); //borrar el \n final
       sprintf(user, "%s", ptr);
       if( isConnectedWithoutFD(fd, str) <= 0 ) {
+        //reseteamos el user
+        sprintf(user, "%s", "");
        *userLine = searchNextUserPosWithoutFD(fd, *userLine);
       }else{
         *nextUserLine = searchNextUserPosWithoutFD(fd, *userLine);
@@ -398,6 +424,62 @@ void fillContentUser(char *file, int *firstLine, int lastLine, bool *noMore){
   fclose(fd);
 }//end list_content(2) (fillContentUser)
 
+int disconnectUser(char* user){
+  FILE* fd = fopen(db, "r+"); //abrir para lectura y escritura
+  if (fd == NULL){ //NO existía la base de datos
+    // perror("Not database existing");
+    return 3;
+  }
+  char userFormat[MAX_LINE];
+  sprintf(userFormat, ":::%s\n", user); //los usuarios empiezan con este formato ":::username"
+  int userLine = isConnectedWithoutFD(fd, userFormat); //mira si está conectado un usuario y si lo está devuelve la línea en la que está, si no existe -1
+
+  if (userLine == -1){
+    return 1; //no existe el usuario
+  }
+  if(userLine == 0){
+    return 2; //no estaba conectado el usuario
+  }
+
+  FILE *fd2;
+  char str[MAX_FILE_LINE], temp[] = "temp.txt";
+  int line = 0;
+  fd2 = fopen(temp, "w"); // abrir un archivo temporal para escribir
+  if (fd2 == NULL){
+    fclose(fd);
+    return 3; //devuelve error
+  }
+
+// escribir en el archivo
+  fseek(fd, 0, SEEK_SET); //se pone el puntero del fichero al principio
+  fd2 = fopen(temp, "w"); // abrir un archivo temporal para escribir
+  if (fd2 == NULL){
+    fclose(fd);
+    return 3; //devuelve error
+  }
+  // printf("%d\n", nextUserLine);
+  while (!feof(fd)) {
+    strcpy(str, "\0");
+    fgets(str, MAX_FILE_LINE, fd);
+    if (!feof(fd)){
+      line++;
+      if (line < userLine + 1 || line > userLine + 1 ){ //avoid userLine + 1 que tiene la info de conexión
+        fprintf(fd2, "%s", str);
+      }
+    }
+  }
+  //cerramos todos los ficheros y actualizamos el fichero
+  fclose(fd2); //cerramos el fichero auxiliar
+  fclose(fd);
+  remove(DATABASE_NAME);  		//eliminamos el archivo original
+  rename(temp, DATABASE_NAME); 	// renombramos el temporal como el original
+
+
+  return 0;
+}//end of disconnectUser
+
+
+
 
 // ------- Funciones de apoyo -------
 //Rellenar límites de contenido usuario
@@ -457,6 +539,9 @@ int isConnectedWithoutFD(FILE* fd, char *userFormat){
       found = true;
   }
   fseek(fd, position, SEEK_SET);
+  if(found == true){
+    return 0; //existe, pero no conectado
+  }
   return -1; //not connected
 }
 

@@ -16,5 +16,6 @@ int publish(char *user, char *file, char *desc);
 int deleteContent(char *user, char *file);
 int list_users(char *user);
 int list_content(char *user, char *userTarget);
+int disconnectUser(char *user);
 
 #endif
