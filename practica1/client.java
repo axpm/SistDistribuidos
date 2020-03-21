@@ -50,10 +50,8 @@ class myThread extends Thread {
 
 				//cada vez que se acepta una conexión, se envían los datos a un hilo
 				// new ProcessRequest(client).start();
-				//ahora con solo un hilo
 
-				// InputStream istream = client.getInputStream();
-				// ObjectInput in = new ObjectInputStream(istream);
+				//ahora con solo un hilo
 
 				DataInputStream in = new DataInputStream(client.getInputStream()); //Recibir
 				DataOutputStream out = new DataOutputStream(client.getOutputStream());//Enviar
@@ -99,13 +97,14 @@ class myThread extends Thread {
 
 					//cerramos archivos
 					fr.close();
+					client.close(); //cerramos la conexión con el cliente
 
 				}else{
 					out.writeBytes("2"); //Escribimos en la salida del cliente el error al cliente
 					out.write('\0'); // inserta el código ASCII 0 al final
+					client.close(); //cerramos la conexión con el cliente
 				}
 
-				client.close(); //cerramos la conexión con el cliente
 			}catch(Exception e) {
 				// out.writeBytes("2"); //Escribimos en la salida del cliente el error al cliente
 				// out.write('\0'); // inserta el código ASCII 0 al final
@@ -229,9 +228,6 @@ class client {
 	private static int _port = -1;
 	private static final int MAX_LINE = 256;
 
-
-	//no seguro
-	/************************************ OJO  ***************************************/
 	private static myThread _th = null;
 	private static boolean userConnected = false;
 	private static String userOperating = null;
@@ -488,6 +484,7 @@ class client {
 			switch(c) {
 				case '0':
 					System.out.println("c> DISCONNECT OK");
+					_th.join(); //acabar el hilo que estaba conectado
 					break;
 				case '1':
 					System.out.println("c> DISCONNECT FAIL / USER DOES NOT EXIST");
