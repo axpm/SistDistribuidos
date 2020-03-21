@@ -4,6 +4,221 @@ import java.net.* ;
 import java.util.* ;
 import gnu.getopt.Getopt;
 
+class Pair {
+  public String ip;
+  public String port;
+
+  public Pair(String i1, String i2){
+   ip = i1;
+   port = i2;
+  }
+
+}
+
+
+class myThread extends Thread {
+
+	ServerSocket serverAddr;
+	int serverPort;
+	String user;
+	// to stop the thread
+  private boolean exit;
+
+
+	public myThread(String serverPort, String user) {
+		this.serverAddr = null;
+		this.serverPort = Integer.parseInt(serverPort);
+		this.user = user;
+	}
+	public void run(){  //se lanza el servidor que escuchará las peticiones
+		// lanzará hilos de procesar peticiones, no será necesario si se hace un servidor secuencial
+		//si se copia solo de uno en uno, entonces no será necesario crear más subhilos
+		try {
+			this.serverAddr = new ServerSocket(this.serverPort);
+		}
+		catch (Exception e){
+			System.err.println("Error creando socket");
+			// if (serverAddr != null){
+			// serverAddr.close();
+			// }
+			// return;
+		}
+
+		while (!exit){
+			try {
+				Socket client = serverAddr.accept();
+
+				//cada vez que se acepta una conexión, se envían los datos a un hilo
+				// new ProcessRequest(client).start();
+				//ahora con solo un hilo
+
+				// InputStream istream = client.getInputStream();
+				// ObjectInput in = new ObjectInputStream(istream);
+
+				DataInputStream in = new DataInputStream(client.getInputStream()); //Recibir
+				DataOutputStream out = new DataOutputStream(client.getOutputStream());//Enviar
+
+				String operation = readFromServer(in);
+				String remoteFile = readFromServer(in);
+				if(operation.equals("GET_FILE")){
+
+				}else{
+					out.writeBytes("2"); //Escribimos en la salida del cliente el error al cliente
+					out.write('\0'); // inserta el código ASCII 0 al final
+				}
+
+				//comprobar que el usuario tiene este archivo en sus archivos
+				if(checkAvailability(remoteFile, this.user) ){ //si está disponible, se enviará
+					//leer del archivo y enviarlo al cliente
+
+					//objetos para leer
+					FileReader fr = null;
+					BufferedReader brf = null;
+
+					try{
+						//leer archivo remoto
+						String rf = "/temp" + remoteFile;
+						fr = new FileReader(rf);
+						brf = new BufferedReader(fr);
+
+					}catch (Exception e) {
+						out.writeBytes("2"); //Escribimos en la salida del cliente el error al cliente
+						out.write('\0'); // inserta el código ASCII 0 al final
+						//cerrar archivos en caso de error
+						if( fr != null ){
+					      fr.close();
+					    }
+					}
+					// Lectura del fichero
+					String strLine;
+					//hasta que lea nulo, escribe en el archivo local
+					while( (strLine = brf.readLine()) !=null){
+					 out.writeBytes(strLine); //Enviamos lo que se lee
+					}
+					out.write('\0'); // inserta el código ASCII 0 al final
+
+					//cerramos archivos
+					fr.close();
+
+				}else{
+					out.writeBytes("2"); //Escribimos en la salida del cliente el error al cliente
+					out.write('\0'); // inserta el código ASCII 0 al final
+				}
+
+				client.close(); //cerramos la conexión con el cliente
+			}catch(Exception e) {
+				// out.writeBytes("2"); //Escribimos en la salida del cliente el error al cliente
+				// out.write('\0'); // inserta el código ASCII 0 al final
+			}
+
+			// client.close(); //cerramos la conexión con el cliente
+		}//end whileTrue
+		try {
+			serverAddr.close(); //cerramos el servidor
+		} catch(Exception e) {
+			// System.err.println("excepcion " + e.toString() );
+			// e.printStackTrace() ;
+		}
+	}
+
+
+
+	/*********** READ FROM SERVER A STRING *********/
+	private static String readFromServer(DataInputStream in) throws Exception{
+		String message = "";
+		byte[] ch = new byte[1];
+		try {
+			//leer un String
+			do{
+				ch[0] = in.readByte(); //Leemos la respuesta
+				if (ch[0] != '\0'){
+					String d = new String(ch);
+					message = message + d; //Concatenamos
+				}
+			}while(ch[0] != '\0');
+		}catch (Exception e) {
+			message = "";
+			return message;
+		}
+		return message;
+
+	}
+
+	private static boolean checkAvailability(String file, String user){
+		//hacer el protocolo para listar los archivos de un usuario
+
+
+		return true; //si estaba disponible
+	}
+
+}//end of class myThread
+
+// class ProcessRequest extends Thread {
+// 	private Socket sc;
+//
+//
+// 	public ProcessRequest(Socket s) {
+// 		sc = s;
+// 	}
+//
+// 	public void run() { //función que se realiza para tratar la petición que llega
+// 		String remoteFile;
+// 		// TODO: código de copiar el archivo
+//
+// 		//leer del cliente y copiar remoteFile y localFile, para saber de dónde copiar y a donde copiar
+// 		// if (cont) {
+// 		//
+// 		// //se abre el archivo local para escribir y el remoto para escribir
+// 		// //objetos para escribir
+// 		// FileWriter fw = null;
+// 		// PrintWriter pw = null;
+// 		// //objetos para leer
+// 		// FileReader fr = null;
+// 		// BufferedReader brf = null;
+// 		//
+// 		// try{
+// 		// 	//leer archivo remoto
+// 		// 	String rf = "/temp" + remote_file_name;
+// 		// 	fr = new FileReader(rf);
+// 		// 	brf = new BufferedReader(fr);
+// 		// 	//escribir archivo local
+// 		// 	String lf = "/temp" + local_file_name;
+// 		// 	fw = new FileWriter(lf);
+// 		// 	pw = new PrintWriter(fw);
+// 		//
+// 		// }catch (Exception e) {
+// 		// 	System.out.println("c> GET_FILE FAIL");
+// 		// 	//cerrar archivos en caso de error
+// 		// 	if( fr != null ){
+// 		//        fr.close();
+// 		//     }
+// 		// 	if( fw != null ){
+// 		//        fw.close();
+// 		//     }
+// 		// 	return -1;
+// 		// }
+// 		// // Lectura del fichero
+// 		// String StrLine;
+// 		// //hasta que lea nulo, escribe en el archivo local
+// 		// while( (StrLine = brf.readLine()) !=null){
+// 		// 	 pw.println(StrLine); //escribir en el local
+// 		// }
+// 		//
+// 		// //cerramos archivos
+// 		// fr.close();
+// 		// fw.close();
+// 	// }// fin de continue
+// 	// sc.close(); //cerrar socket
+// 		try {
+// 			sc.close(); //close socket before leaving
+//
+// 		} catch(Exception e) {
+//
+// 		}
+// 	}
+//
+// }//end of class ProcessRequest
+
 
 class client {
 
@@ -15,6 +230,12 @@ class client {
 	private static final int MAX_LINE = 256;
 
 
+	//no seguro
+	/************************************ OJO  ***************************************/
+	private static myThread _th = null;
+	private static boolean userConnected = false;
+	private static String userOperating = null;
+
 	/********************* METHODS ********************/
 
 	/**
@@ -22,25 +243,16 @@ class client {
 	 *
 	 * @return ERROR CODE
 	 */
-	static int register(String user)
-	{
+	static int register(String user) throws java.io.IOException{
 		//chequear que no empieza por :::
 		if(!checkUserName(user)){
 			System.out.println("c> REGISTER FAIL");
 			return -1;
 		}
 
-		// try {
-		// } catch(Exception e) {
-		// 	System.out.println("c> REGISTER FAIL");
-		// 	// System.err.println("Can't reach the host.");
-		// 	// System.err.println("excepcion " + e.toString() );
-		// 	// e.printStackTrace() ;
-		// 	return -1;
-		// }
+		Socket sc = null;
 		try {
 			// Crear las conexiones
-			Socket sc;
 			sc = new Socket(_server, _port);
 
 			DataOutputStream out = new DataOutputStream(sc.getOutputStream()); //Enviar
@@ -75,6 +287,9 @@ class client {
 
 		} catch(Exception e) {
 			System.out.println("c> REGISTER FAIL");
+			if( sc != null ){
+				sc.close();
+			}
 			// System.err.println("excepcion " + e.toString() );
 			// e.printStackTrace() ;
 			return -1;
@@ -88,23 +303,16 @@ class client {
 	 *
 	 * @return ERROR CODE
 	 */
-	static int unregister(String user)	{
+	static int unregister(String user) throws java.io.IOException{
 		//chequear que no empieza por :::
 		if(!checkUserName(user)){
 			System.out.println("c> UNREGISTER FAIL");
 			return -1;
 		}
-		// try {
-		// } catch(Exception e) {
-		// 	System.out.println("c> UNREGISTER FAIL");
-		// 	// System.err.println("Can't reach the host.");
-		// 	// System.err.println("excepcion " + e.toString() );
-		// 	// e.printStackTrace() ;
-		// 	return -1;
-		// }
+
+		Socket sc = null;
 		try {
 			// Crear las conexiones
-			Socket sc;
 			sc = new Socket(_server, _port);
 
 			DataOutputStream out = new DataOutputStream(sc.getOutputStream()); //Enviar
@@ -138,6 +346,9 @@ class client {
 			sc.close();
 		} catch(Exception e) {
 			System.out.println("c> UNREGISTER FAIL");
+			if( sc != null ){
+				sc.close();
+			}
 			// System.err.println("excepcion " + e.toString() );
 			// e.printStackTrace() ;
 			return -1;
@@ -151,8 +362,7 @@ class client {
 	 *
 	 * @return ERROR CODE
 	 */
-	static int connect(String user)
-	{
+	static int connect(String user) throws java.io.IOException{
 		//
 		// System.out.println("CONNECT " + user);
 
@@ -175,16 +385,8 @@ class client {
 		}
 
 		// Crear las conexiones
-		// try {
-		// } catch(Exception e) {
-		// 	System.out.println("c> CONNECT FAIL");
-		// 	// System.err.println("Can't reach the host.");
-		// 	// System.err.println("excepcion " + e.toString() );
-		// 	// e.printStackTrace() ;
-		// 	return -1;
-		// }
+		Socket sc = null;
 		try {
-			Socket sc;
 			sc = new Socket(_server, _port);
 
 			DataOutputStream out = new DataOutputStream(sc.getOutputStream()); //Enviar
@@ -199,7 +401,7 @@ class client {
 			out.writeBytes(message); //Escribimos en la salida del cliente
 			out.write('\0'); // inserta el código ASCII 0 al final
 			//send port
-			message = "" + findRandomOpenPortOnAllLocalInterfaces(); //envía un puerto libre
+			message = "" + findRandomOpenPort(); //envía un puerto libre
 			out.writeBytes(message); //Escribimos en la salida del cliente
 			out.write('\0'); // inserta el código ASCII 0 al final
 
@@ -207,10 +409,13 @@ class client {
 			byte[] ch = new byte[1];
 			ch[0] = in.readByte(); //Leemos la respuesta
 			char c = (char) ch[0];
+			boolean cont = false;
 
 			switch(c) {
 				case '0':
 					System.out.println("c> CONNECT OK");
+					userConnected = true;
+					userOperating = user;
 					break;
 				case '1':
 					System.out.println("c> CONNECT FAIL, USER DOES NOT EXIST");
@@ -223,12 +428,24 @@ class client {
 				}
 
 			sc.close();
+			//buscar puerto del cliente
+			if (userConnected) {
+				//iniciamos un servidor de escucha
+				Pair ipPort = new Pair(null, null);
+				_th = new myThread(ipPort.ip, userOperating);
+				_th.start();
+			}
+
 		} catch(Exception e) {
 			System.out.println("c> CONNECT FAIL");
+			if( sc != null ){
+				sc.close();
+			}
 			// System.err.println("excepcion " + e.toString() );
 			// e.printStackTrace() ;
 			return -1;
 		}
+
 
 
 
@@ -240,24 +457,15 @@ class client {
 	 *
 	 * @return ERROR CODE
 	 */
-	static int disconnect(String user)
-	{
+	static int disconnect(String user) throws java.io.IOException{
 		//chequear que no empieza por :::
 		if(!checkUserName(user)){
 			System.out.println("c> DISCONNECT FAIL");
 			return -1;
 		}
 
-		// try {
-		// } catch(Exception e) {
-		// 	System.out.println("c> DISCONNECT FAIL");
-		// 	// System.err.println("Can't reach the host.");
-		// 	// System.err.println("excepcion " + e.toString() );
-		// 	// e.printStackTrace() ;
-		// 	return -1;
-		// }
+		Socket sc = null;
 		try {
-			Socket sc;
 			sc = new Socket(_server, _port);
 
 			DataOutputStream out = new DataOutputStream(sc.getOutputStream()); //Enviar
@@ -294,6 +502,9 @@ class client {
 			sc.close();
 		} catch(Exception e) {
 			System.out.println("c> DISCONNECT FAIL");
+			if( sc != null ){
+				sc.close();
+			}
 			// System.err.println("excepcion " + e.toString() );
 			// e.printStackTrace() ;
 			return -1;
@@ -309,26 +520,16 @@ class client {
 	 *
 	 * @return ERROR CODE
 	 */
-	static int publish(String file_name, String description)
-	{
+	static int publish(String file_name, String description) throws java.io.IOException{
 		//chequear que no empieza por :::
 		if(!checkFileName(file_name) || !checkDescription(description)){
 			System.out.println("c> PUBLISH FAIL");
 			return -1;
 		}
 
-
-
-		// try {
-		// } catch(Exception e) {
-		// 	System.out.println("c> PUBLISH FAIL");
-		// 	// System.err.println("Can't reach the host.");
-		// 	// System.err.println("excepcion " + e.toString() );
-		// 	// e.printStackTrace() ;
-		// 	return -1;
-		// }
+		Socket sc = null;
 		try {
-			Socket sc;
+			//crear la conexión
 			sc = new Socket(_server, _port);
 
 			DataOutputStream out = new DataOutputStream(sc.getOutputStream()); //Enviar
@@ -378,6 +579,9 @@ class client {
 			sc.close();
 		} catch(Exception e) {
 			System.out.println("c> PUBLISH FAIL");
+			if( sc != null ){
+				sc.close();
+			}
 			// System.err.println("excepcion " + e.toString() );
 			// e.printStackTrace() ;
 			return -1;
@@ -392,31 +596,16 @@ class client {
 	 *
 	 * @return ERROR CODE
 	 */
-	static int delete(String file_name)
-	{
-		//
-		// System.out.println("DELETE " + file_name);
-		// if(file_name.length() > MAX_LINE){
-		// 	return -1;
-		// }
-
-		// try {
-		// } catch(Exception e) {
-		// 	System.out.println("c> DELETE FAIL");
-		// 	// System.err.println("Can't reach the host.");
-		// 	// System.err.println("excepcion " + e.toString() );
-		// 	// e.printStackTrace() ;
-		// 	return -1;
-		// }
-
+	static int delete(String file_name) throws java.io.IOException{
+		//chequear que no empieza por ->
 		if (!checkFileName(file_name)) {
 			System.out.println("c> DELETE FAIL");
 			return -1;
 		}
 
+		Socket sc = null;
 		try {
 			//Crear conexiones
-			Socket sc;
 			sc = new Socket(_server, _port);
 
 			DataOutputStream out = new DataOutputStream(sc.getOutputStream()); //Enviar
@@ -462,6 +651,9 @@ class client {
 			sc.close();
 		} catch(Exception e) {
 			System.out.println("c> DELETE FAIL");
+			if( sc != null ){
+				sc.close();
+			}
 			// System.err.println("excepcion " + e.toString() );
 			// e.printStackTrace() ;
 			return -1;
@@ -474,21 +666,11 @@ class client {
 	 /**
 	 * @return ERROR CODE
 	 */
-	static int list_users()
-	{
-		//
-		// System.out.println("LIST_USERS " );
-		// try {
-		// } catch(Exception e) {
-		// 	System.out.println("c> LIST_USERS FAIL");
-		// 	// System.err.println("Can't reach the host.");
-		// 	// System.err.println("excepcion " + e.toString() );
-		// 	// e.printStackTrace() ;
-		// 	return -1;
-		// }
+	static int list_users() throws java.io.IOException{
+
+		Socket sc = null;
 		try {
 			//crear la conexiones
-			Socket sc;
 			sc = new Socket(_server, _port);
 
 			DataOutputStream out = new DataOutputStream(sc.getOutputStream()); //Enviar
@@ -564,6 +746,9 @@ class client {
 			sc.close();
 		} catch(Exception e) {
 			System.out.println("c> LIST_USERS FAIL");
+			if( sc != null ){
+				sc.close();
+			}
 			// System.err.println("excepcion " + e.toString() );
 			// e.printStackTrace() ;
 			return -1;
@@ -580,30 +765,16 @@ class client {
 	 *
 	 * @return ERROR CODE
 	 */
-	static int list_content(String user_name)
-	{
-		//
-		// System.out.println("LIST_CONTENT " + user_name);
-
-		// if(user_name.length() > MAX_LINE){
-		// 	return -1;
-		// }
+	static int list_content(String user_name) throws java.io.IOException{
+		//chequear que no empieza por :::
 		if(!checkUserName(user_name)){
 			System.out.println("c> LIST_CONTENT FAIL");
 			return -1;
 		}
 
-		// try {
-		// } catch(Exception e) {
-		// 	System.out.println("c> LIST_CONTENT FAIL");
-		// 	// System.err.println("Can't reach the host.");
-		// 	// System.err.println("excepcion " + e.toString() );
-		// 	// e.printStackTrace() ;
-		// 	return -1;
-		// }
+		Socket sc = null;
 		try {
 			//Crear la conexión
-			Socket sc;
 			sc = new Socket(_server, _port);
 
 			DataOutputStream out = new DataOutputStream(sc.getOutputStream()); //Enviar
@@ -680,6 +851,9 @@ class client {
 			sc.close();
 		} catch(Exception e) {
 			System.out.println("c> LIST_CONTENT FAIL");
+			if( sc != null ){
+				sc.close();
+			}
 			// System.err.println("excepcion " + e.toString() );
 			// e.printStackTrace() ;
 			return -1;
@@ -697,9 +871,7 @@ class client {
 	 *
 	 * @return ERROR CODE
 	 */
-	static int get_file(String user_name, String remote_file_name, String local_file_name)
-	{
-		// System.out.println("GET_FILE " + user_name + " "  + remote_file_name + " " + local_file_name);
+	static int get_file(String user_name, String remote_file_name, String local_file_name) throws java.io.IOException{
 
 		//se comprueba que los campos son correctos
 		if(!checkUserName(user_name) || !checkFileName(remote_file_name) || !checkFileName(local_file_name)){
@@ -707,103 +879,82 @@ class client {
 			return -1;
 		}
 
-		// try {
-		// } catch(Exception e) {
-		// 	System.out.println("c> GET_FILE FAIL");
-		// 	// System.err.println("Can't reach the host.");
-		// 	// System.err.println("excepcion " + e.toString() );
-		// 	// e.printStackTrace() ;
-		// 	return -1;
-		// }
+
+		String port = null;
+		String server = null;
+		Socket client = null;
 		try {
-			//Crear la conexión
-			Socket sc;
-			sc = new Socket(_server, _port);
 
-			DataOutputStream out = new DataOutputStream(sc.getOutputStream()); //Enviar
-			DataInputStream in = new DataInputStream(sc.getInputStream()); //Recibir
+			if(userConnected){
+				//se abre un proceso para escuchar
+				Pair ipPort = getPortFromUser(user_name); //Coge el puerto del server
 
-			//send operation
-			String message = "GET_FILE";
-			out.writeBytes(message); //Escribimos en la salida del cliente
-			out.write('\0'); // inserta el código ASCII 0 al final
-			//send file a descargar
-			message = "" + remote_file_name; // // mensaje más código ASCII 0 al final
-			out.writeBytes(message); //Escribimos en la salida del cliente
-			out.write('\0'); // inserta el código ASCII 0 al final
+				client = new Socket(ipPort.ip, Integer.parseInt(ipPort.port)); // creamos una conexión con el otro cliente
+				DataOutputStream out = new DataOutputStream(client.getOutputStream()); //Enviar
+				DataInputStream in = new DataInputStream(client.getInputStream()); //Recibir
 
-			//recibimos respuesta que es un solo byte
-			byte[] ch = new byte[1];
-			ch[0] = in.readByte(); //Leemos la respuesta
-			char c = (char) ch[0];
-			boolean cont = false;
+				//send operation
+				String message = "GET_FILE";
+				out.writeBytes(message); //Escribimos en la salida del cliente
+				out.write('\0'); // inserta el código ASCII 0 al final
 
-			switch(c) {
-				case '0':
+				//send file a descargar
+				message = "" + remote_file_name; // // mensaje más código ASCII 0 al final
+				out.writeBytes(message); //Escribimos en la salida del cliente
+				out.write('\0'); // inserta el código ASCII 0 al final
+
+				//recibimos respuesta que es un solo byte
+				byte[] ch = new byte[1];
+				ch[0] = in.readByte(); //Leemos la respuesta
+				char c = (char) ch[0];
+				boolean cont = false;
+
+				switch(c) {
+					case '0':
 					System.out.println("c> GET_FILE OK");
 					cont = true;
 					break;
-				case '1':
+					case '1':
 					System.out.println("c> GET_FILE FAIL / FILE DOES NOT EXIST");
 					break;
-				default:
+					default:
 					System.out.println("c> GET_FILE FAIL");
-			}
+				}
 
-			//si fue todo bien se recibe el archivo
-			if (cont) {
+				//si fue todo bien se recibe el archivo
+				if (cont){
+					//leemos línea por línea de lo que se recibe y se escribe
+					//objetos para escribir
+					FileWriter fw = null;
+					PrintWriter pw = null;
 
-				//objetos para escribir
-				FileWriter fw = null;
-				PrintWriter pw = null;
-				//objetos para leer
-				FileReader fr = null;
-				BufferedReader brf = null;
-				//se abre el archivo local para escribir y el remoto para escribir
-        try
-        {
-					//leer archivo remoto
-					String rf = "/temp" + remote_file_name;
-					fr = new FileReader(rf);
-					brf = new BufferedReader(fr);
 					//escribir archivo local
 					String lf = "/temp" + local_file_name;
 					fw = new FileWriter(lf);
 					pw = new PrintWriter(fw);
 
-				}catch (Exception e) {
-					System.out.println("c> GET_FILE FAIL");
-					//cerrar archivos en caso de error
-					if( fr != null ){
-               fr.close();
-            }
-					if( fw != null ){
-               fw.close();
-            }
-					return -1;
-				}
-				// Lectura del fichero
-				String StrLine;
-				//hasta que lea nulo, escribe en el archivo local
-				while( (StrLine = brf.readLine()) !=null){
-					 pw.println(StrLine); //escribir en el local
+					String strLine = null;
+					while( (strLine = readFromServer(in) ) !=null){
+						pw.println(strLine); //escribir en el local
+					}
+					fw.close();//cerramos el fichero local
 				}
 
-				//cerramos archivos
-				fr.close();
-				fw.close();
+			}else{
 
-			}// fin de continue
+				System.out.println("c> GET_FILE FAIL");
+				return -1;
 
-			sc.close(); //cerrar socket
+			}
+
+
+
+
 		} catch(Exception e) {
 			System.out.println("c> GET_FILE FAIL");
-			// if( fr != null ){
-			// 		 fr.close();
-			// 	}
-			// if( fw != null ){
-			// 		 fw.close();
-			// 	}
+			if( client != null ){
+				client.close();
+			}
 			// System.err.println("excepcion " + e.toString() );
 			// e.printStackTrace() ;
 			return -1;
@@ -1005,7 +1156,86 @@ class client {
 
 
 	/*********************** OTHERS ***************************/
-	private static Integer findRandomOpenPortOnAllLocalInterfaces() throws IOException {
+	// private static String getPortFromUser(String userName, Socket sc) throws java.io.IOException{
+	private static Pair getPortFromUser(String userName) throws java.io.IOException{
+
+		String ip = null;
+		String port = null;
+		int n = 15;
+		Socket sc = null;
+		try {
+			//Crear la conexión
+			sc = new Socket(_server, _port);
+
+			DataOutputStream out = new DataOutputStream(sc.getOutputStream()); //Enviar
+			DataInputStream in = new DataInputStream(sc.getInputStream()); //Recibir
+
+			while(port != null){
+
+				//send operation
+				String message = "LIST_USERS";
+				out.writeBytes(message); //Escribimos en la salida del cliente
+				out.write('\0'); // inserta el código ASCII 0 al final
+
+				//send userOperating
+				message = "" + userOperating; //user;// // mensaje más código ASCII 0 al final
+				out.writeBytes(message); //Escribimos en la salida del cliente
+				out.write('\0'); // inserta el código ASCII 0 al final
+
+				//recibimos respuesta que es un solo byte
+				byte[] ch = new byte[1];
+				ch[0] = in.readByte(); //Leemos la respuesta
+				char c = (char) ch[0];
+				boolean cont = false;
+
+				switch(c) {
+					case '0':
+						cont = true;
+						break;
+					default:
+						cont = false;
+				}
+
+				//si fue todo bien se siguen enviando cosas
+				if (cont) {
+
+					for (int i = 0; i < n ; i++) {
+						//recibir user
+						String usersConn = readFromServer(in);
+						//recibir ip
+						String ipConn = readFromServer(in);
+						//recibir port
+						String portConn = readFromServer(in);
+
+						if( usersConn.equals(userName)){ // si usuario que se saca es el correcto, se obtiene su puerto
+							port = portConn;
+							ip = ipConn;
+							// return port;
+						 return new Pair(ip, port);
+						}
+					}
+
+				}// fin de continue
+
+			n *= 2; //si no tiene el puerto, para la siguiente ronda, sacará el doble de usuarios
+			cont = false;
+
+				}//fin del while
+			} catch(Exception e) {
+				// System.out.println("c> LIST_USERS FAIL");
+
+ 				return new Pair(ip, port);
+			}
+
+
+	 return new Pair(ip, port);
+	}
+
+
+
+
+
+	private static Integer findRandomOpenPort() throws IOException {
     try (
         ServerSocket socket = new ServerSocket(0);
     ) {
