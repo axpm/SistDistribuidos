@@ -77,7 +77,7 @@ int set(char *name, int i, int value){
   attr.mq_msgsize = sizeof(struct reply);
   char clientName[MAX];
   sprintf(clientName, "/Queue-%d", getpid()); //Se le da un nombre único para la cola del cliente
-  int qc = mq_open( clientName , O_CREAT | O_RDONLY, 0700, &attr); //Abrimos cola del cliente
+  int qc = mq_open(clientName , O_CREAT | O_RDONLY, 0700, &attr); //Abrimos cola del cliente
   if (qc == -1){
     perror("mq_open");
     return qc;

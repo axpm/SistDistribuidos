@@ -111,11 +111,11 @@ Las funciones que manejan la lista enlazada se encuentran en un archivo distinto
 
 % %%%%Pruebas%%%%
 \section{Pruebas}
-Para verificar el correcto funcionamiento de las operaciones en el servidor hemos creado el método \textit{show} que muestra la lista con el contenido de todos los vectores para ver las modificaciones.Además, hemos creado unos métodos en el cliente que muestra el resultado de los métodos (ErrorMsgInit, ErrorMsgSet, ErrorMsgGet y ErrorMsgDestroy).
+Para verificar el correcto funcionamiento de las operaciones en el servidor hemos creado el método \textit{show} que muestra la lista con el contenido de todos los vectores para ver las modificaciones. Además, hemos creado unos métodos en el cliente que muestra el resultado de los métodos: ErrorMsgInit, ErrorMsgSet, ErrorMsgGet y ErrorMsgDestroy que devuelven "OK" si ha sido correcta o "Something went wrong" si no lo es. A continuación, verificamos el correcto funcionamiento de las operaciones de manera secuencial.
 
 \begin{itemize}
   \item \textbf{init} \\
-    Para probar el funcionamiento del método init primero introducimos un vector llamado "vector1" de tamaño 10. La salida en este caso es: 1. Después, introducimos otro vector con el mismo nombre y mismo tamaño. La salida es: 0 y no se enlaza en la lista. Finalmente, introducimos otro vector del mismo nombre y tamaño distinto y la salida es -1. Añadimos otro vector de distinto nombre y tamaño y se añade a la lista sin problemas.
+    Para probar el funcionamiento del método init primero introducimos un vector llamado "vector1" de tamaño 1000. La salida en este caso es: 1. Después, introducimos otro vector con el mismo nombre y mismo tamaño. La salida es: 0 y no se enlaza en la lista. Finalmente, introducimos otro vector del mismo nombre y tamaño distinto y la salida es -1. Añadimos otro vector de distinto nombre y tamaño y se añade a la lista sin problemas.
 
     \begin{figure}[H]
       \centering
@@ -123,7 +123,7 @@ Para verificar el correcto funcionamiento de las operaciones en el servidor hemo
       \caption{Pruebas de función init}
     \end{figure}
 
-También se ha probado a crear un vector con un nombre y una dimensión desde un cliente e intentar volver a crearlo igual desde otro cliente. Se comprueba que el primero lo crea correctamente, pero al segundo cliente le da un mensaje de que el vector ya existe.
+También se ha probado a crear un vector con un nombre y una dimensión desde un cliente e intentar volver a crearlo igual desde otro cliente cuando el primero ya ha terminado. Se comprueba que el primero lo crea correctamente, pero al segundo cliente le da un mensaje de que el vector ya existe.
     \begin{figure}[H]
       \centering
       \includegraphics [scale=0.4]{INIT2clientes.png}
@@ -149,7 +149,7 @@ También se ha probado a crear un vector con un nombre y una dimensión desde un
   \end{figure}
 
  \item \textbf{destroy}\\
-    Eliminamos un vector que está en la lista, la salida es 1. Después, eliminamos un vector cuyo nombre no se encuentra en la lista, la salida es -1 . Finalmente, se prueba que se borra correctamente un vector situado en mitad de la lista, al principio de la lista y al final de la lista con el fin de observar que se hacen correctamente los enlaces.
+    Eliminamos un vector que está en la lista, la salida es 1. Después, eliminamos un vector cuyo nombre no se encuentra en la lista, la salida es -1 .
 
     \begin{figure}[H]
       \centering
@@ -159,6 +159,20 @@ También se ha probado a crear un vector con un nombre y una dimensión desde un
 
 \end{itemize}
 
+Una vez probado la ejecución con un cliente de manera secuencial, mostramos algunos ejemplos en la siguiente imagen para comprobar el comportamiento con varios clientes de manera concurrente. Para ello, hemos utilizado sleep() para que uno de ellos se duerma en mitad de la ejecución. En la prueba que mostramos como ejemplo el primer cliente crea un vector vector1 de tamaño 1000, muestra el valor de la posición 80 con el get (resultado 0 al estar recién creado) y se duerme. Por otra parte, el segundo cliente crea el mismo vector (el resultado es que ya existe) y modifica los datos del vector con un set en un bucle de 1000 llamadas. A continuación, el primer cliente se despierta y muestra de nuevo con un get el valor de la posición 80 que modificó el segundo cliente.
+Por último, el segundo cliente borra otro vector vector2 que el primero creó antes de dormir. Comprobamos que lo hace correctamente.
+   \begin{figure}[H]
+      \centering
+      \includegraphics [scale=0.4]{CONCURRENCIA1.png}
+      \caption{Pruebas concurrencia}
+    \end{figure}
+Mostramos otro ejemplo con el fin de comprobar que el servidor es capaz de borrar a un vector vector2 situado entre dos vectores vector1 y vector3. Para ello, hacemos que el primer cliente cree el vector1, se duerma, el cliente2 crea el vector2, se duerma y, finalmente, el cliente primero crea el vector3 y destruya el vector2. Por último, el cliente2 intenta borra el vector2 y ya no existe.
+
+   \begin{figure}[H]
+      \centering
+      \includegraphics [scale=0.4]{CONCURRENCIA2.png}
+      \caption{Pruebas concurrencia}
+    \end{figure}
 
 \newpage
 
