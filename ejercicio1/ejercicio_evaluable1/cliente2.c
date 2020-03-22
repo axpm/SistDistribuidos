@@ -5,6 +5,8 @@ int main(int argc, char const *argv[]) {
   int init_count = 0, set_count = 0, destroy_count = 0;
   //get_count = 0
   set_count += 0;
+  destroy_count += 0;
+  init_count += 0;
 //--------------------------PRUEBA 1 CONCURRENCIA -------------------------------------------------------
   // printf("%s\n", "PRUEBAS CON INIT:Creamos el vector 1" );
   // init_count++;

@@ -72,9 +72,9 @@ Para la comunicación entre cliente y servidor hemos creado el fichero comm.h qu
 Para poder compilar el ejercicio se puede hacer de forma sencilla con \textit{make all}, esto generará todos los ejecutables.
 %Uno con la implementación de hilo bajo demanda (\textbf{servidor}) y otro con el pool de hilos (\textbf{servidorPool}). En el caso de que se quiera compilar solo lo necesario, se deberá realizar manualmente haciendo \textit{make} array, cliente, servidor o servidorPool.
 
-Nota: antes de compilar el cliente manualmente, será necesario haber generado la biblioteca dinámica haciendo en primer lugar \textit{make array}.
+Nota: antes de compilar el cliente manualmente (make cliente/cliente2), será necesario haber generado la biblioteca dinámica haciendo en primer lugar \textit{make array}.
 
-Para la ejecución del cliente y que no dé problemas con la variable \textit{LD\_LIBRARY\_PATH}, se ha incluido un archivo llamado \textit{cliente.sh} que hará la ejecución para resolver los problemas con la varible mencionada anteriormente.
+% Para la ejecución del cliente y que no de problemas con la variable \textit{LD\_LIBRARY\_PATH}, se ha incluido un archivo llamado \textit{cliente.sh} que hará la ejecución para resolver los problemas con la varible mencionada anteriormente.
 \subsection{Cliente}
 La función del cliente en el sistema es la de utilizar la interfaz gráfica, en este caso el main del archivo \textit{cliente.c} para administrar los datos que el cliente quiere utilizar, es decir, los vectores mencionados anteriormente. Tendrá la capacidades de realizar varias opciones.
 
