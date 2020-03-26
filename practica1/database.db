@@ -1,14 +1,14 @@
 :::user1
-$192.0.1.2:2500
 :::user2
 ->ficheros||desc
 ->file||desc
 :::user3
 ->fileUser3||desc
 :::user4
-$10.0.1.2:1300
 ->ficheros||desc
 ->ficheros2||desc
-:::alex
-$127.0.0.1:35183
 :::laurita
+:::ALEX
+->ficheroCopia||por ahora no hay descripción, no sé si lo tendría que copiar del original
+:::LAURITA
+->ficheroLaura||desc

@@ -21,14 +21,19 @@ class myThread extends Thread {
 	ServerSocket serverAddr;
 	int serverPort;
 	String user;
+  //Para conectarse y recopilar info del servidor Central
+  private String infoServer;
+  private int infoPort;
 	// to stop the thread
-  private boolean exit;
+  private boolean exit = false;
 
 
-	public myThread(String serverPort, String user) {
+	public myThread(String serverPort, String user, String infoServer, int infoPort) {
 		this.serverAddr = null;
 		this.serverPort = Integer.parseInt(serverPort);
 		this.user = user;
+    this.infoServer = infoServer;
+    this.infoPort = infoPort;
 	}
 	public void run(){  //se lanza el servidor que escuchará las peticiones
 		// lanzará hilos de procesar peticiones, no será necesario si se hace un servidor secuencial
@@ -69,17 +74,22 @@ class myThread extends Thread {
 				if(checkAvailability(remoteFile, this.user) ){ //si está disponible, se enviará
 					//leer del archivo y enviarlo al cliente
 
+          out.writeBytes("0"); //Escribimos en la salida del cliente el error al cliente
+          out.write('\0'); // inserta el código ASCII 0 al final
+
 					//objetos para leer
 					FileReader fr = null;
 					BufferedReader brf = null;
 
 					try{
 						//leer archivo remoto
-						String rf = "/temp" + remoteFile;
+						String rf = "/tmp/" + remoteFile;
 						fr = new FileReader(rf);
 						brf = new BufferedReader(fr);
 
 					}catch (Exception e) {
+            System.err.println("excepcion " + e.toString() );
+            e.printStackTrace() ;
 						out.writeBytes("2"); //Escribimos en la salida del cliente el error al cliente
 						out.write('\0'); // inserta el código ASCII 0 al final
 						//cerrar archivos en caso de error
@@ -90,40 +100,56 @@ class myThread extends Thread {
 					// Lectura del fichero
 					String strLine;
 					//hasta que lea nulo, escribe en el archivo local
-					while( (strLine = brf.readLine()) !=null){
-					 out.writeBytes(strLine); //Enviamos lo que se lee
-					}
+          while( (strLine = brf.readLine()) != null){
+            // System.out.println(strLine);
+            out.writeBytes(strLine); //Enviamos lo que se lee
+            // out.write('\n'); // inserta el código ASCII 0 al final
+          	out.write('\0'); // inserta el código ASCII 0 al final
+          }
+          out.writeBytes("END_OF_FILE");
 					out.write('\0'); // inserta el código ASCII 0 al final
+
+          // System.out.println("ESTO ACABA, EL PROBLEMA ESTÁ EN GET_FILE");
 
 					//cerramos archivos
 					fr.close();
 					client.close(); //cerramos la conexión con el cliente
+          // System.out.println("llega acá");
 
 				}else{
+
+
 					out.writeBytes("2"); //Escribimos en la salida del cliente el error al cliente
 					out.write('\0'); // inserta el código ASCII 0 al final
 					client.close(); //cerramos la conexión con el cliente
 				}
 
 			}catch(Exception e) {
+        System.err.println("excepcion " + e.toString() );
+        e.printStackTrace() ;
 				// out.writeBytes("2"); //Escribimos en la salida del cliente el error al cliente
 				// out.write('\0'); // inserta el código ASCII 0 al final
 			}
 
-			// client.close(); //cerramos la conexión con el cliente
+      // client.close(); //cerramos la conexión con el cliente
 		}//end whileTrue
 		try {
 			serverAddr.close(); //cerramos el servidor
 		} catch(Exception e) {
-			// System.err.println("excepcion " + e.toString() );
-			// e.printStackTrace() ;
+			System.err.println("excepcion " + e.toString() );
+			e.printStackTrace() ;
 		}
-	}
+    System.out.println("FIN DE HILO");
+	}//end of run
+
+	public void finish(){
+    exit = true;
+  }
 
 
 
 	/*********** READ FROM SERVER A STRING *********/
-	private static String readFromServer(DataInputStream in) throws Exception{
+	private String readFromServer(DataInputStream in) throws Exception{
 		String message = "";
 		byte[] ch = new byte[1];
 		try {
@@ -143,14 +169,101 @@ class myThread extends Thread {
 
 	}
 
-	private static boolean checkAvailability(String file, String user){
+	private boolean checkAvailability(String file, String user){
 		//hacer el protocolo para listar los archivos de un usuario
+    Socket sc = null;
+    int n = 15;
+    try {
+      //Crear la conexión
+      sc = new Socket(infoServer, infoPort);
 
+      DataOutputStream out = new DataOutputStream(sc.getOutputStream()); //Enviar
+      DataInputStream in = new DataInputStream(sc.getInputStream()); //Recibir
 
-		return true; //si estaba disponible
+      while(n < 500){
+        //send operation
+        String message = "LIST_CONTENT";
+        out.writeBytes(message); //Escribimos en la salida del cliente
+        out.write('\0'); // inserta el código ASCII 0 al final
+
+        //send user que está haciendo la operación
+        message = "" + user; // // mensaje más código ASCII 0 al final
+        out.writeBytes(message); //Escribimos en la salida del cliente
+        out.write('\0'); // inserta el código ASCII 0 al final
+        //send user del que se quiere saber la info
+        message = "" + user; // mensaje más código ASCII 0 al final
+        out.writeBytes(message); //Escribimos en la salida del cliente
+        out.write('\0'); // inserta el código ASCII 0 al final
+
+        //recibimos respuesta que es un solo byte
+        byte[] ch = new byte[1];
+        ch[0] = in.readByte(); //Leemos la respuesta
+        char c = (char) ch[0];
+        boolean cont = false;
+
+        switch(c) {
+          case '0':
+            cont = true;
+            break;
+          default:
+            return false;
+        }
+
+        message = Integer.toString(n);
+        out.writeBytes(message); //Escribimos en la salida del cliente
+        out.write('\0'); // inserta el código ASCII 0 al final
+
+        //si fue todo bien se siguen enviando cosas
+        if (cont) {
+
+          boolean found = false;
+          for (int i = 0; i < n ; i++) {
+            //recibir user
+            String f = readFromServer(in);
+
+            if( f.equals(file) ){ //si encuentra el fichero devuelve true
+              found = true;
+            }
+          }
+          if (found){
+            try {
+              if (sc != null){
+                sc.close();
+              }
+            } catch(IOException ex) {
+
+            }
+            return found;
+          }
+
+        }// fin de continue
+        n*=2; //aumentamos el rango
+      }//fin de if n <1000
+      try {
+        if (sc != null){
+          sc.close();
+        }
+      } catch(IOException ex) {
+
+      }
+      return false;
+    } catch(Exception e) {
+      try {
+        if (sc != null){
+          sc.close();
+        }
+      } catch(IOException ex) {
+
+      }
+      return false;
+    }
+
+		// return false;
 	}
 
 }//end of class myThread
+
+
 
 // class ProcessRequest extends Thread {
 // 	private Socket sc;
@@ -359,26 +472,21 @@ class client {
 	 * @return ERROR CODE
 	 */
 	static int connect(String user) throws java.io.IOException{
-		//
-		// System.out.println("CONNECT " + user);
 
-		//para elegir un puerto libre, asignar el 0 y elegirá uno libre
-		//findRandomOpenPortOnAllLocalInterfaces(); //esta funcion te hace eso ya
-
-		//crear hilo y crear ServerSocket(0)
-
-		//enviar mensaje
-
-		//recibir byte error
-
-
-		// -------------------------------HECHO DE FORMA SECUENCIAL ----////////////////
 
 		//chequear que no empieza por :::
 		if(!checkUserName(user)){
 			System.out.println("c> CONNECT FAIL");
 			return -1;
 		}
+
+    //si ya estaba conectado con un usuario, da error
+    if(userOperating != null){
+      System.out.println(userOperating);
+      System.out.println("SDFDAS");
+      System.out.println("c> CONNECT FAIL");
+      return -1;
+    }
 
 		// Crear las conexiones
 		Socket sc = null;
@@ -421,14 +529,14 @@ class client {
 					break;
 				default:
 					System.out.println("c> CONNECT FAIL");
-				}
+			}
 
 			sc.close();
 			//buscar puerto del cliente
 			if (userConnected) {
 				//iniciamos un servidor de escucha
-				Pair ipPort = new Pair(null, null);
-				_th = new myThread(ipPort.ip, userOperating);
+				Pair ipPort = getPortFromUser(userOperating);
+				_th = new myThread(ipPort.port, userOperating, _server, _port);
 				_th.start();
 			}
 
@@ -484,7 +592,9 @@ class client {
 			switch(c) {
 				case '0':
 					System.out.println("c> DISCONNECT OK");
-					_th.join(); //acabar el hilo que estaba conectado
+          userOperating = null;
+          userConnected = false;
+					_th.finish(); //acabar el hilo que estaba conectado
 					break;
 				case '1':
 					System.out.println("c> DISCONNECT FAIL / USER DOES NOT EXIST");
@@ -493,7 +603,7 @@ class client {
 					System.out.println("c> DISCONNECT FAIL / USER NOT CONNECTED");
 					break;
 				default:
-					System.out.println("c> DISCONNECT FAIL");
+					System.out.println("c> DISCONNECT FAILURE");
 				}
 
 			sc.close();
@@ -537,9 +647,9 @@ class client {
 			out.writeBytes(message); //Escribimos en la salida del cliente
 			out.write('\0'); // inserta el código ASCII 0 al final
 
-			String user = "user1"; //Ver cómo obtenerlo-------------------------------------------------------- IMPORTANTE
+			// String user = "user1"; //Ver cómo obtenerlo-------------------------------------------------------- IMPORTANTE
 			//send user
-			message = "" + user; //user;// // mensaje más código ASCII 0 al final
+			message = "" + userOperating; //user;// // mensaje más código ASCII 0 al final
 			out.writeBytes(message); //Escribimos en la salida del cliente
 			out.write('\0'); // inserta el código ASCII 0 al final
 			//send file_name
@@ -613,9 +723,9 @@ class client {
 			out.writeBytes(message); //Escribimos en la salida del cliente
 			out.write('\0'); // inserta el código ASCII 0 al final
 
-			String user = "user1"; //Ver cómo obtenerlo-------------------------------------------------------- IMPORTANTE
+			// String user = "user1"; //Ver cómo obtenerlo-------------------------------------------------------- IMPORTANTE
 			//send user
-			message = "" + user; //user;// // mensaje más código ASCII 0 al final
+			message = "" + userOperating; //user;// // mensaje más código ASCII 0 al final
 			out.writeBytes(message); //Escribimos en la salida del cliente
 			out.write('\0'); // inserta el código ASCII 0 al final
 			//send file_name
@@ -678,9 +788,9 @@ class client {
 			out.writeBytes(message); //Escribimos en la salida del cliente
 			out.write('\0'); // inserta el código ASCII 0 al final
 
-			String user = "user1"; //Ver cómo obtenerlo-------------------------------------------------------- IMPORTANTE
+			// String user = "user1"; //Ver cómo obtenerlo-------------------------------------------------------- IMPORTANTE
 			//send user
-			message = "" + user; //user;// // mensaje más código ASCII 0 al final
+			message = "" + userOperating; //user;// // mensaje más código ASCII 0 al final
 			out.writeBytes(message); //Escribimos en la salida del cliente
 			out.write('\0'); // inserta el código ASCII 0 al final
 
@@ -782,9 +892,9 @@ class client {
 			out.writeBytes(message); //Escribimos en la salida del cliente
 			out.write('\0'); // inserta el código ASCII 0 al final
 
-			String user = "user1"; //Ver cómo obtenerlo-------------------------------------------------------- IMPORTANTE
+			// String user = "user1"; //Ver cómo obtenerlo-------------------------------------------------------- IMPORTANTE
 			//send user que está haciendo la operación
-			message = "" + user; //user;// // mensaje más código ASCII 0 al final
+			message = "" + userOperating; //user;// // mensaje más código ASCII 0 al final
 			out.writeBytes(message); //Escribimos en la salida del cliente
 			out.write('\0'); // inserta el código ASCII 0 al final
 			//send user del que se quiere saber la info
@@ -926,15 +1036,33 @@ class client {
 					PrintWriter pw = null;
 
 					//escribir archivo local
-					String lf = "/temp" + local_file_name;
+					String lf = "/tmp/" + local_file_name;
+
+          File file = new File(lf);
+
+          file.createNewFile(); //habría que controlar el error
+
+
 					fw = new FileWriter(lf);
 					pw = new PrintWriter(fw);
 
 					String strLine = null;
-					while( (strLine = readFromServer(in) ) !=null){
+          int i = 0;
+					// while( (strLine = readFromServer(in) ) !=null){
+          // strLine = readFromServer(in);
+          while( !(strLine = readFromServer(in)).equals("END_OF_FILE") ){
+            // System.out.println(strLine);
+            // System.out.println(i);
 						pw.println(strLine); //escribir en el local
+            // strLine = readFromServer(in); //leemos siguiente línea
+
+            // i++; //quitar
 					}
+          // System.out.println("TERMINA GET_FILE");
 					fw.close();//cerramos el fichero local
+
+          //Publicar ese archivo
+          publish(local_file_name, "por ahora no hay descripción, no sé si lo tendría que copiar del original");
 				}
 
 			}else{
@@ -1069,6 +1197,16 @@ class client {
     			/************** QUIT **************/
     			else if (line[0].equals("QUIT")){
 						if (line.length == 1) {
+              try {
+                if(_th != null){
+                  _th.finish(); //acabar el hilo que estaba conectado
+                }
+              } catch(Exception e) {
+              }
+
+              if(userOperating != null && !userOperating.equals("") && !userOperating.equals(" ")){
+                disconnect(userOperating);
+              }
 							exit = true;
 						} else {
 							System.out.println("Syntax error. Use: QUIT");
@@ -1156,6 +1294,7 @@ class client {
 	// private static String getPortFromUser(String userName, Socket sc) throws java.io.IOException{
 	private static Pair getPortFromUser(String userName) throws java.io.IOException{
 
+
 		String ip = null;
 		String port = null;
 		int n = 15;
@@ -1167,7 +1306,8 @@ class client {
 			DataOutputStream out = new DataOutputStream(sc.getOutputStream()); //Enviar
 			DataInputStream in = new DataInputStream(sc.getInputStream()); //Recibir
 
-			while(port != null){
+      int counter = 0;
+			while(port == null){
 
 				//send operation
 				String message = "LIST_USERS";
@@ -1190,8 +1330,12 @@ class client {
 						cont = true;
 						break;
 					default:
-						cont = false;
+            cont = false;
 				}
+
+        message = Integer.toString(n);
+        out.writeBytes(message); //Escribimos en la salida del cliente
+				out.write('\0'); // inserta el código ASCII 0 al final
 
 				//si fue todo bien se siguen enviando cosas
 				if (cont) {
@@ -1208,6 +1352,13 @@ class client {
 							port = portConn;
 							ip = ipConn;
 							// return port;
+              try {
+                if (sc != null){
+                  sc.close();
+                }
+              } catch(IOException ex) {
+
+              }
 						 return new Pair(ip, port);
 						}
 					}
@@ -1216,15 +1367,29 @@ class client {
 
 			n *= 2; //si no tiene el puerto, para la siguiente ronda, sacará el doble de usuarios
 			cont = false;
+      counter += 1;
 
 				}//fin del while
 			} catch(Exception e) {
 				// System.out.println("c> LIST_USERS FAIL");
+        try {
 
+          if (sc != null){
+            sc.close();
+          }
+        } catch(IOException ex) {
+
+        }
  				return new Pair(ip, port);
 			}
 
+  try {
+    if (sc != null){
+      sc.close();
+    }
+  } catch(IOException ex) {
 
+  }
 	 return new Pair(ip, port);
 	}
 
