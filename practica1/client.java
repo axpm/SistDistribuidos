@@ -125,8 +125,8 @@ class myThread extends Thread {
 				}
 
 			}catch(Exception e) {
-        System.err.println("excepcion " + e.toString() );
-        e.printStackTrace() ;
+        // System.err.println("excepcion " + e.toString() );
+        // e.printStackTrace() ;
 				// out.writeBytes("2"); //Escribimos en la salida del cliente el error al cliente
 				// out.write('\0'); // inserta el código ASCII 0 al final
 			}
@@ -136,14 +136,24 @@ class myThread extends Thread {
 		try {
 			serverAddr.close(); //cerramos el servidor
 		} catch(Exception e) {
-			System.err.println("excepcion " + e.toString() );
-			e.printStackTrace() ;
+			// System.err.println("excepcion " + e.toString() );
+			// e.printStackTrace() ;
 		}
-    System.out.println("FIN DE HILO");
+
+    // System.out.println("FIN DE HILO"); //borrar cuando se consiga
 	}//end of run
 
 	public void finish(){
     exit = true;
+    //cierra el servidor por la fuerza y no me convence
+    try {
+			serverAddr.close(); //cerramos el servidor
+		} catch(Exception e) {
+			// System.err.println("excepcion " + e.toString() );
+			// e.printStackTrace() ;
+		}
+
+
   }
 
 
@@ -482,8 +492,6 @@ class client {
 
     //si ya estaba conectado con un usuario, da error
     if(userOperating != null){
-      System.out.println(userOperating);
-      System.out.println("SDFDAS");
       System.out.println("c> CONNECT FAIL");
       return -1;
     }
@@ -592,7 +600,7 @@ class client {
 			switch(c) {
 				case '0':
 					System.out.println("c> DISCONNECT OK");
-          userOperating = null;
+          // userOperating = null;
           userConnected = false;
 					_th.finish(); //acabar el hilo que estaba conectado
 					break;
@@ -647,7 +655,6 @@ class client {
 			out.writeBytes(message); //Escribimos en la salida del cliente
 			out.write('\0'); // inserta el código ASCII 0 al final
 
-			// String user = "user1"; //Ver cómo obtenerlo-------------------------------------------------------- IMPORTANTE
 			//send user
 			message = "" + userOperating; //user;// // mensaje más código ASCII 0 al final
 			out.writeBytes(message); //Escribimos en la salida del cliente
@@ -723,7 +730,6 @@ class client {
 			out.writeBytes(message); //Escribimos en la salida del cliente
 			out.write('\0'); // inserta el código ASCII 0 al final
 
-			// String user = "user1"; //Ver cómo obtenerlo-------------------------------------------------------- IMPORTANTE
 			//send user
 			message = "" + userOperating; //user;// // mensaje más código ASCII 0 al final
 			out.writeBytes(message); //Escribimos en la salida del cliente
@@ -788,7 +794,6 @@ class client {
 			out.writeBytes(message); //Escribimos en la salida del cliente
 			out.write('\0'); // inserta el código ASCII 0 al final
 
-			// String user = "user1"; //Ver cómo obtenerlo-------------------------------------------------------- IMPORTANTE
 			//send user
 			message = "" + userOperating; //user;// // mensaje más código ASCII 0 al final
 			out.writeBytes(message); //Escribimos en la salida del cliente
@@ -985,7 +990,6 @@ class client {
 			System.out.println("c> GET_FILE FAIL");
 			return -1;
 		}
-
 
 		String port = null;
 		String server = null;
@@ -1204,7 +1208,12 @@ class client {
               } catch(Exception e) {
               }
 
-              if(userOperating != null && !userOperating.equals("") && !userOperating.equals(" ")){
+              // if(userOperating != null && !userOperating.equals("") && !userOperating.equals(" ")){
+              //   disconnect(userOperating);
+              // }
+
+              //si estaba conectado se sale
+              if(userConnected){
                 disconnect(userOperating);
               }
 							exit = true;

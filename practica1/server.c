@@ -269,11 +269,11 @@ void listenClient(int *cs){
 		pthread_mutex_unlock(&mutex2);
 		//para poder enviar el código de error
 		char replyC[1];
-		bool cont = false;
+		// bool cont = false;
 		switch (reply) {
 			case 0:
 				replyC[0] = '0';
-				cont = true;
+				// cont = true;
 				break;
 			case 1:
 				replyC[0] = '1';
@@ -286,11 +286,11 @@ void listenClient(int *cs){
 			perror("enviar");
 		}
 
-		if(cont){
-			printf("%s\n", "Conectado, faltan cosas" );
-			printf("s> ");
-			fflush(stdout);
-		}
+		// if(cont){
+		// 	printf("%s\n", "Conectado, faltan cosas" );
+		// 	printf("s> ");
+		// 	fflush(stdout);
+		// }
 
 
 	}//end of CONNECT
