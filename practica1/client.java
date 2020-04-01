@@ -22,18 +22,18 @@ class myThread extends Thread {
 	int serverPort;
 	String user;
   //Para conectarse y recopilar info del servidor Central
-  private String infoServer;
-  private int infoPort;
+  // private String infoServer;
+  // private int infoPort;
 	// to stop the thread
   private boolean exit = false;
 
 
-	public myThread(String serverPort, String user, String infoServer, int infoPort) {
+	public myThread(String serverPort, String user){ // String infoServer, int infoPort) {
 		this.serverAddr = null;
 		this.serverPort = Integer.parseInt(serverPort);
 		this.user = user;
-    this.infoServer = infoServer;
-    this.infoPort = infoPort;
+    // this.infoServer = infoServer;
+    // this.infoPort = infoPort;
 	}
 	public void run(){  //se lanza el servidor que escuchará las peticiones
 		// lanzará hilos de procesar peticiones, no será necesario si se hace un servidor secuencial
@@ -53,11 +53,7 @@ class myThread extends Thread {
 			try {
 				Socket client = serverAddr.accept();
 
-				//cada vez que se acepta una conexión, se envían los datos a un hilo
-				// new ProcessRequest(client).start();
-
-				//ahora con solo un hilo
-
+        //se crean las estructuras para enviar y recibir datos
 				DataInputStream in = new DataInputStream(client.getInputStream()); //Recibir
 				DataOutputStream out = new DataOutputStream(client.getOutputStream());//Enviar
 
@@ -71,8 +67,13 @@ class myThread extends Thread {
 				}
 
 				//comprobar que el usuario tiene este archivo en sus archivos
-				if(checkAvailability(remoteFile, this.user) ){ //si está disponible, se enviará
-					//leer del archivo y enviarlo al cliente
+        String rf = "/tmp/" + remoteFile;
+        File tempFile = new File(rf);
+        boolean available = tempFile.exists(); //comprueba que existe rf en el directorio indicado
+
+				// if(checkAvailability(remoteFile, this.user) ){ //si está disponible --> se leerá del archivo y enviará al cliente
+
+        if(available){ //si está disponible --> se leerá del archivo y enviará al cliente
 
           out.writeBytes("0"); //Escribimos en la salida del cliente el error al cliente
           out.write('\0'); // inserta el código ASCII 0 al final
@@ -83,8 +84,8 @@ class myThread extends Thread {
 
 					try{
 						//leer archivo remoto
-						String rf = "/tmp/" + remoteFile;
-						fr = new FileReader(rf);
+						// String rf = "/tmp/" + remoteFile;
+            fr = new FileReader(rf);
 						brf = new BufferedReader(fr);
 
 					}catch (Exception e) {
@@ -179,97 +180,7 @@ class myThread extends Thread {
 
 	}
 
-	private boolean checkAvailability(String file, String user){
-		//hacer el protocolo para listar los archivos de un usuario
-    Socket sc = null;
-    int n = 15;
-    try {
-      //Crear la conexión
-      sc = new Socket(infoServer, infoPort);
 
-      DataOutputStream out = new DataOutputStream(sc.getOutputStream()); //Enviar
-      DataInputStream in = new DataInputStream(sc.getInputStream()); //Recibir
-
-      while(n < 500){
-        //send operation
-        String message = "LIST_CONTENT";
-        out.writeBytes(message); //Escribimos en la salida del cliente
-        out.write('\0'); // inserta el código ASCII 0 al final
-
-        //send user que está haciendo la operación
-        message = "" + user; // // mensaje más código ASCII 0 al final
-        out.writeBytes(message); //Escribimos en la salida del cliente
-        out.write('\0'); // inserta el código ASCII 0 al final
-        //send user del que se quiere saber la info
-        message = "" + user; // mensaje más código ASCII 0 al final
-        out.writeBytes(message); //Escribimos en la salida del cliente
-        out.write('\0'); // inserta el código ASCII 0 al final
-
-        //recibimos respuesta que es un solo byte
-        byte[] ch = new byte[1];
-        ch[0] = in.readByte(); //Leemos la respuesta
-        char c = (char) ch[0];
-        boolean cont = false;
-
-        switch(c) {
-          case '0':
-            cont = true;
-            break;
-          default:
-            return false;
-        }
-
-        message = Integer.toString(n);
-        out.writeBytes(message); //Escribimos en la salida del cliente
-        out.write('\0'); // inserta el código ASCII 0 al final
-
-        //si fue todo bien se siguen enviando cosas
-        if (cont) {
-
-          boolean found = false;
-          for (int i = 0; i < n ; i++) {
-            //recibir user
-            String f = readFromServer(in);
-
-            if( f.equals(file) ){ //si encuentra el fichero devuelve true
-              found = true;
-            }
-          }
-          if (found){
-            try {
-              if (sc != null){
-                sc.close();
-              }
-            } catch(IOException ex) {
-
-            }
-            return found;
-          }
-
-        }// fin de continue
-        n*=2; //aumentamos el rango
-      }//fin de if n <1000
-      try {
-        if (sc != null){
-          sc.close();
-        }
-      } catch(IOException ex) {
-
-      }
-      return false;
-    } catch(Exception e) {
-      try {
-        if (sc != null){
-          sc.close();
-        }
-      } catch(IOException ex) {
-
-      }
-      return false;
-    }
-
-		// return false;
-	}
 
 }//end of class myThread
 
@@ -491,7 +402,7 @@ class client {
 		}
 
     //si ya estaba conectado con un usuario, da error
-    if(userOperating != null){
+    if(userConnected){
       System.out.println("c> CONNECT FAIL");
       return -1;
     }
@@ -544,7 +455,7 @@ class client {
 			if (userConnected) {
 				//iniciamos un servidor de escucha
 				Pair ipPort = getPortFromUser(userOperating);
-				_th = new myThread(ipPort.port, userOperating, _server, _port);
+				_th = new myThread(ipPort.port, userOperating);// _server, _port);
 				_th.start();
 			}
 
@@ -1065,8 +976,6 @@ class client {
           // System.out.println("TERMINA GET_FILE");
 					fw.close();//cerramos el fichero local
 
-          //Publicar ese archivo
-          publish(local_file_name, "por ahora no hay descripción, no sé si lo tendría que copiar del original");
 				}
 
 			}else{
