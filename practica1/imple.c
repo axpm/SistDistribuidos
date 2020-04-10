@@ -32,8 +32,9 @@ char db[MAX_LINE] = DATABASE_NAME;
 //   char user[MAX_LINE] = "alex";
 //   char ip[MAX_LINE] = "192.2.2.2";
 //   char port[MAX_LINE] = "2";
-//   // printf("%d\n", registerUser(user));
-//   // printf("%d\n", connectUser(user, ip, port) );
+//   printf("%d\n", registerUser(user));
+//   printf("%d\n", connectUser(user, ip, port) );
+//   printf("%d\n", publish(user, "file", "desc") );
 //   // printf("%d\n", disconnectUser(user) );
 //   // printf("%d\n", unregisterUser(user));
 //
@@ -595,6 +596,8 @@ int addFile(FILE* fd, char *fileFormat, int userLine, int nextUserLine){
   if (nextUserLine == -1){
     fseek(fd, 0, SEEK_END); //se pone el puntero del fichero al final
     fprintf(fd, "%s", fileFormat);
+    fclose(fd);
+    return 0;
   }else{
     fseek(fd, 0, SEEK_SET); //se pone el puntero del fichero al principio
     fd2 = fopen(temp, "w"); // abrir un archivo temporal para escribir
@@ -615,11 +618,15 @@ int addFile(FILE* fd, char *fileFormat, int userLine, int nextUserLine){
       }
     }
     fclose(fd2); //cerramos el fichero auxiliar
+    //cerramos todos los ficheros y actualizamos el fichero
+    fclose(fd);
+    remove(DATABASE_NAME);  		//eliminamos el archivo original
+    rename(temp, DATABASE_NAME); 	// renombramos el temporal como el original
   }
   //cerramos todos los ficheros y actualizamos el fichero
-  fclose(fd);
-  remove(DATABASE_NAME);  		//eliminamos el archivo original
-  rename(temp, DATABASE_NAME); 	// renombramos el temporal como el original
+  // fclose(fd);
+  // remove(DATABASE_NAME);  		//eliminamos el archivo original
+  // rename(temp, DATABASE_NAME); 	// renombramos el temporal como el original
 
   return 0; //todo fue bien
 } //end of addFile

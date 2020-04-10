@@ -4,6 +4,11 @@ import java.net.* ;
 import java.util.* ;
 import gnu.getopt.Getopt;
 
+//para el apartado 3
+import client.UpperServiceService;
+import client.UpperService;
+
+//Clase de apoyo para obtener ip-puerto
 class Pair {
   public String ip;
   public String port;
@@ -28,9 +33,9 @@ class myThread extends Thread {
   private boolean exit = false;
 
 
-	public myThread(String serverPort, String user){ // String infoServer, int infoPort) {
+	public myThread(int serverPort, String user){ // String infoServer, int infoPort) {
 		this.serverAddr = null;
-		this.serverPort = Integer.parseInt(serverPort);
+		this.serverPort = serverPort;
 		this.user = user;
     // this.infoServer = infoServer;
     // this.infoPort = infoPort;
@@ -409,6 +414,7 @@ class client {
 
 		// Crear las conexiones
 		Socket sc = null;
+    int port;
 		try {
 			sc = new Socket(_server, _port);
 
@@ -424,7 +430,8 @@ class client {
 			out.writeBytes(message); //Escribimos en la salida del cliente
 			out.write('\0'); // inserta el código ASCII 0 al final
 			//send port
-			message = "" + findRandomOpenPort(); //envía un puerto libre
+      port = findRandomOpenPort();
+			message = "" + port; //envía un puerto libre
 			out.writeBytes(message); //Escribimos en la salida del cliente
 			out.write('\0'); // inserta el código ASCII 0 al final
 
@@ -454,8 +461,9 @@ class client {
 			//buscar puerto del cliente
 			if (userConnected) {
 				//iniciamos un servidor de escucha
-				Pair ipPort = getPortFromUser(userOperating);
-				_th = new myThread(ipPort.port, userOperating);// _server, _port);
+				// Pair ipPort = findRandomOpenPort(userOperating);
+        // System.out.println(ipPort.port);
+				_th = new myThread(port, userOperating);// _server, _port);
 				_th.start();
 			}
 
@@ -464,8 +472,8 @@ class client {
 			if( sc != null ){
 				sc.close();
 			}
-			// System.err.println("excepcion " + e.toString() );
-			// e.printStackTrace() ;
+			System.err.println("excepcion " + e.toString() );
+			e.printStackTrace() ;
 			return -1;
 		}
 
@@ -552,6 +560,11 @@ class client {
 			System.out.println("c> PUBLISH FAIL");
 			return -1;
 		}
+
+    //transformar a mayúsculas con Servicios Web la descripción
+    UpperServiceService service = new UpperServiceService();
+    UpperService port = service.getUpperServicePort();
+    description = port.standardizeString(description);
 
 		Socket sc = null;
 		try {
