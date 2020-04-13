@@ -1,4 +1,7 @@
 #include "server.h"
+//Para el servicio rpc
+#include "storage.h"
+
 
 pthread_mutex_t mutex;
 pthread_mutex_t mutex2;
@@ -30,6 +33,12 @@ void sigint_handler(int sig) {
 	exit(0);
 }
 
+void print_usage() {
+	// printf("Usage: server -p puerto \n");
+	printf("Usage: server -p puerto -r rpcHost \n");
+}
+
+char rpcHost[256] = "";
 
 int main(int argc, char *argv[]) {
 
@@ -51,7 +60,8 @@ int main(int argc, char *argv[]) {
 	struct sockaddr_in server_addr;
 
 	int  option = 0;
-	char port[256]= "";
+	char port[256] = "";
+
 
 	//Manejador de la señal ctrl-c
 	struct sigaction sa;
@@ -59,17 +69,21 @@ int main(int argc, char *argv[]) {
 	sa.sa_flags = SA_RESTART;
 	sigaction(SIGINT, &sa, NULL);
 
-	while ((option = getopt(argc, argv,"p:")) != -1) {
+	while ((option = getopt(argc, argv,"p:r:")) != -1 ) {
 		switch (option) {
-		    	case 'p' :
+			case 'p' :
 				strcpy(port, optarg);
-		    		break;
-		    	default:
+				break;
+			case 'r':
+				strcpy(rpcHost, optarg);
+				break;
+			default:
 				print_usage();
-		    		exit(-1);
-		    }
+				exit(-1);
+			}
 	}
-	if (strcmp(port,"")==0){
+
+	if (strcmp(port,"") == 0 || strcmp(rpcHost, "") == 0){
 		print_usage();
 		exit(-1);
 	}
@@ -182,10 +196,48 @@ void listenClient(int *cs){
 		printf("s> ");
 		fflush(stdout);
 
-		pthread_mutex_lock(&mutex2);
-		int reply = registerUser(user); //accion a realizar
+		// ----------------- CÓDIGO ANTIGUO: sin rpc -----------------
+		// pthread_mutex_lock(&mutex2);
+		// int reply = registerUser(user); //accion a realizar
+		// pthread_mutex_unlock(&mutex2);
+		// ----------------- fin CÓDIGO ANTIGUO: sin rpc -----------------
+
+		// ----------------- VERSIÓN RPC: -----------------
+		// char *host = "localhost";
+		CLIENT *clnt;
+		enum clnt_stat retval;
+		int reply;
+		// localizar el servidor
+		clnt = clnt_create(rpcHost, STORAGE, STORAGEVER, "tcp"); //binding
+		if (clnt == NULL) {
+			clnt_pcreateerror(rpcHost);
+			// exit(1);
+			close(clienteSd);
+
+			//se disminuye el contador de hilos
+			pthread_mutex_lock(&mutex3);
+			nt--;
+			pthread_cond_signal(&c2);
+			pthread_mutex_unlock(&mutex3);
+
+			pthread_exit(NULL);
+		}
+
+		//Invocar procedimiento remoto
+		pthread_mutex_lock(&mutex2);	//NO estoy seguro de los cerrojos
+		retval = registeruser_1(user, &reply, clnt);
 		pthread_mutex_unlock(&mutex2);
-		//int reply = 0;
+
+		if (retval != RPC_SUCCESS) {
+			clnt_perror(clnt, "call failed:");
+		}
+
+		//Destruir el manejador
+		clnt_destroy( clnt );
+
+		// ----------------- fin ~> VERSIÓN RPC -----------------
+
+
 		//para poder enviar el código de error
 		char replyC[1];
 		switch (reply) {
@@ -215,9 +267,47 @@ void listenClient(int *cs){
 		printf("s> ");
 		fflush(stdout);
 
-		pthread_mutex_lock(&mutex2);
-		int reply = unregisterUser(user); //accion a realizar
+		// ----------------- CÓDIGO ANTIGUO: sin rpc -----------------
+		// pthread_mutex_lock(&mutex2);
+		// int reply = unregisterUserImple(user); //accion a realizar
+		// pthread_mutex_unlock(&mutex2);
+		// ----------------- fin CÓDIGO ANTIGUO: sin rpc -----------------
+
+		// ----------------- VERSIÓN RPC: -----------------
+		CLIENT *clnt;
+		enum clnt_stat retval;
+		int reply;
+		// localizar el servidor
+		clnt = clnt_create(rpcHost, STORAGE, STORAGEVER, "tcp"); //binding
+		if (clnt == NULL) {
+			clnt_pcreateerror(rpcHost);
+			// exit(1);
+			close(clienteSd);
+
+			//se disminuye el contador de hilos
+			pthread_mutex_lock(&mutex3);
+			nt--;
+			pthread_cond_signal(&c2);
+			pthread_mutex_unlock(&mutex3);
+
+			pthread_exit(NULL);
+		}
+
+		//Invocar procedimiento remoto
+		pthread_mutex_lock(&mutex2);	//NO estoy seguro de los cerrojos
+		retval = unregisteruser_1(user, &reply, clnt);
 		pthread_mutex_unlock(&mutex2);
+
+		if (retval != RPC_SUCCESS) {
+			clnt_perror(clnt, "call failed:");
+		}
+
+		//Destruir el manejador
+		clnt_destroy( clnt );
+
+		// ----------------- fin ~> VERSIÓN RPC -----------------
+
+
 		//para poder enviar el código de error
 		char replyC[1];
 		switch (reply) {
@@ -238,7 +328,7 @@ void listenClient(int *cs){
 	}//end of UNREGISTER
 
 
-	// ----------------CONNECT sin hacer
+	// ----------------CONNECT
 	else if (strcmp("CONNECT", buffer) == 0) {
 		char user[MAX_LINE];
 		err = readLine(clienteSd, user, MAX_LINE);
@@ -264,9 +354,48 @@ void listenClient(int *cs){
 		// ip = inet_ntop(*(struct in_addr*) client_addr.sin_addr); //Convert into IP string
 		inet_ntop( AF_INET, &ipAddr, ip, INET_ADDRSTRLEN );
 
-		pthread_mutex_lock(&mutex2);
-		int reply = connectUser(user, ip, port); //accion a realizar
+		// ----------------- CÓDIGO ANTIGUO: sin rpc -----------------
+		// pthread_mutex_lock(&mutex2);
+		// int reply = connectUser(user, ip, port); //accion a realizar
+		// pthread_mutex_unlock(&mutex2);
+		// ----------------- fin CÓDIGO ANTIGUO: sin rpc -----------------
+
+		// ----------------- VERSIÓN RPC: -----------------
+		// char *host = "localhost";
+		CLIENT *clnt;
+		enum clnt_stat retval;
+		int reply;
+		// localizar el servidor
+		clnt = clnt_create(rpcHost, STORAGE, STORAGEVER, "tcp"); //binding
+		if (clnt == NULL) {
+			clnt_pcreateerror(rpcHost);
+			// exit(1);
+			close(clienteSd);
+
+			//se disminuye el contador de hilos
+			pthread_mutex_lock(&mutex3);
+			nt--;
+			pthread_cond_signal(&c2);
+			pthread_mutex_unlock(&mutex3);
+
+			pthread_exit(NULL);
+		}
+
+		//Invocar procedimiento remoto
+		pthread_mutex_lock(&mutex2);	//NO estoy seguro de los cerrojos
+		retval = connectuser_1(user, ip, port, &reply, clnt);
 		pthread_mutex_unlock(&mutex2);
+
+		if (retval != RPC_SUCCESS) {
+			clnt_perror(clnt, "call failed:");
+		}
+
+		//Destruir el manejador
+		clnt_destroy( clnt );
+
+		// ----------------- fin ~> VERSIÓN RPC -----------------
+
+
 		//para poder enviar el código de error
 		char replyC[1];
 		// bool cont = false;
@@ -285,13 +414,6 @@ void listenClient(int *cs){
 		if (err == -1) {
 			perror("enviar");
 		}
-
-		// if(cont){
-		// 	printf("%s\n", "Conectado, faltan cosas" );
-		// 	printf("s> ");
-		// 	fflush(stdout);
-		// }
-
 
 	}//end of CONNECT
 
@@ -314,9 +436,48 @@ void listenClient(int *cs){
 		// ip = inet_ntop(*(struct in_addr*) client_addr.sin_addr); //Convert into IP string
 		inet_ntop( AF_INET, &ipAddr, ip, INET_ADDRSTRLEN );
 
-		pthread_mutex_lock(&mutex2);
-		int reply = disconnectUser(user); //accion a realizar
+
+		// ----------------- CÓDIGO ANTIGUO: sin rpc -----------------
+		// pthread_mutex_lock(&mutex2);
+		// int reply = disconnectUser(user); //accion a realizar
+		// pthread_mutex_unlock(&mutex2);
+		// ----------------- fin CÓDIGO ANTIGUO: sin rpc -----------------
+
+		// ----------------- VERSIÓN RPC: -----------------
+		// char *host = "localhost";
+		CLIENT *clnt;
+		enum clnt_stat retval;
+		int reply;
+		// localizar el servidor
+		clnt = clnt_create(rpcHost, STORAGE, STORAGEVER, "tcp"); //binding
+		if (clnt == NULL) {
+			clnt_pcreateerror(rpcHost);
+			// exit(1);
+			close(clienteSd);
+
+			//se disminuye el contador de hilos
+			pthread_mutex_lock(&mutex3);
+			nt--;
+			pthread_cond_signal(&c2);
+			pthread_mutex_unlock(&mutex3);
+
+			pthread_exit(NULL);
+		}
+
+		//Invocar procedimiento remoto
+		pthread_mutex_lock(&mutex2);	//NO estoy seguro de los cerrojos
+		retval = disconnectuser_1(user, &reply, clnt);
 		pthread_mutex_unlock(&mutex2);
+
+		if (retval != RPC_SUCCESS) {
+			clnt_perror(clnt, "call failed:");
+		}
+
+		//Destruir el manejador
+		clnt_destroy( clnt );
+
+		// ----------------- fin ~> VERSIÓN RPC -----------------
+
 		//para poder enviar el código de error
 		char replyC[1];
 		switch (reply) {
@@ -366,9 +527,48 @@ void listenClient(int *cs){
 		if (err == -1) {
 			perror("readLine, description");
 		}
-		pthread_mutex_lock(&mutex2);
-		int reply = publish(user, file, desc); //accion a realizar
+
+		// ----------------- CÓDIGO ANTIGUO: sin rpc -----------------
+		// pthread_mutex_lock(&mutex2);
+		// int reply = publishImple(user, file, desc); //accion a realizar
+		// pthread_mutex_unlock(&mutex2);
+		// ----------------- fin CÓDIGO ANTIGUO: sin rpc -----------------
+
+		// ----------------- VERSIÓN RPC: -----------------
+		CLIENT *clnt;
+		enum clnt_stat retval;
+		int reply;
+		// localizar el servidor
+		clnt = clnt_create(rpcHost, STORAGE, STORAGEVER, "tcp"); //binding
+		if (clnt == NULL) {
+			clnt_pcreateerror(rpcHost);
+			// exit(1);
+			close(clienteSd);
+
+			//se disminuye el contador de hilos
+			pthread_mutex_lock(&mutex3);
+			nt--;
+			pthread_cond_signal(&c2);
+			pthread_mutex_unlock(&mutex3);
+
+			pthread_exit(NULL);
+		}
+
+		//Invocar procedimiento remoto
+		pthread_mutex_lock(&mutex2);	//NO estoy seguro de los cerrojos
+		retval = publish_1(user, file, desc, &reply, clnt);
 		pthread_mutex_unlock(&mutex2);
+
+		if (retval != RPC_SUCCESS) {
+			clnt_perror(clnt, "call failed:");
+		}
+
+		//Destruir el manejador
+		clnt_destroy( clnt );
+
+		// ----------------- fin ~> VERSIÓN RPC -----------------
+
+
 		char replyC[1];
 		switch (reply) {
 			case 0:
@@ -408,26 +608,65 @@ void listenClient(int *cs){
 		if (err == -1) {
 			perror("readLine, file");
 		}
-		pthread_mutex_lock(&mutex2);
-		int reply = deleteContent(user, file); //accion a realizar
+
+		// ----------------- CÓDIGO ANTIGUO: sin rpc -----------------
+		// pthread_mutex_lock(&mutex2);
+		// int reply = deleteContentImple(user, file); //accion a realizar
+		// pthread_mutex_unlock(&mutex2);
+		// ----------------- fin CÓDIGO ANTIGUO: sin rpc -----------------
+
+		// ----------------- VERSIÓN RPC: -----------------
+		CLIENT *clnt;
+		enum clnt_stat retval;
+		int reply;
+		// localizar el servidor
+		clnt = clnt_create(rpcHost, STORAGE, STORAGEVER, "tcp"); //binding
+		if (clnt == NULL) {
+			clnt_pcreateerror(rpcHost);
+			// exit(1);
+			close(clienteSd);
+
+			//se disminuye el contador de hilos
+			pthread_mutex_lock(&mutex3);
+			nt--;
+			pthread_cond_signal(&c2);
+			pthread_mutex_unlock(&mutex3);
+
+			pthread_exit(NULL);
+		}
+
+		//Invocar procedimiento remoto
+		pthread_mutex_lock(&mutex2);	//NO estoy seguro de los cerrojos
+		retval = deletecontent_1(user, file, &reply, clnt);
 		pthread_mutex_unlock(&mutex2);
-			char replyC[1];
-			switch (reply) {
-				case 0:
-					replyC[0] = '0';
-					break;
-				case 1:
-					replyC[0] = '1';
-					break;
-				case 2:
-					replyC[0] = '2';
-					break;
-				case 3:
-					replyC[0] = '3';
-					break;
-				default:
-					replyC[0] = '4';
-			}
+
+		if (retval != RPC_SUCCESS) {
+			clnt_perror(clnt, "call failed:");
+		}
+
+		//Destruir el manejador
+		clnt_destroy( clnt );
+
+		// ----------------- fin ~> VERSIÓN RPC -----------------
+
+
+		char replyC[1];
+		switch (reply) {
+			case 0:
+				replyC[0] = '0';
+				break;
+			case 1:
+				replyC[0] = '1';
+				break;
+			case 2:
+				replyC[0] = '2';
+				break;
+			case 3:
+				replyC[0] = '3';
+				break;
+			default:
+				replyC[0] = '4';
+		}
 
 		err = enviar(clienteSd, replyC, 1);
     if (err == -1) {
@@ -435,7 +674,6 @@ void listenClient(int *cs){
     }
 
 	}//end of DELETE
-
 	else if(strcmp("LIST_USERS", buffer) == 0){
 		char user[MAX_LINE];
 		err = readLine(clienteSd, user, MAX_LINE);
@@ -447,10 +685,49 @@ void listenClient(int *cs){
 		printf("s> ");
 		fflush(stdout);
 
+		// ----------------- CÓDIGO ANTIGUO: sin rpc -----------------
+		// pthread_mutex_lock(&mutex2);
 		//comprueba si el user tiene problemas y envía respuesta
-		pthread_mutex_lock(&mutex2);
-		int reply = list_users(user); //accion a realizar
+		// int reply = list_usersImple(user); //accion a realizar
+		// pthread_mutex_unlock(&mutex2);
+		// ----------------- fin CÓDIGO ANTIGUO: sin rpc -----------------
+
+		// ----------------- VERSIÓN RPC: -----------------
+		CLIENT *clnt;
+		enum clnt_stat retval;
+		int reply;
+		// localizar el servidor
+		clnt = clnt_create(rpcHost, STORAGE, STORAGEVER, "tcp"); //binding
+		if (clnt == NULL) {
+			clnt_pcreateerror(rpcHost);
+			// exit(1);
+			close(clienteSd);
+
+			//se disminuye el contador de hilos
+			pthread_mutex_lock(&mutex3);
+			nt--;
+			pthread_cond_signal(&c2);
+			pthread_mutex_unlock(&mutex3);
+
+			pthread_exit(NULL);
+		}
+
+		//Invocar procedimiento remoto
+		pthread_mutex_lock(&mutex2);	//NO estoy seguro de los cerrojos
+		//comprueba si el user tiene problemas y envía respuesta
+		retval = check_list_users_1(user, &reply, clnt);
 		pthread_mutex_unlock(&mutex2);
+
+		if (retval != RPC_SUCCESS) {
+			clnt_perror(clnt, "call failed:");
+		}
+
+		//Destruir el manejador
+		clnt_destroy( clnt );
+
+		// ----------------- fin ~> VERSIÓN RPC -----------------
+
+
 		//para poder enviar el código de error
 		char replyC[1];
 		bool cont = false;
@@ -482,28 +759,87 @@ void listenClient(int *cs){
 			}
 			n = atoi(nString);
 
-			bool noMore = false;
-			int userLine = 0, nextUserLine = 0;
-			char ip[MAX_LINE];
-			char port[MAX_LINE];
 
-			for (int i = 0; i < n; i++){
-				pthread_mutex_lock(&mutex2);
-				fillUserInfo(user, ip, port, &userLine, &nextUserLine, &noMore);
-				pthread_mutex_unlock(&mutex2);
+			// ----------------- CÓDIGO ANTIGUO: sin rpc -----------------
+			// bool noMore = false;
+			// int userLine = 0, nextUserLine = 0;
+			// char ip[MAX_LINE];
+			// char port[MAX_LINE];
+			// for (int i = 0; i < n; i++){
+			// 	pthread_mutex_lock(&mutex2);
+			// 	fillUserInfoImple(user, ip, port, &userLine, &nextUserLine, &noMore);
+			// 	pthread_mutex_unlock(&mutex2);
+			//
+			// 	if (noMore){ //envío de relleno
+			// 		enviar(clienteSd, '\0', 1);
+			// 		enviar(clienteSd, '\0', 1);
+			// 		enviar(clienteSd, '\0', 1);
+			// 	}else{ //envío normal de la info de los usuarios
+			// 		enviar(clienteSd, user, strlen(user)+1);
+			// 		enviar(clienteSd, ip, strlen(ip)+1);
+			// 		enviar(clienteSd, port, strlen(port)+1);
+			// 	}
+			// }
+			// ----------------- fin CÓDIGO ANTIGUO: sin rpc -----------------
 
-				if (noMore){ //envío de relleno
-					enviar(clienteSd, "\0", 1);
-					enviar(clienteSd, "\0", 1);
-					enviar(clienteSd, "\0", 1);
-				}else{ //envío normal de la info de los usuarios
-					enviar(clienteSd, user, strlen(user)+1);
-					enviar(clienteSd, ip, strlen(ip)+1);
-					enviar(clienteSd, port, strlen(port)+1);
-				}
+			// ----------------- VERSIÓN RPC: -----------------
+			t_listUsers users;
+			CLIENT *clnt;
+			enum clnt_stat retval;
+			// localizar el servidor
+			clnt = clnt_create(rpcHost, STORAGE, STORAGEVER, "tcp"); //binding
+			if (clnt == NULL) {
+				clnt_pcreateerror(rpcHost);
+				// exit(1);
+				close(clienteSd);
 
+				//se disminuye el contador de hilos
+				pthread_mutex_lock(&mutex3);
+				nt--;
+				pthread_cond_signal(&c2);
+				pthread_mutex_unlock(&mutex3);
+
+				pthread_exit(NULL);
 			}
-		}
+
+			// t_listUsers aux = users; //copiar
+			// t_listUsers aux2; //copiar
+			// for (size_t i = 0; i < n; i++) {
+			// 	aux = (t_list) malloc(sizeof(list));
+			// 	aux->n = i;
+			// 	aux->s.s_len = 64;
+			// 	aux->s.s_val = (char *)malloc(64);
+			// 	sprintf(aux->s.s_val, "%d", i);
+			//
+			// 	aux->next = *result;
+			// 	*result = aux;
+			// }
+
+			//Invocar procedimiento remoto
+			pthread_mutex_lock(&mutex2);	//NO estoy seguro de los cerrojos
+			//comprueba si el user tiene problemas y envía respuesta
+			retval = list_users_1(n, &users, clnt);
+			pthread_mutex_unlock(&mutex2);
+
+			if (retval != RPC_SUCCESS) {
+				clnt_perror(clnt, "call failed:");
+			}
+
+			//Destruir el manejador
+			clnt_destroy( clnt );
+
+
+			//Recorremos la lista de usuarios para enviar el contenido
+			while(users != NULL){
+				// printf("USER: %s\n", users->user.user_val);
+				enviar(clienteSd, users->user.user_val, strlen(users->user.user_val)+1);
+				enviar(clienteSd, users->ip.ip_val, strlen(users->ip.ip_val)+1);
+				enviar(clienteSd, users->port.port_val, strlen(users->port.port_val)+1);
+				users = users->next;
+			}
+		// ----------------- fin ~> VERSIÓN RPC -----------------
+
+	}// end of cont
 
 
 	} //end LIST_USERS
@@ -525,10 +861,49 @@ void listenClient(int *cs){
 			perror("readLine, user");
 		}
 
+		// ----------------- CÓDIGO ANTIGUO: sin rpc -----------------
+		// pthread_mutex_lock(&mutex2);
 		//comprueba si el user tiene problemas y envía respuesta
-		pthread_mutex_lock(&mutex2);
-		int reply = list_content(user, userTarget); //accion a realizar
+		// int reply = list_contentImple(user, userTarget); //accion a realizar
+		// pthread_mutex_unlock(&mutex2);
+		// ----------------- fin CÓDIGO ANTIGUO: sin rpc -----------------
+
+		// ----------------- VERSIÓN RPC: -----------------
+		CLIENT *clnt;
+		enum clnt_stat retval;
+		int reply;
+		// localizar el servidor
+		clnt = clnt_create(rpcHost, STORAGE, STORAGEVER, "tcp"); //binding
+		if (clnt == NULL) {
+			clnt_pcreateerror(rpcHost);
+			// exit(1);
+			close(clienteSd);
+
+			//se disminuye el contador de hilos
+			pthread_mutex_lock(&mutex3);
+			nt--;
+			pthread_cond_signal(&c2);
+			pthread_mutex_unlock(&mutex3);
+
+			pthread_exit(NULL);
+		}
+
+		//Invocar procedimiento remoto
+		pthread_mutex_lock(&mutex2);	//NO estoy seguro de los cerrojos
+		//comprueba si el user tiene problemas y envía respuesta
+		retval = check_list_content_1(user, userTarget, &reply, clnt);
 		pthread_mutex_unlock(&mutex2);
+
+		if (retval != RPC_SUCCESS) {
+			clnt_perror(clnt, "call failed:");
+		}
+
+		//Destruir el manejador
+		clnt_destroy( clnt );
+
+		// ----------------- fin ~> VERSIÓN RPC -----------------
+
+
 		//para poder enviar el código de error
 		char replyC[1];
 		bool cont = false;
@@ -563,31 +938,78 @@ void listenClient(int *cs){
 			}
 			n = atoi(nString);
 
-			bool noMore = false;
-			int firstLine = 0, lastLine = 0;
-			pthread_mutex_lock(&mutex2);
-			findContentUser(userTarget, &firstLine, &lastLine);
-			pthread_mutex_unlock(&mutex2);
-			char file[MAX_LINE];
 
-			// printf("%d %d\n",firstLine, lastLine );
+			// ----------------- CÓDIGO ANTIGUO: sin rpc -----------------
+			// bool noMore = false;
+			// int firstLine = 0, lastLine = 0;
+			// pthread_mutex_lock(&mutex2);
+			// findContentUser(userTarget, &firstLine, &lastLine);
+			// pthread_mutex_unlock(&mutex2);
+			// char file[MAX_LINE];
+			//
+			// // printf("%d %d\n",firstLine, lastLine );
+			//
+			// for (int i = 0; i < n; i++){
+			// 	pthread_mutex_lock(&mutex2);
+			// 	fillContentUserImple(file, &firstLine, lastLine, &noMore);
+			// 	pthread_mutex_unlock(&mutex2);
+			//
+			// 	// printf("%s %d %d\n", file, noMore, i );
+			//
+			// 	if (noMore){ //envío de relleno
+			// 		enviar(clienteSd, "\0", 1);
+			// 		// printf("noMore %d\n", i );
+			// 	}else{ //envío normal de la info
+			// 		enviar(clienteSd, file, strlen(file)+1);
+			// 	}
+			// 	firstLine++;
+			// ----------------- fin CÓDIGO ANTIGUO: sin rpc -----------------
 
-			for (int i = 0; i < n; i++){
-				pthread_mutex_lock(&mutex2);
-				fillContentUser(file, &firstLine, lastLine, &noMore);
-				pthread_mutex_unlock(&mutex2);
+			// ----------------- VERSIÓN RPC: -----------------
+			t_list files;
+			CLIENT *clnt;
+			enum clnt_stat retval;
+			// localizar el servidor
+			clnt = clnt_create(rpcHost, STORAGE, STORAGEVER, "tcp"); //binding
+			if (clnt == NULL) {
+				clnt_pcreateerror(rpcHost);
+				// exit(1);
+				close(clienteSd);
 
-				// printf("%s %d %d\n", file, noMore, i );
+				//se disminuye el contador de hilos
+				pthread_mutex_lock(&mutex3);
+				nt--;
+				pthread_cond_signal(&c2);
+				pthread_mutex_unlock(&mutex3);
 
-				if (noMore){ //envío de relleno
-					enviar(clienteSd, "\0", 1);
-					// printf("noMore %d\n", i );
-				}else{ //envío normal de la info
-					enviar(clienteSd, file, strlen(file)+1);
-				}
-				firstLine++;
+				pthread_exit(NULL);
 			}
-		}
+
+			//Invocar procedimiento remoto
+			pthread_mutex_lock(&mutex2);	//NO estoy seguro de los cerrojos
+			//comprueba si el user tiene problemas y envía respuesta
+			retval = list_content_1(n, userTarget, &files, clnt);
+			pthread_mutex_unlock(&mutex2);
+
+			if (retval != RPC_SUCCESS) {
+				clnt_perror(clnt, "call failed:");
+			}
+
+			//Destruir el manejador
+			clnt_destroy( clnt );
+
+
+			//Recorremos la lista de usuarios para enviar el contenido
+			while(files != NULL){
+				// printf("USER: %s\n", users->user.user_val);
+				enviar(clienteSd, files->file.file_val, strlen(files->file.file_val)+1);
+				files = files->next;
+			}
+		// ----------------- fin ~> VERSIÓN RPC -----------------
+
+
+
+		} //end of cont
 
 	} //end LIST_CONTENT
 

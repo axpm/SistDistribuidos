@@ -1,4 +1,4 @@
-BIN_FILES  = server
+BIN_FILES  = rpcServer server
 
 CC = gcc
 
@@ -13,8 +13,11 @@ all: CFLAGS=$(CCGLAGS)
 all: $(BIN_FILES)
 .PHONY : all
 
-server: server.o lines.o imple.o
+server: server.o lines.o imple.o storage_xdr.o storage_clnt.o
 	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
+
+rpcServer: storage_xdr.o storage_svc.o imple.o
+	$(CC) $(LDFLAGS) $^ $(LDLIBS) storage_server.c -o $@
 
 %.o: %.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $<

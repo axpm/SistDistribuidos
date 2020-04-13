@@ -25,14 +25,17 @@
 void print_usage();
 void printInitServer(struct sockaddr_in server_addr);
 
-int registerUser(char * user);
-int unregisterUser(char * user);
-int connectUser(char* user,char *ip, char *port);
-int publish(char *user, char *file, char *desc);
-int deleteContent(char *user, char *file);
-int list_users(char *user);
-int list_content(char *user, char *userTarget);
-int disconnectUser(char *user);
+int registerUserImple(char * user);
+int unregisterUserImple(char * user);
+int connectUserImple(char* user,char *ip, char *port);
+int publishImple(char *user, char *file, char *desc);
+int deleteContentImple(char *user, char *file);
+int list_usersImple(char *user);
+int list_contentImple(char *user, char *userTarget);
+int disconnectUserImple(char *user);
+
+void fillContentUserImple(char *file, int firstLine, int lastLine, bool *noMore);
+void fillUserInfoImple(char *user, char * ip, char *port, int *userLine, int *nextUserLine, bool *noMore);
 
 void serverMsg(char * msg);
 int searchUserPos(FILE* fd, char *userFormat);
@@ -45,9 +48,7 @@ int isConnectedWithoutFD(FILE* fd, char *userFormat);
 int searchFile(FILE* fd, char *file, int userLine, int nextUserLine);
 int addFile(FILE* fd, char *fileFormat, int userLine, int nextUserLine);
 int deleteFile(FILE* fd, int fileLine);
-void fillUserInfo(char *user, char * ip, char *port, int *userLine, int *nextUserLine, bool *noMore);
 void findContentUser(char *user, int *firstLine, int* lastLine);
-void fillContentUser(char *file, int *firstLine, int lastLine, bool *noMore);
 
 
 #endif

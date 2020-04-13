@@ -521,7 +521,11 @@ class client {
 					System.out.println("c> DISCONNECT OK");
           // userOperating = null;
           userConnected = false;
-					_th.finish(); //acabar el hilo que estaba conectado
+          try {
+            _th.finish(); //acabar el hilo que estaba conectado
+          } catch(Exception e) {
+
+          }
 					break;
 				case '1':
 					System.out.println("c> DISCONNECT FAIL / USER DOES NOT EXIST");
@@ -705,6 +709,11 @@ class client {
 	 */
 	static int list_users() throws java.io.IOException{
 
+    if(!userConnected){
+      System.out.println("c> LIST_USERS FAIL, USER NOT CONNECTED");
+      return -1;
+    }
+
 		Socket sc = null;
 		try {
 			//crear la conexiones
@@ -808,6 +817,11 @@ class client {
 			return -1;
 		}
 
+    if(!userConnected){
+			System.out.println("c> LIST_CONTENT FAIL, USER NOT CONNECTED");
+			return -1;
+    }
+
 		Socket sc = null;
 		try {
 			//Crear la conexión
@@ -821,7 +835,6 @@ class client {
 			out.writeBytes(message); //Escribimos en la salida del cliente
 			out.write('\0'); // inserta el código ASCII 0 al final
 
-			// String user = "user1"; //Ver cómo obtenerlo-------------------------------------------------------- IMPORTANTE
 			//send user que está haciendo la operación
 			message = "" + userOperating; //user;// // mensaje más código ASCII 0 al final
 			out.writeBytes(message); //Escribimos en la salida del cliente
@@ -1038,7 +1051,7 @@ class client {
 						if  (line.length == 2) {
 							register(line[1]); // userName = line[1]
 						} else {
-							System.out.println("Syntax error. Usage: REGISTER <userName>");
+							System.out.println("c> Syntax error. Usage: REGISTER <userName>");
 						}
 					}
 
@@ -1047,7 +1060,7 @@ class client {
 						if  (line.length == 2) {
 							unregister(line[1]); // userName = line[1]
 						} else {
-							System.out.println("Syntax error. Usage: UNREGISTER <userName>");
+							System.out.println("c> Syntax error. Usage: UNREGISTER <userName>");
 						}
                     			}
 
@@ -1056,7 +1069,7 @@ class client {
 						if  (line.length == 2) {
 							connect(line[1]); // userName = line[1]
 						} else {
-							System.out.println("Syntax error. Usage: CONNECT <userName>");
+							System.out.println("c> Syntax error. Usage: CONNECT <userName>");
                     				}
                     			}
 
@@ -1065,7 +1078,7 @@ class client {
 						if  (line.length == 2) {
 							disconnect(line[1]); // userName = line[1]
 						} else {
-							System.out.println("Syntax error. Usage: DISCONNECT <userName>");
+							System.out.println("c> Syntax error. Usage: DISCONNECT <userName>");
                     				}
                     			}
 
@@ -1078,7 +1091,7 @@ class client {
 							description = description.substring(description.indexOf(' ')+1);
 							publish(line[1], description); // file_name = line[1]
 						} else {
-							System.out.println("Syntax error. Usage: PUBLISH <file_name> <description>");
+							System.out.println("c> Syntax error. Usage: PUBLISH <file_name> <description>");
                     				}
                     			}
 
@@ -1087,7 +1100,7 @@ class client {
 						if  (line.length == 2) {
 							delete(line[1]); // userName = line[1]
 						} else {
-							System.out.println("Syntax error. Usage: DELETE <file name>");
+							System.out.println("c> Syntax error. Usage: DELETE <file name>");
                     				}
                     			}
 
@@ -1097,7 +1110,7 @@ class client {
 							// Remove first two words
 							list_users();
 						} else {
-							System.out.println("Syntax error. Usage: LIST_USERS ");
+							System.out.println("c> Syntax error. Usage: LIST_USERS ");
                     				}
                     			}
 
@@ -1106,7 +1119,7 @@ class client {
 						if  (line.length == 2) {
 							list_content(line[1]); // userName = line[1]
 						} else {
-							System.out.println("Syntax error. Usage: LIST_CONTENT <user name>");
+							System.out.println("c> Syntax error. Usage: LIST_CONTENT <user name>");
                     				}
                     			}
 
@@ -1115,7 +1128,7 @@ class client {
 						if  (line.length == 4) {
 							get_file(line[1], line[2], line[3]);
 						} else {
-							System.out.println("Syntax error. Usage: GET_FILE <user> <remote_file_name> <local_file_name>");
+							System.out.println("c> Syntax error. Usage: GET_FILE <user> <remote_file_name> <local_file_name>");
                     				}
                     			}
 
@@ -1140,13 +1153,13 @@ class client {
               }
 							exit = true;
 						} else {
-							System.out.println("Syntax error. Use: QUIT");
+							System.out.println("c> Syntax error. Use: QUIT");
 						}
 					}
 
 					/************* UNKNOWN ************/
 					else {
-						System.out.println("Error: command '" + line[0] + "' not valid.");
+						System.out.println("c> Error: command '" + line[0] + "' not valid.");
 					}
 				}
 			} catch (java.io.IOException e) {

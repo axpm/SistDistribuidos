@@ -16,7 +16,7 @@ char db[MAX_LINE] = DATABASE_NAME;
 //   //
 //   //
 //   // for (int i = 0; i < n; i++){
-//   //   fillContentUser(file, &firstLine, lastLine, &noMore);
+//   //   fillContentUserImple(file, &firstLine, lastLine, &noMore);
 //   //   printf("round: %d\n", i+1 );
 //   //   if (noMore){
 //   //     sprintf(file, " ");
@@ -45,7 +45,7 @@ char db[MAX_LINE] = DATABASE_NAME;
 //OPERACIONES
 
 // ------- REGISTER -------
-int registerUser(char * user){
+int registerUserImple(char * user){
   if(!validUsername(user)){//comprueba si no contiene caracteres no válidos para el nombre de usuario
     return 2;
   }
@@ -90,7 +90,7 @@ int registerUser(char * user){
 
 
 // ------- UNREGISTER -------
-int unregisterUser(char * user){
+int unregisterUserImple(char * user){
   if(!validUsername(user)){ //comprueba si no contiene caracteres no válidos para el nombre de usuario
     return 2;
   }
@@ -115,7 +115,7 @@ int unregisterUser(char * user){
 }
 
 // ------- CONNECT -------
-int connectUser(char* user,char *ip, char *port){
+int connectUserImple(char* user,char *ip, char *port){
 
   FILE* fd = fopen(db, "r+"); //abrir para lectura y escritura
   if (fd == NULL){ //NO existía la base de datos
@@ -203,7 +203,7 @@ int connectUser(char* user,char *ip, char *port){
 }//end of connect
 
 // ------- PUBLISH content-------
-int publish(char *user, char *file, char *desc){
+int publishImple(char *user, char *file, char *desc){
   if (strcmp(file, "") == 0)//si el nombre del fichero es vacío
     return 4;
   FILE* fd = fopen(db, "r+"); //abrir para lectura y escritura
@@ -238,7 +238,7 @@ int publish(char *user, char *file, char *desc){
 } //end of publish
 
 // ------- DELETE content -------
-int deleteContent(char *user, char *file){
+int deleteContentImple(char *user, char *file){
   if (strcmp(file, "") == 0)//si el nombre del fichero es vacío
     return 4;
   FILE* fd = fopen(db, "r+"); //abrir para lectura y escritura
@@ -271,7 +271,7 @@ int deleteContent(char *user, char *file){
 }
 
 // ------- LIST_USERS -------
-int list_users(char *user){
+int list_usersImple(char *user){
   FILE* fd = fopen(db, "r+"); //abrir para lectura y escritura
   if (fd == NULL){ //NO existía la base de datos
     // perror("Not database existing");
@@ -291,7 +291,7 @@ int list_users(char *user){
   return 0; //todo OK
 }
 // ------- LIST_USERS 2 (rellena la info) -------
-void fillUserInfo(char *user, char * ip, char *port, int *userLine, int *nextUserLine, bool *noMore){
+void fillUserInfoImple(char *user, char * ip, char *port, int *userLine, int *nextUserLine, bool *noMore){
   if(*userLine == 0){
     *userLine = 1;
   }else{
@@ -310,11 +310,11 @@ void fillUserInfo(char *user, char * ip, char *port, int *userLine, int *nextUse
     *noMore = true;
     return;
   }
-  *nextUserLine = searchNextUserPos(fd, *userLine);
-  if(*userLine == 1 && *nextUserLine == -1){ //no hay usuarios
-    *noMore = true;
-    return;
-  }
+  *nextUserLine = searchNextUserPosWithoutFD(fd, *userLine);
+  // if(*userLine == 1 && *nextUserLine == -1){ //no hay usuarios
+  //   *noMore = true;
+  //   return;
+  // }
   char str[MAX_FILE_LINE];
   fseek(fd, 0, SEEK_SET);
   bool copied = false;
@@ -361,7 +361,7 @@ void fillUserInfo(char *user, char * ip, char *port, int *userLine, int *nextUse
 } //fin de LIST_USERS (2)
 
 // ------- LIST_CONTENT -------
-int list_content(char *user, char *userTarget){
+int list_contentImple(char *user, char *userTarget){
   FILE* fd = fopen(db, "r+"); //abrir para lectura y escritura
   if (fd == NULL){ //NO existía la base de datos
     // perror("Not database existing");
@@ -390,32 +390,32 @@ int list_content(char *user, char *userTarget){
 }//end list_content
 
 // ------- LIST_CONTENT (2)-------
-void fillContentUser(char *file, int *firstLine, int lastLine, bool *noMore){
+void fillContentUserImple(char *file, int firstLine, int lastLine, bool *noMore){
   FILE *fd = fopen(db, "r+"); //abrir para lectura y escritura);
   char str[MAX_FILE_LINE];
   int line = 0;
-  if(*firstLine == 0){
+  if(firstLine == 0){
     *noMore = true; //si no hay nada, estará vacío todo
   }
   if (lastLine == -1) {
     while(fgets(str, sizeof(str), fd) && *noMore == false) {
       line ++;
-      if (line == *firstLine) {
+      if (line == firstLine) {
         char *copy = strtok(str, "->");
         copy = strtok(copy, "||");
         strcpy(file, copy);
       }
     }
-    if(*firstLine > line){
+    if(firstLine > line){
       *noMore = true;
     }
   }else{
-    if(*firstLine == lastLine ){
+    if(firstLine == lastLine ){
       *noMore = true;
     }
     while(fgets(str, sizeof(str), fd) && *noMore == false) {
       line ++;
-      if (line == *firstLine && *noMore == false) {
+      if (line == firstLine && *noMore == false) {
         char *copy = strtok(str, "->");
         copy = strtok(copy, "||");
         strcpy(file, copy);
@@ -423,9 +423,9 @@ void fillContentUser(char *file, int *firstLine, int lastLine, bool *noMore){
     }
   }
   fclose(fd);
-}//end list_content(2) (fillContentUser)
+}//end list_content(2) (fillContentUserImple)
 
-int disconnectUser(char* user){
+int disconnectUserImple(char* user){
   FILE* fd = fopen(db, "r+"); //abrir para lectura y escritura
   if (fd == NULL){ //NO existía la base de datos
     // perror("Not database existing");
@@ -575,13 +575,25 @@ int searchFile(FILE* fd, char *file, int userLine, int nextUserLine){
   char strCopy [MAX_FILE_LINE];
   int line = 0;
   //buscamos en el fichero
-  while(fgets(str, sizeof(str), fd)) {
-    line ++;
-    if (line > userLine && line < nextUserLine){ //si está en la zona del usuario, se compruebas sus ficheros
-      strcpy(strCopy,str);
-      char *ptr = strtok(str, "||");
-      if(strcmp(fileFormat, ptr) == 0) //si encuentra el mismo fichero para el usuario devuelve 1
+  if(nextUserLine != -1){
+    while(fgets(str, sizeof(str), fd)) {
+      line ++;
+      if (line > userLine && line < nextUserLine){ //si está en la zona del usuario, se compruebas sus ficheros
+        strcpy(strCopy,str);
+        char *ptr = strtok(str, "||");
+        if(strcmp(fileFormat, ptr) == 0) //si encuentra el mismo fichero para el usuario devuelve 1
         return line;
+      }
+    }
+  }else{ //si no hay más usuarios después
+    while(fgets(str, sizeof(str), fd)) {
+      line ++;
+      if (line > userLine){ //si está en la zona del usuario, se compruebas sus ficheros
+        strcpy(strCopy,str);
+        char *ptr = strtok(str, "||");
+        if(strcmp(fileFormat, ptr) == 0) //si encuentra el mismo fichero para el usuario devuelve 1
+        return line;
+      }
     }
   }
   return 0; //si no se encuentra el fichero para el usuario devuelve 0
@@ -776,9 +788,6 @@ int validUsername(char *name){
 }
 
 // ZONA DE MENSAJES EN LA PANTALLA
-void print_usage() {
-	    printf("Usage: server -p puerto \n");
-}
 
 void serverMsg(char * msg){
   printf("%s\n", msg);
