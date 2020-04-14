@@ -39,14 +39,12 @@ storage_1(char *host)
 	char *check_list_users_1_user;
 	enum clnt_stat retval_8;
 	t_listUsers result_8;
-	int list_users_1_n;
 	enum clnt_stat retval_9;
 	int result_9;
 	char *check_list_content_1_user;
 	char *check_list_content_1_userTarget;
 	enum clnt_stat retval_10;
 	t_list result_10;
-	int list_content_1_n;
 	char *list_content_1_userTarget;
 
 #ifndef	DEBUG
@@ -85,7 +83,7 @@ storage_1(char *host)
 	if (retval_7 != RPC_SUCCESS) {
 		clnt_perror (clnt, "call failed");
 	}
-	retval_8 = list_users_1(list_users_1_n, &result_8, clnt);
+	retval_8 = listconnectedusers_1(&result_8, clnt);
 	if (retval_8 != RPC_SUCCESS) {
 		clnt_perror (clnt, "call failed");
 	}
@@ -93,7 +91,7 @@ storage_1(char *host)
 	if (retval_9 != RPC_SUCCESS) {
 		clnt_perror (clnt, "call failed");
 	}
-	retval_10 = list_content_1(list_content_1_n, list_content_1_userTarget, &result_10, clnt);
+	retval_10 = list_content_1(list_content_1_userTarget, &result_10, clnt);
 	if (retval_10 != RPC_SUCCESS) {
 		clnt_perror (clnt, "call failed");
 	}

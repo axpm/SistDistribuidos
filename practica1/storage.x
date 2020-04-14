@@ -19,8 +19,8 @@ program STORAGE {
 		int connectUser(string user<256>, string ip<256>, string port<256>) = 5;
 		int disconnectUser(string user<256>) = 6;
 		int check_list_users(string user<256>) = 7;
-		t_listUsers list_users(int n) = 8;
+		t_listUsers listConnectedUsers() = 8;
 		int check_list_content(string user<256>, string userTarget<256>) = 9;
-		t_list list_content(int n, string userTarget<256>) = 10;
+		t_list list_content(string userTarget<256>) = 10;
 	} = 1;
 } = 99;

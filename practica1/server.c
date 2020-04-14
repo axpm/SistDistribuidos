@@ -1,6 +1,4 @@
 #include "server.h"
-//Para el servicio rpc
-#include "storage.h"
 
 
 pthread_mutex_t mutex;
@@ -751,38 +749,15 @@ void listenClient(int *cs){
     }
 		//si no dió error se leerá el número de users a imprimir
 		if(cont){
-			int n = 0;
-			char nString[MAX_LINE];
-			err = readLine(clienteSd, nString, MAX_LINE);
-			if (err == -1) {
-				perror("readLine, n");
-			}
-			n = atoi(nString);
-
-
-			// ----------------- CÓDIGO ANTIGUO: sin rpc -----------------
-			// bool noMore = false;
-			// int userLine = 0, nextUserLine = 0;
-			// char ip[MAX_LINE];
-			// char port[MAX_LINE];
-			// for (int i = 0; i < n; i++){
-			// 	pthread_mutex_lock(&mutex2);
-			// 	fillUserInfoImple(user, ip, port, &userLine, &nextUserLine, &noMore);
-			// 	pthread_mutex_unlock(&mutex2);
-			//
-			// 	if (noMore){ //envío de relleno
-			// 		enviar(clienteSd, '\0', 1);
-			// 		enviar(clienteSd, '\0', 1);
-			// 		enviar(clienteSd, '\0', 1);
-			// 	}else{ //envío normal de la info de los usuarios
-			// 		enviar(clienteSd, user, strlen(user)+1);
-			// 		enviar(clienteSd, ip, strlen(ip)+1);
-			// 		enviar(clienteSd, port, strlen(port)+1);
-			// 	}
-			// }
-			// ----------------- fin CÓDIGO ANTIGUO: sin rpc -----------------
-
-			// ----------------- VERSIÓN RPC: -----------------
+			//Nuevo pseudocódigo
+			//Sacar lista conectados--> lista users  --> RPC
+			//enviar(tamañoLista(lista users))
+			/*while (puntero lista users != NULL) {
+				enviar(userName)
+				enviar(ip)
+				enviar(puerto)
+			}*/
+			// ----------------- VERSIÓN RPC: protocolo correcto -----------------
 			t_listUsers users;
 			CLIENT *clnt;
 			enum clnt_stat retval;
@@ -802,23 +777,10 @@ void listenClient(int *cs){
 				pthread_exit(NULL);
 			}
 
-			// t_listUsers aux = users; //copiar
-			// t_listUsers aux2; //copiar
-			// for (size_t i = 0; i < n; i++) {
-			// 	aux = (t_list) malloc(sizeof(list));
-			// 	aux->n = i;
-			// 	aux->s.s_len = 64;
-			// 	aux->s.s_val = (char *)malloc(64);
-			// 	sprintf(aux->s.s_val, "%d", i);
-			//
-			// 	aux->next = *result;
-			// 	*result = aux;
-			// }
-
 			//Invocar procedimiento remoto
 			pthread_mutex_lock(&mutex2);	//NO estoy seguro de los cerrojos
 			//comprueba si el user tiene problemas y envía respuesta
-			retval = list_users_1(n, &users, clnt);
+			retval = listconnectedusers_1(&users, clnt);
 			pthread_mutex_unlock(&mutex2);
 
 			if (retval != RPC_SUCCESS) {
@@ -827,7 +789,15 @@ void listenClient(int *cs){
 
 			//Destruir el manejador
 			clnt_destroy( clnt );
+			// ----------------- fin VERSIÓN RPC: protocolo correcto -----------------
 
+			//sacamos la longitud de la lista, para que el cliente sepa cuantos le enviamos
+			int n = lengthListUsers(users);
+			char n_string[256];
+			// sprintf(n_string, "%d\0", n); //pasamos el número a cadena de caracteres
+			sprintf(n_string, "%d", n); //pasamos el número a cadena de caracteres
+			//enviamos el número de usuarios conectados
+			enviar(clienteSd, n_string, strlen(n_string)+1);
 
 			//Recorremos la lista de usuarios para enviar el contenido
 			while(users != NULL){
@@ -837,7 +807,6 @@ void listenClient(int *cs){
 				enviar(clienteSd, users->port.port_val, strlen(users->port.port_val)+1);
 				users = users->next;
 			}
-		// ----------------- fin ~> VERSIÓN RPC -----------------
 
 	}// end of cont
 
@@ -930,42 +899,7 @@ void listenClient(int *cs){
     }
 		//si no dió error se leerá el número de users a imprimir
 		if(cont){
-			int n = 0;
-			char nString[MAX_LINE];
-			err = readLine(clienteSd, nString, MAX_LINE);
-			if (err == -1) {
-				perror("readLine, n");
-			}
-			n = atoi(nString);
-
-
-			// ----------------- CÓDIGO ANTIGUO: sin rpc -----------------
-			// bool noMore = false;
-			// int firstLine = 0, lastLine = 0;
-			// pthread_mutex_lock(&mutex2);
-			// findContentUser(userTarget, &firstLine, &lastLine);
-			// pthread_mutex_unlock(&mutex2);
-			// char file[MAX_LINE];
-			//
-			// // printf("%d %d\n",firstLine, lastLine );
-			//
-			// for (int i = 0; i < n; i++){
-			// 	pthread_mutex_lock(&mutex2);
-			// 	fillContentUserImple(file, &firstLine, lastLine, &noMore);
-			// 	pthread_mutex_unlock(&mutex2);
-			//
-			// 	// printf("%s %d %d\n", file, noMore, i );
-			//
-			// 	if (noMore){ //envío de relleno
-			// 		enviar(clienteSd, "\0", 1);
-			// 		// printf("noMore %d\n", i );
-			// 	}else{ //envío normal de la info
-			// 		enviar(clienteSd, file, strlen(file)+1);
-			// 	}
-			// 	firstLine++;
-			// ----------------- fin CÓDIGO ANTIGUO: sin rpc -----------------
-
-			// ----------------- VERSIÓN RPC: -----------------
+			// ----------------- VERSIÓN RPC: ALGORITMO correcto-----------------
 			t_list files;
 			CLIENT *clnt;
 			enum clnt_stat retval;
@@ -988,7 +922,7 @@ void listenClient(int *cs){
 			//Invocar procedimiento remoto
 			pthread_mutex_lock(&mutex2);	//NO estoy seguro de los cerrojos
 			//comprueba si el user tiene problemas y envía respuesta
-			retval = list_content_1(n, userTarget, &files, clnt);
+			retval = list_content_1(userTarget, &files, clnt);
 			pthread_mutex_unlock(&mutex2);
 
 			if (retval != RPC_SUCCESS) {
@@ -998,6 +932,12 @@ void listenClient(int *cs){
 			//Destruir el manejador
 			clnt_destroy( clnt );
 
+			//sacamos la longitud de la lista, para que el cliente sepa cuantos le enviamos
+			int n = lengthList(files);
+			char n_string[256];
+			sprintf(n_string, "%d", n); //pasamos el número a cadena de caracteres
+			//enviamos el número de usuarios conectados
+			enviar(clienteSd, n_string, strlen(n_string)+1);
 
 			//Recorremos la lista de usuarios para enviar el contenido
 			while(files != NULL){
@@ -1006,8 +946,6 @@ void listenClient(int *cs){
 				files = files->next;
 			}
 		// ----------------- fin ~> VERSIÓN RPC -----------------
-
-
 
 		} //end of cont
 
@@ -1023,4 +961,24 @@ void listenClient(int *cs){
 
 	pthread_exit(NULL);
 
+}
+
+int lengthListUsers(t_listUsers l){
+	t_listUsers aux = l;
+	int n = 0;
+	while (aux != NULL) {
+		n++;
+		aux = aux->next;
+	}
+	return n;
+}
+
+int lengthList(t_list l){
+	t_list aux = l;
+	int n = 0;
+	while (aux != NULL) {
+		n++;
+		aux = aux->next;
+	}
+	return n;
 }

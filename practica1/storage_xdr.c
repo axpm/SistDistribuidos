@@ -100,13 +100,3 @@ xdr_check_list_content_1_argument (XDR *xdrs, check_list_content_1_argument *obj
 		 return FALSE;
 	return TRUE;
 }
-
-bool_t
-xdr_list_content_1_argument (XDR *xdrs, list_content_1_argument *objp)
-{
-	 if (!xdr_int (xdrs, &objp->n))
-		 return FALSE;
-	 if (!xdr_string (xdrs, &objp->userTarget, 256))
-		 return FALSE;
-	return TRUE;
-}

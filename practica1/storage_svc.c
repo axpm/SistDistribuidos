@@ -59,9 +59,9 @@ _check_list_users_1 (char * *argp, void *result, struct svc_req *rqstp)
 }
 
 int
-_list_users_1 (int  *argp, void *result, struct svc_req *rqstp)
+_listconnectedusers_1 (void  *argp, void *result, struct svc_req *rqstp)
 {
-	return (list_users_1_svc(*argp, result, rqstp));
+	return (listconnectedusers_1_svc(result, rqstp));
 }
 
 int
@@ -71,9 +71,9 @@ _check_list_content_1 (check_list_content_1_argument *argp, void *result, struct
 }
 
 int
-_list_content_1 (list_content_1_argument *argp, void *result, struct svc_req *rqstp)
+_list_content_1 (char * *argp, void *result, struct svc_req *rqstp)
 {
-	return (list_content_1_svc(argp->n, argp->userTarget, result, rqstp));
+	return (list_content_1_svc(*argp, result, rqstp));
 }
 
 static void
@@ -87,9 +87,8 @@ storage_1(struct svc_req *rqstp, register SVCXPRT *transp)
 		connectuser_1_argument connectuser_1_arg;
 		char *disconnectuser_1_arg;
 		char *check_list_users_1_arg;
-		int list_users_1_arg;
 		check_list_content_1_argument check_list_content_1_arg;
-		list_content_1_argument list_content_1_arg;
+		char *list_content_1_arg;
 	} argument;
 	union {
 		int registeruser_1_res;
@@ -99,7 +98,7 @@ storage_1(struct svc_req *rqstp, register SVCXPRT *transp)
 		int connectuser_1_res;
 		int disconnectuser_1_res;
 		int check_list_users_1_res;
-		t_listUsers list_users_1_res;
+		t_listUsers listconnectedusers_1_res;
 		int check_list_content_1_res;
 		t_list list_content_1_res;
 	} result;
@@ -154,10 +153,10 @@ storage_1(struct svc_req *rqstp, register SVCXPRT *transp)
 		local = (bool_t (*) (char *, void *,  struct svc_req *))_check_list_users_1;
 		break;
 
-	case list_users:
-		_xdr_argument = (xdrproc_t) xdr_int;
+	case listConnectedUsers:
+		_xdr_argument = (xdrproc_t) xdr_void;
 		_xdr_result = (xdrproc_t) xdr_t_listUsers;
-		local = (bool_t (*) (char *, void *,  struct svc_req *))_list_users_1;
+		local = (bool_t (*) (char *, void *,  struct svc_req *))_listconnectedusers_1;
 		break;
 
 	case check_list_content:
@@ -167,7 +166,7 @@ storage_1(struct svc_req *rqstp, register SVCXPRT *transp)
 		break;
 
 	case list_content:
-		_xdr_argument = (xdrproc_t) xdr_list_content_1_argument;
+		_xdr_argument = (xdrproc_t) xdr_wrapstring;
 		_xdr_result = (xdrproc_t) xdr_t_list;
 		local = (bool_t (*) (char *, void *,  struct svc_req *))_list_content_1;
 		break;

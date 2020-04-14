@@ -81,12 +81,12 @@ check_list_users_1(char *user, int *clnt_res,  CLIENT *clnt)
 }
 
 enum clnt_stat 
-list_users_1(int n, t_listUsers *clnt_res,  CLIENT *clnt)
+listconnectedusers_1(t_listUsers *clnt_res, CLIENT *clnt)
 {
-	return (clnt_call(clnt, list_users,
-		(xdrproc_t) xdr_int, (caddr_t) &n,
+	 return (clnt_call (clnt, listConnectedUsers, (xdrproc_t) xdr_void, (caddr_t) NULL,
 		(xdrproc_t) xdr_t_listUsers, (caddr_t) clnt_res,
 		TIMEOUT));
+
 }
 
 enum clnt_stat 
@@ -101,12 +101,10 @@ check_list_content_1(char *user, char *userTarget, int *clnt_res,  CLIENT *clnt)
 }
 
 enum clnt_stat 
-list_content_1(int n, char *userTarget, t_list *clnt_res,  CLIENT *clnt)
+list_content_1(char *userTarget, t_list *clnt_res,  CLIENT *clnt)
 {
-	list_content_1_argument arg;
-	arg.n = n;
-	arg.userTarget = userTarget;
-	return (clnt_call (clnt, list_content, (xdrproc_t) xdr_list_content_1_argument, (caddr_t) &arg,
+	return (clnt_call(clnt, list_content,
+		(xdrproc_t) xdr_wrapstring, (caddr_t) &userTarget,
 		(xdrproc_t) xdr_t_list, (caddr_t) clnt_res,
 		TIMEOUT));
 }

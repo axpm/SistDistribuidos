@@ -85,7 +85,7 @@ check_list_users_1_svc(char *user, int *result,  struct svc_req *rqstp)
 }
 
 bool_t
-list_users_1_svc(int n, t_listUsers *result, struct svc_req *rqstp)
+listconnectedusers_1_svc(t_listUsers *result, struct svc_req *rqstp)
 {
 	bool_t retval;
 
@@ -97,7 +97,8 @@ list_users_1_svc(int n, t_listUsers *result, struct svc_req *rqstp)
 	t_listUsers aux;
 
 	*result = NULL;
-	for (int i = 0; i < n; i++){
+	// for (int i = 0; i < n; i++){
+	while(!noMore){
 		fillUserInfoImple(user, ip, port, &userLine, &nextUserLine, &noMore);
 
 		//creando un nuevo item
@@ -109,21 +110,25 @@ list_users_1_svc(int n, t_listUsers *result, struct svc_req *rqstp)
 		aux->ip.ip_val = (char *)malloc(256);
 		aux->port.port_val = (char *)malloc(256);
 
-		if (noMore){ //envío de relleno
-			// sprintf(aux->user.user_val, "%s", "PRUEBA");
-			sprintf(aux->user.user_val, "%c", '\0');
-			sprintf(aux->ip.ip_val, "%c", '\0');
-			sprintf(aux->port.port_val, "%c", '\0');
-		}else{ //envío normal de la info de los usuarios
-			// sprintf(aux->user.user_val, "%s", "PRUEBA");
+		// if (noMore){ //envío de relleno
+		// 	// sprintf(aux->user.user_val, "%s", "PRUEBA");
+		// 	sprintf(aux->user.user_val, "%c", '\0');
+		// 	sprintf(aux->ip.ip_val, "%c", '\0');
+		// 	sprintf(aux->port.port_val, "%c", '\0');
+		// }else{ //envío normal de la info de los usuarios
+		// 	// sprintf(aux->user.user_val, "%s", "PRUEBA");
+		// 	sprintf(aux->user.user_val, "%s", user);
+		// 	sprintf(aux->ip.ip_val, "%s", ip);
+		// 	sprintf(aux->port.port_val, "%s", port);
+		// }
+		if(!noMore){
 			sprintf(aux->user.user_val, "%s", user);
 			sprintf(aux->ip.ip_val, "%s", ip);
 			sprintf(aux->port.port_val, "%s", port);
-
+			//se añade el auxiliar a la lista
+			aux->next = *result;
+			*result = aux;
 		}
-		//se añade el auxiliar a la lista
-		aux->next = *result;
-		*result = aux;
 	}
 	retval = TRUE;
 
@@ -142,7 +147,7 @@ check_list_content_1_svc(char *user, char *userTarget, int *result,  struct svc_
 }
 
 bool_t
-list_content_1_svc(int n, char *userTarget, t_list *result,  struct svc_req *rqstp)
+list_content_1_svc(char *userTarget, t_list *result,  struct svc_req *rqstp)
 {
 	bool_t retval;
 
@@ -154,21 +159,26 @@ list_content_1_svc(int n, char *userTarget, t_list *result,  struct svc_req *rqs
 	char file[MAX_LINE];
 	t_list aux;
 
-	for (int i = 0; i < n; i++){
+	// for (int i = 0; i < n; i++){
+	while(!noMore){
 		fillContentUserImple(file, firstLine, lastLine, &noMore);
 		aux = (t_list) malloc(sizeof(list));
 		aux->file.file_len = 256;
 		aux->file.file_val = (char *)malloc(256);
 
-		if (noMore){ //envío de relleno
-			sprintf(aux->file.file_val, "%c", '\0');
-		}else{ //envío normal de la info
+		// if (noMore){ //envío de relleno
+		// 	sprintf(aux->file.file_val, "%c", '\0');
+		// }else{ //envío normal de la info
+		// 	sprintf(aux->file.file_val, "%s", file);
+		// }
+		if(!noMore){ //para evitar los blancos en la última
 			sprintf(aux->file.file_val, "%s", file);
+			firstLine++;
+			//se añade el auxiliar a la lista
+			aux->next = *result;
+			*result = aux;
 		}
-		firstLine++;
-		//se añade el auxiliar a la lista
-		aux->next = *result;
-		*result = aux;
+
 	}
 	retval = TRUE;
 

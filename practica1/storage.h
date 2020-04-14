@@ -71,12 +71,6 @@ struct check_list_content_1_argument {
 };
 typedef struct check_list_content_1_argument check_list_content_1_argument;
 
-struct list_content_1_argument {
-	int n;
-	char *userTarget;
-};
-typedef struct list_content_1_argument list_content_1_argument;
-
 #define STORAGE 99
 #define STORAGEVER 1
 
@@ -102,15 +96,15 @@ extern  bool_t disconnectuser_1_svc(char *, int *, struct svc_req *);
 #define check_list_users 7
 extern  enum clnt_stat check_list_users_1(char *, int *, CLIENT *);
 extern  bool_t check_list_users_1_svc(char *, int *, struct svc_req *);
-#define list_users 8
-extern  enum clnt_stat list_users_1(int , t_listUsers *, CLIENT *);
-extern  bool_t list_users_1_svc(int , t_listUsers *, struct svc_req *);
+#define listConnectedUsers 8
+extern  enum clnt_stat listconnectedusers_1(t_listUsers *, CLIENT *);
+extern  bool_t listconnectedusers_1_svc(t_listUsers *, struct svc_req *);
 #define check_list_content 9
 extern  enum clnt_stat check_list_content_1(char *, char *, int *, CLIENT *);
 extern  bool_t check_list_content_1_svc(char *, char *, int *, struct svc_req *);
 #define list_content 10
-extern  enum clnt_stat list_content_1(int , char *, t_list *, CLIENT *);
-extern  bool_t list_content_1_svc(int , char *, t_list *, struct svc_req *);
+extern  enum clnt_stat list_content_1(char *, t_list *, CLIENT *);
+extern  bool_t list_content_1_svc(char *, t_list *, struct svc_req *);
 extern int storage_1_freeresult (SVCXPRT *, xdrproc_t, caddr_t);
 
 #else /* K&R C */
@@ -135,9 +129,9 @@ extern  bool_t disconnectuser_1_svc();
 #define check_list_users 7
 extern  enum clnt_stat check_list_users_1();
 extern  bool_t check_list_users_1_svc();
-#define list_users 8
-extern  enum clnt_stat list_users_1();
-extern  bool_t list_users_1_svc();
+#define listConnectedUsers 8
+extern  enum clnt_stat listconnectedusers_1();
+extern  bool_t listconnectedusers_1_svc();
 #define check_list_content 9
 extern  enum clnt_stat check_list_content_1();
 extern  bool_t check_list_content_1_svc();
@@ -158,7 +152,6 @@ extern  bool_t xdr_publish_1_argument (XDR *, publish_1_argument*);
 extern  bool_t xdr_deletecontent_1_argument (XDR *, deletecontent_1_argument*);
 extern  bool_t xdr_connectuser_1_argument (XDR *, connectuser_1_argument*);
 extern  bool_t xdr_check_list_content_1_argument (XDR *, check_list_content_1_argument*);
-extern  bool_t xdr_list_content_1_argument (XDR *, list_content_1_argument*);
 
 #else /* K&R C */
 extern bool_t xdr_list ();
@@ -169,7 +162,6 @@ extern bool_t xdr_publish_1_argument ();
 extern bool_t xdr_deletecontent_1_argument ();
 extern bool_t xdr_connectuser_1_argument ();
 extern bool_t xdr_check_list_content_1_argument ();
-extern bool_t xdr_list_content_1_argument ();
 
 #endif /* K&R C */
 

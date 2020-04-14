@@ -755,19 +755,22 @@ class client {
 
 			//si fue todo bien se siguen enviando cosas
 			if (cont) {
-				//Objetos para leer por pantalla
-				InputStreamReader  is = new InputStreamReader(System.in); //Leemos por pantalla
-				BufferedReader br = new BufferedReader(is); //Guardamos
-				//Leemos por pantalla
-				System.out.print("c> ");
-			  message = br.readLine();
-				//enviamos el número recibido
-				out.writeBytes(message); //Escribimos en la salida del cliente
-				out.write('\0'); // inserta el código ASCII 0 al final
+				// //Objetos para leer por pantalla
+				// InputStreamReader  is = new InputStreamReader(System.in); //Leemos por pantalla
+				// BufferedReader br = new BufferedReader(is); //Guardamos
+				// //Leemos por pantalla
+				// System.out.print("c> ");
+			  // message = br.readLine();
+				// //enviamos el número recibido
+				// out.writeBytes(message); //Escribimos en la salida del cliente
+				// out.write('\0'); // inserta el código ASCII 0 al final
 
 				int n;
 				try {
-					n = Integer.parseInt(message);
+          //recibir número de users
+          String n_string = readFromServer(in);
+          // System.out.println("N: " + n_string);
+					n = Integer.parseInt(n_string);
 				} catch(Exception e) {
 					System.out.println("c> LIST_USERS FAIL");
 					return -1;
@@ -852,7 +855,7 @@ class client {
 
 			switch(c) {
 				case '0':
-					System.out.println("c> LIST_CONTENT OK");
+					// System.out.println("c> LIST_CONTENT OK");
 					cont = true;
 					break;
 				case '1':
@@ -867,24 +870,27 @@ class client {
 
 			//si fue todo bien se siguen enviando cosas
 			if (cont) {
-				//Objetos para leer por pantalla
-				InputStreamReader  is = new InputStreamReader(System.in); //Leemos por pantalla
-				BufferedReader br = new BufferedReader(is); //Guardamos
-				//Leemos por pantalla
-				System.out.print("c> ");
-			  message = br.readLine();
-				//enviamos el número recibido
-				out.writeBytes(message); //Escribimos en la salida del cliente
-				out.write('\0'); // inserta el código ASCII 0 al final
+				// //Objetos para leer por pantalla
+				// InputStreamReader  is = new InputStreamReader(System.in); //Leemos por pantalla
+				// BufferedReader br = new BufferedReader(is); //Guardamos
+				// //Leemos por pantalla
+				// System.out.print("c> ");
+			  // message = br.readLine();
+				// //enviamos el número recibido
+				// out.writeBytes(message); //Escribimos en la salida del cliente
+				// out.write('\0'); // inserta el código ASCII 0 al final
 
-				int n;
+        int n;
 				try {
-					n = Integer.parseInt(message);
+          //recibir número de users
+          String n_string = readFromServer(in);
+          // System.out.println("N: " + n_string);
+					n = Integer.parseInt(n_string);
 				} catch(Exception e) {
 					System.out.println("c> LIST_CONTENT FAIL");
 					return -1;
 				}
-
+        System.out.println("c> LIST_CONTENT OK");
 				for (int i = 0; i < n ; i++) {
 					//recibir user
 					String file = readFromServer(in);

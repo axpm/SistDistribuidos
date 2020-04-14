@@ -2,6 +2,9 @@
 #define SERVER_HPP
 #include "lines.h"
 #include "imple.h"
+//Para el servicio rpc
+#include "storage.h"
+
 
 
 void listenClient(int *cs);
@@ -9,6 +12,9 @@ void listenClient(int *cs);
 void print_usage();
 void printInitServer(struct sockaddr_in server_addr);
 void serverMsg(char * msg);
+
+int lengthListUsers(t_listUsers l);
+int lengthList(t_list l);
 
 // int connectUser(user, ip, port);
 // int registerUser(char * user);
