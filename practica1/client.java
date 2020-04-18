@@ -76,22 +76,19 @@ class myThread extends Thread {
         File tempFile = new File(rf);
         boolean available = tempFile.exists(); //comprueba que existe rf en el directorio indicado
 
-				// if(checkAvailability(remoteFile, this.user) ){ //si está disponible --> se leerá del archivo y enviará al cliente
-
         if(available){ //si está disponible --> se leerá del archivo y enviará al cliente
 
           out.writeBytes("0"); //Escribimos en la salida del cliente el error al cliente
           out.write('\0'); // inserta el código ASCII 0 al final
 
 					//objetos para leer
-					FileReader fr = null;
-					BufferedReader brf = null;
+
+          InputStream inputStream = null;
 
 					try{
 						//leer archivo remoto
-						// String rf = "/tmp/" + remoteFile;
-            fr = new FileReader(rf);
-						brf = new BufferedReader(fr);
+            File infile = new File(rf);
+            inputStream = new FileInputStream(rf);
 
 					}catch (Exception e) {
             System.err.println("excepcion " + e.toString() );
@@ -99,46 +96,50 @@ class myThread extends Thread {
 						out.writeBytes("2"); //Escribimos en la salida del cliente el error al cliente
 						out.write('\0'); // inserta el código ASCII 0 al final
 						//cerrar archivos en caso de error
-						if( fr != null ){
-					      fr.close();
-					    }
+						// if( fr != null ){
+					  //     fr.close();
+					  //   }
 					}
 					// Lectura del fichero
-					String strLine;
-					//hasta que lea nulo, escribe en el archivo local
-          while( (strLine = brf.readLine()) != null){
-            // System.out.println(strLine);
-            out.writeBytes(strLine); //Enviamos lo que se lee
-            // out.write('\n'); // inserta el código ASCII 0 al final
-          	out.write('\0'); // inserta el código ASCII 0 al final
-          }
-          out.writeBytes("END_OF_FILE");
-					out.write('\0'); // inserta el código ASCII 0 al final
+          byte[] buffer = new byte[1024];
+          int length = 0;
 
-          // System.out.println("ESTO ACABA, EL PROBLEMA ESTÁ EN GET_FILE");
+          // while ((length = brf.read(buffer)) > 0) {
+          while((length = inputStream.read(buffer)) > 0) {
+            out.write(buffer, 0, length);
+          }
 
 					//cerramos archivos
-					fr.close();
+          inputStream.close();
+          out.close();
 					client.close(); //cerramos la conexión con el cliente
           // System.out.println("llega acá");
 
 				}else{
-
-
-					out.writeBytes("2"); //Escribimos en la salida del cliente el error al cliente
-					out.write('\0'); // inserta el código ASCII 0 al final
+				  out.writeBytes("2"); //Escribimos en la salida del cliente el error al cliente
+				  out.write('\0'); // inserta el código ASCII 0 al final
 					client.close(); //cerramos la conexión con el cliente
 				}
 
-			}catch(Exception e) {
+			}catch(Exception e) { 
         // System.err.println("excepcion " + e.toString() );
         // e.printStackTrace() ;
 				// out.writeBytes("2"); //Escribimos en la salida del cliente el error al cliente
 				// out.write('\0'); // inserta el código ASCII 0 al final
+        if (exit) {
+          try {
+            serverAddr.close(); //cerramos el servidor
+          } catch(Exception e) {
+            // System.err.println("excepcion " + e.toString() );
+            // e.printStackTrace() ;
+          }
+        }
 			}
 
       // client.close(); //cerramos la conexión con el cliente
 		}//end whileTrue
+
+
 		try {
 			serverAddr.close(); //cerramos el servidor
 		} catch(Exception e) {
@@ -188,74 +189,6 @@ class myThread extends Thread {
 
 
 }//end of class myThread
-
-
-
-// class ProcessRequest extends Thread {
-// 	private Socket sc;
-//
-//
-// 	public ProcessRequest(Socket s) {
-// 		sc = s;
-// 	}
-//
-// 	public void run() { //función que se realiza para tratar la petición que llega
-// 		String remoteFile;
-// 		// TODO: código de copiar el archivo
-//
-// 		//leer del cliente y copiar remoteFile y localFile, para saber de dónde copiar y a donde copiar
-// 		// if (cont) {
-// 		//
-// 		// //se abre el archivo local para escribir y el remoto para escribir
-// 		// //objetos para escribir
-// 		// FileWriter fw = null;
-// 		// PrintWriter pw = null;
-// 		// //objetos para leer
-// 		// FileReader fr = null;
-// 		// BufferedReader brf = null;
-// 		//
-// 		// try{
-// 		// 	//leer archivo remoto
-// 		// 	String rf = "/temp" + remote_file_name;
-// 		// 	fr = new FileReader(rf);
-// 		// 	brf = new BufferedReader(fr);
-// 		// 	//escribir archivo local
-// 		// 	String lf = "/temp" + local_file_name;
-// 		// 	fw = new FileWriter(lf);
-// 		// 	pw = new PrintWriter(fw);
-// 		//
-// 		// }catch (Exception e) {
-// 		// 	System.out.println("c> GET_FILE FAIL");
-// 		// 	//cerrar archivos en caso de error
-// 		// 	if( fr != null ){
-// 		//        fr.close();
-// 		//     }
-// 		// 	if( fw != null ){
-// 		//        fw.close();
-// 		//     }
-// 		// 	return -1;
-// 		// }
-// 		// // Lectura del fichero
-// 		// String StrLine;
-// 		// //hasta que lea nulo, escribe en el archivo local
-// 		// while( (StrLine = brf.readLine()) !=null){
-// 		// 	 pw.println(StrLine); //escribir en el local
-// 		// }
-// 		//
-// 		// //cerramos archivos
-// 		// fr.close();
-// 		// fw.close();
-// 	// }// fin de continue
-// 	// sc.close(); //cerrar socket
-// 		try {
-// 			sc.close(); //close socket before leaving
-//
-// 		} catch(Exception e) {
-//
-// 		}
-// 	}
-//
-// }//end of class ProcessRequest
 
 
 class client {
@@ -755,16 +688,6 @@ class client {
 
 			//si fue todo bien se siguen enviando cosas
 			if (cont) {
-				// //Objetos para leer por pantalla
-				// InputStreamReader  is = new InputStreamReader(System.in); //Leemos por pantalla
-				// BufferedReader br = new BufferedReader(is); //Guardamos
-				// //Leemos por pantalla
-				// System.out.print("c> ");
-			  // message = br.readLine();
-				// //enviamos el número recibido
-				// out.writeBytes(message); //Escribimos en la salida del cliente
-				// out.write('\0'); // inserta el código ASCII 0 al final
-
 				int n;
 				try {
           //recibir número de users
@@ -870,15 +793,6 @@ class client {
 
 			//si fue todo bien se siguen enviando cosas
 			if (cont) {
-				// //Objetos para leer por pantalla
-				// InputStreamReader  is = new InputStreamReader(System.in); //Leemos por pantalla
-				// BufferedReader br = new BufferedReader(is); //Guardamos
-				// //Leemos por pantalla
-				// System.out.print("c> ");
-			  // message = br.readLine();
-				// //enviamos el número recibido
-				// out.writeBytes(message); //Escribimos en la salida del cliente
-				// out.write('\0'); // inserta el código ASCII 0 al final
 
         int n;
 				try {
@@ -934,6 +848,19 @@ class client {
 			return -1;
 		}
 
+    String lf = "/tmp/" + local_file_name;
+
+    File tempFile = new File(lf);
+    boolean exists = tempFile.exists(); //comprueba que existe rf en el directorio indicado
+    // tempFile.close();
+    //si existe un archivo que se llama igual que local_file_name da error
+    if(exists){
+      System.out.println("c> GET_FILE FAIL");
+      return -1;
+    }
+
+
+
 		String port = null;
 		String server = null;
 		Socket client = null;
@@ -983,30 +910,27 @@ class client {
 					PrintWriter pw = null;
 
 					//escribir archivo local
-					String lf = "/tmp/" + local_file_name;
+
 
           File file = new File(lf);
 
           file.createNewFile(); //habría que controlar el error
 
-
 					fw = new FileWriter(lf);
 					pw = new PrintWriter(fw);
 
-					String strLine = null;
-          int i = 0;
-					// while( (strLine = readFromServer(in) ) !=null){
-          // strLine = readFromServer(in);
-          while( !(strLine = readFromServer(in)).equals("END_OF_FILE") ){
-            // System.out.println(strLine);
-            // System.out.println(i);
-						pw.println(strLine); //escribir en el local
-            // strLine = readFromServer(in); //leemos siguiente línea
+      		OutputStream outputStream = null;
+          outputStream = new FileOutputStream(lf);
 
-            // i++; //quitar
-					}
-          // System.out.println("TERMINA GET_FILE");
+          byte[] buffer = new byte[1024];
+          int length = 0;
+          while ((length = in.read(buffer)) > 0) {
+            outputStream.write(buffer, 0, length);
+        	}
+
 					fw.close();//cerramos el fichero local
+          in.close();
+          out.close();
 
 				}
 
@@ -1247,7 +1171,7 @@ class client {
 
 		String ip = null;
 		String port = null;
-		int n = 15;
+		// int n = 15;
 		Socket sc = null;
 		try {
 			//Crear la conexión
@@ -1257,7 +1181,7 @@ class client {
 			DataInputStream in = new DataInputStream(sc.getInputStream()); //Recibir
 
       int counter = 0;
-			while(port == null){
+			// while(port == null){
 
 				//send operation
 				String message = "LIST_USERS";
@@ -1265,7 +1189,7 @@ class client {
 				out.write('\0'); // inserta el código ASCII 0 al final
 
 				//send userOperating
-				message = "" + userOperating; //user;// // mensaje más código ASCII 0 al final
+				message = "" + userOperating; // mensaje más código ASCII 0 al final
 				out.writeBytes(message); //Escribimos en la salida del cliente
 				out.write('\0'); // inserta el código ASCII 0 al final
 
@@ -1283,9 +1207,16 @@ class client {
             cont = false;
 				}
 
-        message = Integer.toString(n);
-        out.writeBytes(message); //Escribimos en la salida del cliente
-				out.write('\0'); // inserta el código ASCII 0 al final
+        int n;
+        try {
+          //recibir número de users
+          String n_string = readFromServer(in);
+          // System.out.println("N: " + n_string);
+          n = Integer.parseInt(n_string);
+        } catch(Exception e) {
+          System.out.println("c> LIST_USERS FAIL");
+          return null;
+        }
 
 				//si fue todo bien se siguen enviando cosas
 				if (cont) {
@@ -1314,12 +1245,12 @@ class client {
 					}
 
 				}// fin de continue
-
-			n *= 2; //si no tiene el puerto, para la siguiente ronda, sacará el doble de usuarios
-			cont = false;
-      counter += 1;
-
-				}//fin del while
+      //
+			// n *= 2; //si no tiene el puerto, para la siguiente ronda, sacará el doble de usuarios
+			// cont = false;
+      // counter += 1;
+      //
+			// 	}//fin del while
 			} catch(Exception e) {
 				// System.out.println("c> LIST_USERS FAIL");
         try {
@@ -1412,6 +1343,27 @@ class client {
 		}
 		return message;
 
+	}
+
+  static void copyFile(String src, String dest) throws IOException {
+    		InputStream inputStream = null;
+    		OutputStream outputStream = null;
+    		try {
+		      File infile = new File(src);
+  	    	File outfile = new File(dest);
+
+      		inputStream = new FileInputStream(src);
+      		outputStream = new FileOutputStream(dest);
+
+      		byte[] buffer = new byte[1024];
+      		int length = 0;
+      		while ((length = inputStream.read(buffer)) > 0) {
+          			outputStream.write(buffer, 0, length);
+      		}
+    		} finally {
+      		inputStream.close();
+      		outputStream.close();
+    		}
 	}
 
 }//fin de clase
