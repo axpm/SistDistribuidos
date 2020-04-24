@@ -129,7 +129,7 @@ class myThread extends Thread {
         if (exit) {
           try {
             serverAddr.close(); //cerramos el servidor
-          } catch(Exception e) {
+          } catch(Exception exc) {
             // System.err.println("excepcion " + e.toString() );
             // e.printStackTrace() ;
           }
@@ -1288,44 +1288,47 @@ class client {
 
 	private static boolean checkUserName(String user){
 		if(user.length() <= MAX_LINE){
-			if (user.length() > 1){
-        if (file.charAt(0) == '-' && file.charAt(1) == '>'){
+      if(user.length() > 0){ //tiene menos de dos caracteres
+        if (user.charAt(0) == '$'){
           return false;
         }
-        if (user.length() > 2){
-          if (user.charAt(0) == ':' && user.charAt(1) == ':' && user.charAt(2) == ':' )
-          return false; //no puede empezar por :::loQueSea
+        if (user.length() > 1){
+          if (user.charAt(0) == '-' && user.charAt(1) == '>'){
+            return false;
+          }
+          if (user.length() > 2){
+            if (user.charAt(0) == ':' && user.charAt(1) == ':' && user.charAt(2) == ':' ){
+              return false; //no puede empezar por :::loQueSea
+            }
+          }
         }
         return true;
-			}else if(file.length() > 0){ //tiene menos de dos caracteres
-        if (file.charAt(0) == '%')
-          return false;
-				return true;
-			}
-		}else return false; //se pasa de longitud
-	}
-
+      }
+    }
+    return false;
+  }
 
 	private static boolean checkFileName(String file){
-		if(file.length() <= MAX_LINE){
-			if (file.length() > 1){
-        if (file.charAt(0) == '%')
+    if(file.length() <= MAX_LINE){
+      if(file.length() > 0){ //tiene menos de dos caracteres
+        if (file.charAt(0) == '$'){
           return false;
-				if (file.charAt(0) == '-' && file.charAt(1) == '>')
-					return false; //no puede empezar por :::loQueSea
-        if (user.length() > 2){
-  				if (user.charAt(0) == ':' && user.charAt(1) == ':' && user.charAt(2) == ':' )
-  					return false; //no puede empezar por :::loQueSea
-  				return true;
-  			}
-				return true;
-			}else if(file.length() > 0){ //tiene menos de dos caracteres
-        if (file.charAt(0) == '&')
-          return false;
-				return true;
-			}
-		}else return false; //se pasa de longitud o no llega
-	}
+        }
+        if (file.length() > 1){
+          if (file.charAt(0) == '-' && file.charAt(1) == '>'){
+            return false;
+          }
+          if (file.length() > 2){
+            if (file.charAt(0) == ':' && file.charAt(1) == ':' && file.charAt(2) == ':' ){
+              return false; //no puede empezar por :::loQueSea
+            }
+          }
+        }
+        return true;
+      }
+    }
+    return false;
+  }
 
 
 	private static boolean checkDescription(String desc){
@@ -1334,9 +1337,7 @@ class client {
 				if (desc.charAt(0) == '|' && desc.charAt(1) == '|' )
 					return false; //no puede empezar por :::loQueSea
 				return true;
-			}else if(file.length() > 0){ //tiene menos de dos caracteres
-        if (file.charAt(0) == '&')
-          return false;
+			}else{
 				return true;
 			}
 		}else return false; //se pasa de longitud
