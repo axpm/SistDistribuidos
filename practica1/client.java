@@ -1288,14 +1288,18 @@ class client {
 
 	private static boolean checkUserName(String user){
 		if(user.length() <= MAX_LINE){
-			if (user.length() > 2){
+			if (user.length() > 1){
         if (file.charAt(0) == '-' && file.charAt(1) == '>'){
           return false;
         }
-				if (user.charAt(0) == ':' && user.charAt(1) == ':' && user.charAt(2) == ':' )
-					return false; //no puede empezar por :::loQueSea
-				return true;
-			}else{ //tiene menos de tres caracteres
+        if (user.length() > 2){
+          if (user.charAt(0) == ':' && user.charAt(1) == ':' && user.charAt(2) == ':' )
+          return false; //no puede empezar por :::loQueSea
+        }
+        return true;
+			}else if(file.length() > 0){ //tiene menos de dos caracteres
+        if (file.charAt(0) == '%')
+          return false;
 				return true;
 			}
 		}else return false; //se pasa de longitud
@@ -1305,6 +1309,8 @@ class client {
 	private static boolean checkFileName(String file){
 		if(file.length() <= MAX_LINE){
 			if (file.length() > 1){
+        if (file.charAt(0) == '%')
+          return false;
 				if (file.charAt(0) == '-' && file.charAt(1) == '>')
 					return false; //no puede empezar por :::loQueSea
         if (user.length() > 2){
@@ -1313,10 +1319,12 @@ class client {
   				return true;
   			}
 				return true;
-			}else{ //tiene menos de dos caracteres
+			}else if(file.length() > 0){ //tiene menos de dos caracteres
+        if (file.charAt(0) == '&')
+          return false;
 				return true;
 			}
-		}else return false; //se pasa de longitud
+		}else return false; //se pasa de longitud o no llega
 	}
 
 
@@ -1326,7 +1334,9 @@ class client {
 				if (desc.charAt(0) == '|' && desc.charAt(1) == '|' )
 					return false; //no puede empezar por :::loQueSea
 				return true;
-			}else{ //tiene menos de dos caracteres
+			}else if(file.length() > 0){ //tiene menos de dos caracteres
+        if (file.charAt(0) == '&')
+          return false;
 				return true;
 			}
 		}else return false; //se pasa de longitud
