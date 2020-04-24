@@ -121,7 +121,7 @@ class myThread extends Thread {
 					client.close(); //cerramos la conexión con el cliente
 				}
 
-			}catch(Exception e) { 
+			}catch(Exception e) {
         // System.err.println("excepcion " + e.toString() );
         // e.printStackTrace() ;
 				// out.writeBytes("2"); //Escribimos en la salida del cliente el error al cliente
@@ -1289,6 +1289,9 @@ class client {
 	private static boolean checkUserName(String user){
 		if(user.length() <= MAX_LINE){
 			if (user.length() > 2){
+        if (file.charAt(0) == '-' && file.charAt(1) == '>'){
+          return false;
+        }
 				if (user.charAt(0) == ':' && user.charAt(1) == ':' && user.charAt(2) == ':' )
 					return false; //no puede empezar por :::loQueSea
 				return true;
@@ -1304,6 +1307,11 @@ class client {
 			if (file.length() > 1){
 				if (file.charAt(0) == '-' && file.charAt(1) == '>')
 					return false; //no puede empezar por :::loQueSea
+        if (user.length() > 2){
+  				if (user.charAt(0) == ':' && user.charAt(1) == ':' && user.charAt(2) == ':' )
+  					return false; //no puede empezar por :::loQueSea
+  				return true;
+  			}
 				return true;
 			}else{ //tiene menos de dos caracteres
 				return true;
