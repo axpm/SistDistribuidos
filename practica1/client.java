@@ -467,7 +467,7 @@ class client {
 					System.out.println("c> DISCONNECT FAIL / USER NOT CONNECTED");
 					break;
 				default:
-					System.out.println("c> DISCONNECT FAILURE");
+					System.out.println("c> DISCONNECT FAIL");
 				}
 
 			sc.close();

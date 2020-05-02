@@ -103,7 +103,7 @@ int main(int argc, char *argv[]) {
   bzero((char *)&server_addr, sizeof(server_addr));
   server_addr.sin_family = AF_INET;
   server_addr.sin_port = htons(atoi(port));
-  server_addr.sin_addr.s_addr = INADDR_ANY; 
+  server_addr.sin_addr.s_addr = INADDR_ANY;
 
   /* bind */
   if (bind(sd,(struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
@@ -405,8 +405,11 @@ void listenClient(int *cs){
 			case 1:
 				replyC[0] = '1';
 				break;
-			default:
+			case 2:
 				replyC[0] = '2';
+				break;
+			default:
+				replyC[0] = '3';
 		}
 		err = enviar(clienteSd, replyC, 1);
 		if (err == -1) {
