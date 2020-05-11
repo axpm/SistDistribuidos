@@ -26,7 +26,7 @@ Ejecución Servicio Web
   java upper.UpperPublisher
 
 ORDEN DE EJECUCIÓN
-  1) ./rpcServer
-  2) ./server -p puertoServidor -r hostRPC
+  1) ./server -p puertoServidor -r hostRPC
+  2) ./rpcServer
   3) java upper.UpperPublisher
   4) java -cp . client -s localhost -p 2500
