@@ -54,7 +54,6 @@ int main(int argc, char *argv[]) {
 	//Sockets
 	int val, err, clienteSd;
 	socklen_t size;
-	// struct sockaddr_in server_addr, client_addr;
 	struct sockaddr_in server_addr;
 
 	int  option = 0;
@@ -121,7 +120,6 @@ int main(int argc, char *argv[]) {
 		clienteSd = accept (sd, (struct sockaddr *) &client_addr, &size);
     if (clienteSd < 0) {
       printf("Error en el accept\n");
-      // return(-1);
 			break;
 		}
     if (pthread_create(&t, NULL, (void *) listenClient, &clienteSd) == -1){
@@ -138,7 +136,6 @@ int main(int argc, char *argv[]) {
 
   }
 
-	// close (sd);
 	//compureba el estado del contador de hilos
 	pthread_mutex_lock(&mutex3);
 	while(nt > 0)
@@ -209,7 +206,6 @@ void listenClient(int *cs){
 		clnt = clnt_create(rpcHost, STORAGE, STORAGEVER, "tcp"); //binding
 		if (clnt == NULL) {
 			clnt_pcreateerror(rpcHost);
-			// exit(1);
 			close(clienteSd);
 
 			//se disminuye el contador de hilos
@@ -222,7 +218,7 @@ void listenClient(int *cs){
 		}
 
 		//Invocar procedimiento remoto
-		pthread_mutex_lock(&mutex2);	//NO estoy seguro de los cerrojos
+		pthread_mutex_lock(&mutex2);
 		retval = registeruser_1(user, &reply, clnt);
 		pthread_mutex_unlock(&mutex2);
 
@@ -292,7 +288,7 @@ void listenClient(int *cs){
 		}
 
 		//Invocar procedimiento remoto
-		pthread_mutex_lock(&mutex2);	//NO estoy seguro de los cerrojos
+		pthread_mutex_lock(&mutex2);
 		retval = unregisteruser_1(user, &reply, clnt);
 		pthread_mutex_unlock(&mutex2);
 
@@ -349,7 +345,6 @@ void listenClient(int *cs){
 		struct sockaddr_in* pV4Addr = (struct sockaddr_in*) &client_addr;
 		struct in_addr ipAddr = pV4Addr->sin_addr;
 		char ip[INET_ADDRSTRLEN];
-		// ip = inet_ntop(*(struct in_addr*) client_addr.sin_addr); //Convert into IP string
 		inet_ntop( AF_INET, &ipAddr, ip, INET_ADDRSTRLEN );
 
 		// ----------------- CÓDIGO ANTIGUO: sin rpc -----------------
@@ -380,7 +375,7 @@ void listenClient(int *cs){
 		}
 
 		//Invocar procedimiento remoto
-		pthread_mutex_lock(&mutex2);	//NO estoy seguro de los cerrojos
+		pthread_mutex_lock(&mutex2);
 		retval = connectuser_1(user, ip, port, &reply, clnt);
 		pthread_mutex_unlock(&mutex2);
 
@@ -418,7 +413,6 @@ void listenClient(int *cs){
 
 	}//end of CONNECT
 
-	// ----------------CONNECT sin hacer
 	else if (strcmp("DISCONNECT", buffer) == 0) {
 		char user[MAX_LINE];
 		err = readLine(clienteSd, user, MAX_LINE);
@@ -434,7 +428,6 @@ void listenClient(int *cs){
 		struct sockaddr_in* pV4Addr = (struct sockaddr_in*) &client_addr;
 		struct in_addr ipAddr = pV4Addr->sin_addr;
 		char ip[INET_ADDRSTRLEN];
-		// ip = inet_ntop(*(struct in_addr*) client_addr.sin_addr); //Convert into IP string
 		inet_ntop( AF_INET, &ipAddr, ip, INET_ADDRSTRLEN );
 
 
@@ -466,7 +459,7 @@ void listenClient(int *cs){
 		}
 
 		//Invocar procedimiento remoto
-		pthread_mutex_lock(&mutex2);	//NO estoy seguro de los cerrojos
+		pthread_mutex_lock(&mutex2);
 		retval = disconnectuser_1(user, &reply, clnt);
 		pthread_mutex_unlock(&mutex2);
 
@@ -556,7 +549,7 @@ void listenClient(int *cs){
 		}
 
 		//Invocar procedimiento remoto
-		pthread_mutex_lock(&mutex2);	//NO estoy seguro de los cerrojos
+		pthread_mutex_lock(&mutex2);
 		retval = publish_1(user, file, desc, &reply, clnt);
 		pthread_mutex_unlock(&mutex2);
 
@@ -624,7 +617,6 @@ void listenClient(int *cs){
 		clnt = clnt_create(rpcHost, STORAGE, STORAGEVER, "tcp"); //binding
 		if (clnt == NULL) {
 			clnt_pcreateerror(rpcHost);
-			// exit(1);
 			close(clienteSd);
 
 			//se disminuye el contador de hilos
@@ -637,7 +629,7 @@ void listenClient(int *cs){
 		}
 
 		//Invocar procedimiento remoto
-		pthread_mutex_lock(&mutex2);	//NO estoy seguro de los cerrojos
+		pthread_mutex_lock(&mutex2);
 		retval = deletecontent_1(user, file, &reply, clnt);
 		pthread_mutex_unlock(&mutex2);
 
@@ -701,7 +693,6 @@ void listenClient(int *cs){
 		clnt = clnt_create(rpcHost, STORAGE, STORAGEVER, "tcp"); //binding
 		if (clnt == NULL) {
 			clnt_pcreateerror(rpcHost);
-			// exit(1);
 			close(clienteSd);
 
 			//se disminuye el contador de hilos
@@ -714,7 +705,7 @@ void listenClient(int *cs){
 		}
 
 		//Invocar procedimiento remoto
-		pthread_mutex_lock(&mutex2);	//NO estoy seguro de los cerrojos
+		pthread_mutex_lock(&mutex2);
 		//comprueba si el user tiene problemas y envía respuesta
 		retval = check_list_users_1(user, &reply, clnt);
 		pthread_mutex_unlock(&mutex2);
@@ -781,7 +772,7 @@ void listenClient(int *cs){
 			}
 
 			//Invocar procedimiento remoto
-			pthread_mutex_lock(&mutex2);	//NO estoy seguro de los cerrojos
+			pthread_mutex_lock(&mutex2);
 			//comprueba si el user tiene problemas y envía respuesta
 			retval = listconnectedusers_1(&users, clnt);
 			pthread_mutex_unlock(&mutex2);
@@ -848,7 +839,6 @@ void listenClient(int *cs){
 		clnt = clnt_create(rpcHost, STORAGE, STORAGEVER, "tcp"); //binding
 		if (clnt == NULL) {
 			clnt_pcreateerror(rpcHost);
-			// exit(1);
 			close(clienteSd);
 
 			//se disminuye el contador de hilos
@@ -861,7 +851,7 @@ void listenClient(int *cs){
 		}
 
 		//Invocar procedimiento remoto
-		pthread_mutex_lock(&mutex2);	//NO estoy seguro de los cerrojos
+		pthread_mutex_lock(&mutex2);
 		//comprueba si el user tiene problemas y envía respuesta
 		retval = check_list_content_1(user, userTarget, &reply, clnt);
 		pthread_mutex_unlock(&mutex2);
@@ -923,7 +913,7 @@ void listenClient(int *cs){
 			}
 
 			//Invocar procedimiento remoto
-			pthread_mutex_lock(&mutex2);	//NO estoy seguro de los cerrojos
+			pthread_mutex_lock(&mutex2);
 			//comprueba si el user tiene problemas y envía respuesta
 			retval = list_content_1(userTarget, &files, clnt);
 			pthread_mutex_unlock(&mutex2);

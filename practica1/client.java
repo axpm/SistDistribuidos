@@ -27,9 +27,6 @@ class myThread extends Thread {
 	int serverPort;
 	String user;
   //Para conectarse y recopilar info del servidor Central
-  // private String infoServer;
-  // private int infoPort;
-	// to stop the thread
   private boolean exit = false;
 
 
@@ -48,10 +45,6 @@ class myThread extends Thread {
 		}
 		catch (Exception e){
 			System.err.println("Error creando socket");
-			// if (serverAddr != null){
-			// serverAddr.close();
-			// }
-			// return;
 		}
 
 		while (!exit){
@@ -95,10 +88,6 @@ class myThread extends Thread {
             e.printStackTrace() ;
 						out.writeBytes("2"); //Escribimos en la salida del cliente el error al cliente
 						out.write('\0'); // inserta el código ASCII 0 al final
-						//cerrar archivos en caso de error
-						// if( fr != null ){
-					  //     fr.close();
-					  //   }
 					}
 					// Lectura del fichero
           byte[] buffer = new byte[1024];
@@ -122,32 +111,25 @@ class myThread extends Thread {
 				}
 
 			}catch(Exception e) {
-        // System.err.println("excepcion " + e.toString() );
-        // e.printStackTrace() ;
-				// out.writeBytes("2"); //Escribimos en la salida del cliente el error al cliente
-				// out.write('\0'); // inserta el código ASCII 0 al final
+
         if (exit) {
           try {
             serverAddr.close(); //cerramos el servidor
           } catch(Exception exc) {
-            // System.err.println("excepcion " + e.toString() );
-            // e.printStackTrace() ;
+
           }
         }
 			}
 
-      // client.close(); //cerramos la conexión con el cliente
 		}//end whileTrue
 
 
 		try {
 			serverAddr.close(); //cerramos el servidor
 		} catch(Exception e) {
-			// System.err.println("excepcion " + e.toString() );
-			// e.printStackTrace() ;
+
 		}
 
-    // System.out.println("FIN DE HILO"); //borrar cuando se consiga
 	}//end of run
 
 	public void finish(){
@@ -156,8 +138,7 @@ class myThread extends Thread {
     try {
 			serverAddr.close(); //cerramos el servidor
 		} catch(Exception e) {
-			// System.err.println("excepcion " + e.toString() );
-			// e.printStackTrace() ;
+
 		}
 
 
@@ -394,8 +375,6 @@ class client {
 			//buscar puerto del cliente
 			if (userConnected) {
 				//iniciamos un servidor de escucha
-				// Pair ipPort = findRandomOpenPort(userOperating);
-        // System.out.println(ipPort.port);
 				_th = new myThread(port, userOperating);// _server, _port);
 				_th.start();
 			}
@@ -476,8 +455,7 @@ class client {
 			if( sc != null ){
 				sc.close();
 			}
-			// System.err.println("excepcion " + e.toString() );
-			// e.printStackTrace() ;
+
 			return -1;
 		}
 
@@ -557,8 +535,6 @@ class client {
 			if( sc != null ){
 				sc.close();
 			}
-			// System.err.println("excepcion " + e.toString() );
-			// e.printStackTrace() ;
 			return -1;
 		}
 
@@ -628,8 +604,6 @@ class client {
 			if( sc != null ){
 				sc.close();
 			}
-			// System.err.println("excepcion " + e.toString() );
-			// e.printStackTrace() ;
 			return -1;
 		}
 
@@ -720,8 +694,6 @@ class client {
 			if( sc != null ){
 				sc.close();
 			}
-			// System.err.println("excepcion " + e.toString() );
-			// e.printStackTrace() ;
 			return -1;
 		}
 
@@ -823,8 +795,6 @@ class client {
 			if( sc != null ){
 				sc.close();
 			}
-			// System.err.println("excepcion " + e.toString() );
-			// e.printStackTrace() ;
 			return -1;
 		}
 
@@ -911,7 +881,6 @@ class client {
 
 					//escribir archivo local
 
-
           File file = new File(lf);
 
           file.createNewFile(); //habría que controlar el error
@@ -931,7 +900,6 @@ class client {
 					fw.close();//cerramos el fichero local
           in.close();
           out.close();
-
 				}
 
 			}else{
@@ -949,8 +917,6 @@ class client {
 			if( client != null ){
 				client.close();
 			}
-			// System.err.println("excepcion " + e.toString() );
-			// e.printStackTrace() ;
 			return -1;
 		}
 

@@ -3,45 +3,6 @@
 //DATABASE FILE
 char db[MAX_LINE] = DATABASE_NAME;
 
-// int main(int argc, char const *argv[]) {
-//   // bool noMore = false;
-//   // int n = 6;
-//   // char userTarget[MAX_LINE] = "LauraLaMasGuapa";
-// 	// int firstLine = 0, lastLine = 0;
-//   // char file[MAX_LINE];
-//   //
-//   // findContentUser(userTarget, &firstLine, &lastLine);
-//   //
-//   // printf("firstLine: %d; lastLine: %d\n", firstLine, lastLine);
-//   //
-//   //
-//   // for (int i = 0; i < n; i++){
-//   //   fillContentUserImple(file, &firstLine, lastLine, &noMore);
-//   //   printf("round: %d\n", i+1 );
-//   //   if (noMore){
-//   //     sprintf(file, " ");
-//   //     printf("file: %s\n", file );
-//   //     printf("\n" );
-//   //   }else{
-//   //     printf("file: %s\n", file );
-//   //     printf("\n" );
-//   //   }
-//   //   firstLine++;
-//   // }
-//
-//   char user[MAX_LINE] = "alex";
-//   char ip[MAX_LINE] = "192.2.2.2";
-//   char port[MAX_LINE] = "2";
-//   printf("%d\n", registerUser(user));
-//   printf("%d\n", connectUser(user, ip, port) );
-//   printf("%d\n", publish(user, "file", "desc") );
-//   // printf("%d\n", disconnectUser(user) );
-//   // printf("%d\n", unregisterUser(user));
-//
-//   return(0);
-// } //fin main
-
-
 //OPERACIONES
 
 // ------- REGISTER -------
@@ -99,7 +60,6 @@ int unregisterUserImple(char * user){
 
   FILE* fd = fopen(db, "r+"); //abrir para lectura y escritura
   if (fd == NULL){ //NO existía la base de datos
-    // perror("Not database existing");
     return 2;
   }
   //existía la base de datos
@@ -119,7 +79,6 @@ int connectUserImple(char* user,char *ip, char *port){
 
   FILE* fd = fopen(db, "r+"); //abrir para lectura y escritura
   if (fd == NULL){ //NO existía la base de datos
-    // perror("Not database existing");
     return 3;
   }
   char userFormat[MAX_LINE];
@@ -169,8 +128,6 @@ int connectUserImple(char* user,char *ip, char *port){
     if (!moreLines){ //si no hay más líneas se pone al final
       fprintf(fd2, "%s", newLine);
     }
-    // fseek(fd, 0, SEEK_END); //se pone el puntero del fichero al final
-    // fprintf(fd, "%s", newLine);
   }
   else{
     fseek(fd, 0, SEEK_SET); //se pone el puntero del fichero al principio
@@ -208,7 +165,6 @@ int publishImple(char *user, char *file, char *desc){
     return 4;
   FILE* fd = fopen(db, "r+"); //abrir para lectura y escritura
   if (fd == NULL){ //NO existía la base de datos
-    // perror("Not database existing");
     return 4;
   }
   char userFormat[MAX_LINE];
@@ -219,7 +175,6 @@ int publishImple(char *user, char *file, char *desc){
     return 1;
   }else if(userLine == 0 ){ //el usuario no está connectado
     fclose(fd);
-    // printf("%s\n", "No conectado");
     return 2;
   }
   //else está conectado y en la línea userLine
@@ -234,7 +189,6 @@ int publishImple(char *user, char *file, char *desc){
   //else no estaba y se incluye
   return addFile(fd, fileFormat, userLine, nextUserLine); //añade el archivo al final del usuario, devuelve 4 si error y 0 si todo ok
 
-  // return 0;
 } //end of publish
 
 // ------- DELETE content -------
@@ -243,7 +197,6 @@ int deleteContentImple(char *user, char *file){
     return 4;
   FILE* fd = fopen(db, "r+"); //abrir para lectura y escritura
   if (fd == NULL){ //NO existía la base de datos
-    // perror("Not database existing");
     return 4;
   }
   char userFormat[MAX_LINE];
@@ -274,7 +227,6 @@ int deleteContentImple(char *user, char *file){
 int list_usersImple(char *user){
   FILE* fd = fopen(db, "r+"); //abrir para lectura y escritura
   if (fd == NULL){ //NO existía la base de datos
-    // perror("Not database existing");
     return 3;
   }
   char userFormat[MAX_LINE];
@@ -299,7 +251,6 @@ void fillUserInfoImple(char *user, char * ip, char *port, int *userLine, int *ne
   }
   FILE *fd = fopen(db, "r+"); //abrir para lectura y escritura
   if (fd == NULL){ //NO existía la base de datos
-    // perror("Not database existing");
     *noMore = true;
     //reseteamos el user
     sprintf(user, "%s", "");
@@ -311,10 +262,6 @@ void fillUserInfoImple(char *user, char * ip, char *port, int *userLine, int *ne
     return;
   }
   *nextUserLine = searchNextUserPosWithoutFD(fd, *userLine);
-  // if(*userLine == 1 && *nextUserLine == -1){ //no hay usuarios
-  //   *noMore = true;
-  //   return;
-  // }
   char str[MAX_FILE_LINE];
   fseek(fd, 0, SEEK_SET);
   bool copied = false;
@@ -458,7 +405,6 @@ int disconnectUserImple(char* user){
     fclose(fd);
     return 3; //devuelve error
   }
-  // printf("%d\n", nextUserLine);
   while (!feof(fd)) {
     strcpy(str, "\0");
     fgets(str, MAX_FILE_LINE, fd);
@@ -524,9 +470,7 @@ int isConnectedWithoutFD(FILE* fd, char *userFormat){
   bool found = false;
   while(fgets(str, sizeof(str), fd)) {
     line ++;
-    // printf("connected func: %s\n", str);
     if(found == true){ //si se le encuentra, en la siguiente línea se ve si empieza por $ (que indica que es una línea ip:port)
-      // printf("%s %c\n", userFormat, str[0] );
       if(str[0] == '$'){
         fseek(fd, position, SEEK_SET);
         return line-1;
@@ -555,7 +499,6 @@ int isConnected(FILE* fd, char *userFormat){
   while(fgets(str, sizeof(str), fd)) {
     line ++;
     if(found == true){ //si se le encuentra, en la siguiente línea se ve si empieza por $ (que indica que es una línea ip:port)
-      // printf("%s %c\n", userFormat, str[0] );
       if(str[0] == '$')
         return line-1;
       else
@@ -635,10 +578,6 @@ int addFile(FILE* fd, char *fileFormat, int userLine, int nextUserLine){
     remove(DATABASE_NAME);  		//eliminamos el archivo original
     rename(temp, DATABASE_NAME); 	// renombramos el temporal como el original
   }
-  //cerramos todos los ficheros y actualizamos el fichero
-  // fclose(fd);
-  // remove(DATABASE_NAME);  		//eliminamos el archivo original
-  // rename(temp, DATABASE_NAME); 	// renombramos el temporal como el original
 
   return 0; //todo fue bien
 } //end of addFile
